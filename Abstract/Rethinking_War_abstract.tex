@@ -1,0 +1,58 @@
+% !TEX TS-program = pdflatexmk
+
+\documentclass[12pt]{article}
+\usepackage{amsmath,amssymb}
+\usepackage{graphicx}
+\usepackage[margin=0.75in]{geometry}
+\usepackage{mathptmx}
+\usepackage{url}
+\usepackage{subcaption}
+\usepackage{changepage}
+
+
+%\usepackage{tgschola}
+\usepackage{mathptmx}
+
+
+\usepackage{stackengine}
+\usepackage{dsfont}
+\usepackage{verbatim}
+\usepackage[scr=boondox]{mathalfa}
+\newcommand{\bR}{{\mathbb R}}
+\newcommand{\E}{{\mathbb E}}
+
+\begin{document}
+
+\section*{Rethinking WAR for Pitchers}
+
+\subsubsection*{Ryan Brill, Justin Lipitz, Emma Segerman, Ezra Troy, Adi Wyner}
+
+WAR (wins above replacement) is a fundamental statistic for valuing pitchers, and has recently been proposed to determine arbitration salaries \cite{war_arb}. So, it is of utmost importance to use a WAR statistic that accurately captures a pitcher's contribution to his team. 
+
+Current popular implementations of WAR for pitchers, implemented by Fangraphs \cite{war_FG} and Baseball Reference \cite{war_BR}, have serious issues.  First, these implementations of WAR focus on a pitcher's earned runs averaged over his innings pitched, completely ignoring variance. This is problematic because high-variance and low-variance pitchers shouldn't have the same WAR. Furthermore, current implementations of WAR fail to take into account the convexity of WAR. In other words, the WAR of a pitcher's total number of earned runs over a season should not be equal to the sum of the WAR added by each of a pitcher's individual games, but current implementations treat these two quantities as equal. Lastly, current WAR formulas are extremely convoluted. 
+
+%One way to see why this is problematic is that a boom-or-bust pitcher who either pitches shutouts or blowups is treated the same as a pitcher who pitches a constant number of runs per inning, as long as they have the same average number of earned runs per inning. 
+
+% these implementations of WAR only take in to account a pitcher's earned runs via earned runs \textit{averaged} over innings pitched, and fail to take into account a pitcher's earned run \textit{variance}.
+
+%The boom-or-bust pitcher should have a higher WAR, however, because ``you can only lose a game once''. For instance, once you've pitched, say, 5 runs in a game, your team is so likely to lose that any additional runs on top of the 5 are worth much less and shouldn't contribute to WAR. 
+
+Therefore, we propose a new way to compute WAR, which fixes the aforementioned problems and has a much more natural interpretation and understandable derivation.
+
+To compute our WAR, we examine each of a pitcher's games individually. A pitcher's win probability added during game $i$ is defined as the difference in his team's win probability just after his last pitch (time $t_1$) and just before his first pitch of the game (time $t_0$). We use statistical techniques to estimate this difference in win probability as a function of the pitcher's earned runs, number of (partial) innings pitched, and the base-runner configuration at the time the pitcher starts and finishes pitching. Then, we compute the expected win probability added during game $i$ from time $t_0$ to $t_1$ by a hypothetical replacement level pitcher. A pitcher's WAR in game $i$ is thus defined as the difference between his win probability added and that of the hypothetical replacement level pitcher. A pitcher's WAR over the whole season is thus defined as the sum of his WAR over all his individual games.
+
+We conclude our study by comparing our WAR to previous versions of WAR. We anticipate that the WAR of low-variance pitchers won't change much, and the WAR of high-variance pitchers will, which will lead to a new WAR-ranking of pitchers. 
+
+Although we don't yet take into account many of the adjustments that previous implementations of WAR do, such as park adjustments and fielding adjustments, there are natural ways to extend our analysis in order to account for these effects. Despite these drawbacks, our method for computing WAR is an improvement over previous implementations, and should lay the foundation for a more robust, understandable, and accurate version of WAR.
+
+
+
+
+
+
+%%%% REFERENCES
+\bibliography{../bib/refs}
+\bibliographystyle{plain}
+
+
+\end{document}
