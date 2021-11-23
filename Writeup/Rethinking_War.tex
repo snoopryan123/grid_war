@@ -28,6 +28,10 @@
 \begin{document}
 \maketitle
 
+\begin{abstract}
+Traditional methods of computing WAR (wins above replacement) for pitchers have serious flaws. Specifically, Fangraphs and Baseball Reference compute a pitcher's WAR as a function of his performance averaged over the entire season, which is problematic because it ignores a pitcher's game-by-game variance. Hence we propose a new framework for computing a pitcher's season-long WAR as the summation of the WAR of each of his individual game performances. 
+\end{abstract}
+
 \section{Motivation}
 
 
@@ -58,23 +62,20 @@ Consider Max Scherzer's six game stretch from June 12, 2014 through the 2014 all
 \label{Tab:p1}
 \end{table}
 
-In Scherzer's six game stretch, he averages 15 runs over 45 innings, or $1/3$ runs per inning. So, on average, Scherzer pitches three runs per complete game, which isn't great. If we look at each of Scherzer's individual games separately, however, we see that he has five dominant performances and one blowup, which is essentially equivalent to five wins and one loss. Pitching three runs per complete game is certainly not as stellar as five nearly-guaranteed wins and one loss. On this view, a WAR statistic based upon averaging a pitcher's performance would significantly devalue Scherzer's value during this six game stretch. Because ``you can only lose a game once'', it makes more sense to give Scherzer zero credit for his one blowup game than to distribute his one poor performance over all his other games via averaging. Hence we should not compute WAR as a function of a pitcher's average performance, and should compute season-long WAR as the summation of the WAR of his individual games. 
+In Scherzer's six game stretch, he averages 15 runs over 45 innings, or $1/3$ runs per inning. So, on average, Scherzer pitches three runs per complete game, which isn't great. If we look at each of Scherzer's individual games separately, however, we see that he has five dominant performances and one blowup, which is essentially equivalent to five wins and one loss. Pitching three runs per complete game is certainly not as stellar as five nearly-guaranteed wins and one loss. On this view, a WAR statistic based upon averaging a pitcher's performance significantly devalues Scherzer's contributions during this six game stretch. Because ``you can only lose a game once'', it makes more sense to give Scherzer zero credit for his one blowup game than to distribute his one poor performance over all his other games via averaging. Hence we should not compute WAR as a function of a pitcher's average performance, and should compute season-long WAR as the summation of the WAR of his individual games. 
 
-Another way of thinking about why it is problematic to use earned run average to compute WAR is that WAR should be a nonlinear function. In other words, if $R_j$ denotes a pitcher's number of runs allowed in inning $j \in \{1,...,n\}$ of the season, then we expect
+We mathematically ground this intuition as follows: WAR should be a nonlinear function. In other words, let's think of WAR as a function of $R$ and $I$, which refers to a pitcher allowing $R$ runs over $I$ innings. Then, letting $R_j$ denote a pitcher's number of runs allowed in inning $j \in \{1,...,n\}$ of the season, we expect
 \begin{equation}
-WAR\bigg( \sum_{j=1}^{n} R_j, n \bigg) \neq  \sum_{j=1}^{n} WAR(R_j, 1).
+WAR\bigg( \sum_{j=1}^{n} R_j, n \bigg) \neq  \sum_{j=1}^{n} WAR(R_j, 1),
 \label{eqn:war1}
 \end{equation}
-Equation (\ref{eqn:war1}) tells us that, if you think of WAR as a function $R$ and $I$, which refers to a pitcher allowing $R$ runs over $I$ innings, then the WAR of a pitcher's total runs allowed and total innings over the season is not the same as the summation of a pitcher's WAR over his individual games.
-
-As discussed in the Scherzer 2014 example, a good WAR statistic should be a function of a player's individual game performances, as depicted in the right hand side of equation (\ref{eqn:war1}). Traditional WAR statistics, as computed by Baseball Reference and Fangraphs, however, implicitly treat WAR as a linear function by using a WAR statistic of the form of the left side of equation (\ref{eqn:war1}). 
-
-
-
+which is to say that WAR is a nonlinear function. In English, equation (\ref{eqn:war1}) tells us that the WAR of a pitcher's performance aggregated over a season is not equal to the aggregation of the WAR of a pitcher's individual game performances. As discussed previously, traditional WAR statistics compute a WAR function reminiscent of the left side of equation (\ref{eqn:war1}), whereas we aim to develop a WAR function based on the right side of equation (\ref{eqn:war1}).
 
 \section{Grid War: Model Specification}
 
 \subsection{Overview}
+
+We wish to compute a pitcher's season-long WAR as the sum of the WAR of his individual game performances. We begin by computing a pitcher's ``win probability added'' during game $i$, which we define as the difference in his team's win probability just after his last pitch and just before his first pitch of the game. We use statistical techniques to estimate this difference in win probability as a function of the pitcher's number of earned runs, starting inning number, ending inning number, base-runner configuration at the time he starts and finishes pitching, and number of outs at the time he starts and finishes pitching. Then, we estimate the expected win probability added if the pitcher had been replaced a hypothetical replacement-level pitcher. We then define a pitcher's WAR in game $i$ is as the difference between his win probability added and that of the hypothetical replacement level pitcher. A pitcher's WAR over the whole season is thus defined as the sum of the WAR of his individual games.
 
 \subsection{Win Probability Added}
 
