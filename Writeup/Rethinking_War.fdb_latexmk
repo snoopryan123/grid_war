@@ -1,5 +1,5 @@
 # Fdb version 3
-["pdflatex"] 1637646589 "Rethinking_War.tex" "Rethinking_War.pdf" "Rethinking_War" 1637646590
+["pdflatex"] 1637647124 "Rethinking_War.tex" "Rethinking_War.pdf" "Rethinking_War" 1637647125
   "/usr/local/texlive/2017/texmf-dist/fonts/enc/dvips/base/8r.enc" 1480098666 4850 80dc9bab7f31fb78a000ccfed0e27cab ""
   "/usr/local/texlive/2017/texmf-dist/fonts/map/fontname/texfonts.map" 1480098670 3287 e6b82fe08f5336d4d5ebc73fb1152e87 ""
   "/usr/local/texlive/2017/texmf-dist/fonts/tfm/adobe/symbol/psyr.tfm" 1480098689 1408 5937f58aa508ea2cea4901c07d10f5fe ""
@@ -117,9 +117,9 @@
   "/usr/local/texlive/2017/texmf-var/fonts/map/pdftex/updmap/pdftex.map" 1495593472 2350277 a699055bee05bf8a40b0504752487295 ""
   "/usr/local/texlive/2017/texmf-var/web2c/pdftex/pdflatex.fmt" 1495593487 4129592 0e6cfee100d68e6d96b92c0258f2ff73 ""
   "/usr/local/texlive/2017/texmf.cnf" 1495593465 577 2b71d4d888f9e5560b2e99985915a9fa ""
-  "Rethinking_War.aux" 1637646590 1228 739fbdfa5baf2f8d16d7cf361aece819 ""
-  "Rethinking_War.tex" 1637646588 13464 1c495afa15edc3982226a9e60b4eb691 ""
+  "Rethinking_War.aux" 1637647125 1219 84a52f18a526ab77d6b0fe6914047e6c ""
+  "Rethinking_War.tex" 1637647122 13482 7fc5e04b05e07735dec9d8d563343c0d ""
   (generated)
   "Rethinking_War.aux"
-  "Rethinking_War.log"
   "Rethinking_War.pdf"
+  "Rethinking_War.log"

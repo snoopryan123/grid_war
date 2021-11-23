@@ -32,9 +32,7 @@
 Traditional methods of computing WAR (wins above replacement) for pitchers have serious flaws. Specifically, Fangraphs and Baseball Reference compute a pitcher's WAR as a function of his performance averaged over the entire season, which is problematic because it ignores a pitcher's game-by-game variance. Hence we propose a new framework for computing a pitcher's season-long WAR as the summation of the WAR of each of his individual game performances. 
 \end{abstract}
 
-\section{Motivation}
-
-
+\section{Introduction}
 
 % CITATIONS
 %https://www.espn.com/mlb/player/gamelog/_/id/28976/year/2014/category/pitching
@@ -42,9 +40,7 @@ Traditional methods of computing WAR (wins above replacement) for pitchers have 
 % https://library.fangraphs.com/war/calculating-war-pitchers/
 % https://www.baseball-reference.com/about/war_explained_pitch.shtml
 
-
-
-Traditional methods for computing WAR (wins above replacement) for pitchers, notably by Baseball Reference and Fangraphs, calculate WAR as a function of a pitcher's average performance. Specifically, in computing WAR, Baseball Reference averages a pitcher's performance over the course of a season via its $xRA$ statistic [CITE]. $xRA$, or ``expected runs allowed'', denotes a pitcher's average number of runs allowed per out. Additionally, Fangraphs averages a pitcher's performance over the course of a season via its $ifFIP$ statistic [CITE]. $ifFIP$ , or ``fielding independent pitching (with infield flies), is defined by
+Traditional methods for computing WAR (wins above replacement) for pitchers, notably by Baseball Reference and Fangraphs, calculate WAR as a function of a pitcher's average performance. Specifically, in computing WAR, Baseball Reference averages a pitcher's performance over the course of a season via its $xRA$ statistic [CITE]. $xRA$, or ``expected runs allowed'', denotes a pitcher's average number of runs allowed per out. Additionally, Fangraphs averages a pitcher's performance over the course of a season via its $ifFIP$ statistic [CITE]. $ifFIP$ , or ``fielding independent pitching (with infield flies)", is defined by
 $$ifFIP := \frac{13\cdot HR + 3\cdot(BB+HBP) - 2\cdot(K+IFFB)}{IP} + ifFIP constant,$$
 which involves averaging some of a pitcher's statistics over his innings pitched. In this paper, we argue that using a pitcher's average performance to calculate his WAR is a bad way to measure his value on the mound, and so we derive an alternative approach to computing WAR.  
 
@@ -53,16 +49,16 @@ Consider Max Scherzer's six game stretch from June 12, 2014 through the 2014 all
 
 \begin{table}[ht]
 \centering
-\begin{tabular}{|r|cccccc|} \hline
-\text{game} & 1 & 2 & 3 & 4 & 5 & 6\\ \hline
-\text{earned runs} & 0 & 10 & 1 & 2 & 1 & 1 \\
-\text{innings pitched} & 9 & 4 & 6 & 7 & 8 & 7 \\ \hline
+\begin{tabular}{|r|cccccc|c|} \hline
+\text{game} & 1 & 2 & 3 & 4 & 5 & 6 & \text{total} \\ \hline
+\text{earned runs} & 0 & 10 & 1 & 2 & 1 & 1 & 15 \\
+\text{innings pitched} & 9 & 4 & 6 & 7 & 8 & 7 & 41 \\ \hline
 \end{tabular}
 \caption{Max Scherzer's performance over six games prior to the 2014 all star break.}
 \label{Tab:p1}
 \end{table}
 
-In Scherzer's six game stretch, he averages 15 runs over 45 innings, or $1/3$ runs per inning. So, on average, Scherzer pitches three runs per complete game, which isn't great. If we look at each of Scherzer's individual games separately, however, we see that he has five dominant performances and one blowup, which is essentially equivalent to five wins and one loss. Pitching three runs per complete game is certainly not as stellar as five nearly-guaranteed wins and one loss. On this view, a WAR statistic based upon averaging a pitcher's performance significantly devalues Scherzer's contributions during this six game stretch. Because ``you can only lose a game once'', it makes more sense to give Scherzer zero credit for his one blowup game than to distribute his one poor performance over all his other games via averaging. Hence we should not compute WAR as a function of a pitcher's average performance, and should compute season-long WAR as the summation of the WAR of his individual games. 
+In Scherzer's six game stretch, he averages 15 runs over 41 innings, or $0.366$ runs per inning. So, on average, Scherzer pitches $3.3$ runs per complete game, which isn't great. If we look at each of Scherzer's individual games separately, however, we see that he has five dominant performances and one blowup, which is essentially equivalent to five wins and one loss. Pitching $3.3$ runs per complete game is certainly not as stellar as five nearly-guaranteed wins and one loss. On this view, a WAR statistic based upon averaging a pitcher's performance significantly devalues Scherzer's contributions during this six game stretch. Because ``you can only lose a game once'', it makes more sense to give Scherzer zero credit for his one blowup game than to distribute his one poor performance over all his other games via averaging. Hence we should not compute WAR as a function of a pitcher's average performance, and should compute season-long WAR as the summation of the WAR of his individual games. 
 
 We mathematically ground this intuition as follows: WAR should be a nonlinear function. In other words, let's think of WAR as a function of $R$ and $I$, which refers to a pitcher allowing $R$ runs over $I$ innings. Then, letting $R_j$ denote a pitcher's number of runs allowed in inning $j \in \{1,...,n\}$ of the season, we expect
 \begin{equation}
@@ -71,7 +67,7 @@ WAR\bigg( \sum_{j=1}^{n} R_j, n \bigg) \neq  \sum_{j=1}^{n} WAR(R_j, 1),
 \end{equation}
 which is to say that WAR is a nonlinear function. In English, equation (\ref{eqn:war1}) tells us that the WAR of a pitcher's performance aggregated over a season is not equal to the aggregation of the WAR of a pitcher's individual game performances. As discussed previously, traditional WAR statistics compute a WAR function reminiscent of the left side of equation (\ref{eqn:war1}), whereas we aim to develop a WAR function based on the right side of equation (\ref{eqn:war1}).
 
-\section{Grid War: Model Specification}
+\section{Computing Grid War}
 
 \subsection{Overview}
 
