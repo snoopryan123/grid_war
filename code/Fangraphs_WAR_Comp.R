@@ -54,7 +54,7 @@ merged = merged %>% mutate(examine_pit = PIT_NAME %in% pit_names_examine)
     scale_x_continuous(name="Fangraphs WAR", limits = c(0,8)) +
     scale_y_continuous(name="Grid WAR",limits = c(0,8)) #,breaks = BREAKS
   pgf19
-  # ggsave(paste0(output_folder,"GWAR_vs_FWAR_2019.png"), pgf19)
+  # ggsave(paste0(output_folder,"plot_GWAR_vs_FWAR_2019.png"), pgf19)
   # ggplotly(p1)
 }
 
@@ -92,7 +92,7 @@ merged = merged %>% mutate(examine_pit = PIT_NAME %in% pit_names_examine)
     geom_histogram() + 
     labs(title="",x="",y="")
   p2 = plot_grid(p2L,p2M,p2U, nrow=3) 
-  # ggsave(paste0(output_folder,"ex_CumRunsDists_2019.png"), p2)
+  # ggsave(paste0(output_folder,"eplot_x_CumRunsDists_2019.png"), p2)
 }
 
 ### AGGREGATED HISTOGRAMS
