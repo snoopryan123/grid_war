@@ -13,7 +13,8 @@ output_folder = "./plots/"
 #############################
 
 f_grid <- read.csv("f_grid.csv",row.names = 1, header= TRUE)
-g_grid <- read.csv("g_grid.csv",row.names = 1, header= TRUE)
+g_grid <- read_csv("g_grid.csv") #read.csv("g_grid.csv",row.names = 1, header= TRUE)
+names(g_grid) = c("c", paste0("r", 0:(ncol(g_grid)-2)) )
 
 #############################
 ########## f PLOTS ##########
@@ -94,5 +95,33 @@ g_grid <- read.csv("g_grid.csv",row.names = 1, header= TRUE)
 #############################
 ########## g PLOTS ##########
 #############################
+
+### plot g(R,S,O) as a function of R, with O = 0, for different base states S
+
+plot_gRSO <- function(O) {
+  RP0 = stack(g_grid[8*O + 1:8,2:ncol(g_grid)])
+  RP0$S = g_grid$c[8*O + 1:8]
+  RP0$r = as.numeric(str_sub( RP0$ind,2))
+  pg0 = RP0 %>% ggplot(aes(color=S,x=r,y=values)) +
+    theme_solarized() +
+    geom_point() +
+    geom_line(size=1) +
+    labs(title="g(R,S,O=0) as a function of R, for different base states S",
+         x="runs allowed R from now until the end of this half inning",
+         y="context-neutral probability")
+  pg0
+}
+
+{
+  pg0 = plot_gRSO(0)
+  pg0
+  pg1 = plot_gRSO(1)
+  pg1
+  pg2 = plot_gRSO(2)
+  pg2
+  # ggsave(paste0(output_folder,"plot_gRSO_R0.png"), pg0)
+  # ggsave(paste0(output_folder,"plot_gRSO_R1.png"), pg1)
+  # ggsave(paste0(output_folder,"plot_gRSO_R2.png"), pg2)
+}
 
 
