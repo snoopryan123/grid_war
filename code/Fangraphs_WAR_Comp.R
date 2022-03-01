@@ -1,29 +1,31 @@
 library(tidyverse)
 library(plotly)
-# set_theme(theme_bw())
-FanGraphsLeaderboard <- read_csv("FanGraphsLeaderboard.csv")
-GWAR <- read_csv("GWAR_2019.csv") %>% rename(GWAR_og = GWAR)
-FWAR = FanGraphsLeaderboard %>% select (Name, WAR) %>% rename(PIT_NAME = Name, FWAR = WAR)
+output_folder = "./plots/"
+theme_set(theme_bw())
+theme_update(text = element_text(size=16))
+
+#############################
+########### DATA ############
+#############################
+
+FanGraphsLeaderboard_2019 <- read_csv("FanGraphsLeaderboard_2019.csv")
+GWAR_2019 <- read_csv("GWAR_2019.csv") %>% rename(GWAR_og = GWAR)
+FWAR_2019 = FanGraphsLeaderboard %>% select (Name, WAR) %>% rename(PIT_NAME = Name, FWAR = WAR)
 pitcher_exits_2019 = read_csv("pitcher_exits_2019.csv")
-# View (FWAR)
-# View(GWAR)
-# hist(FWAR$WAR)
-merged <- left_join(FWAR, GWAR, by = "PIT_NAME")
-merged <- merged %>% na.omit() 
+
+# pitcher_exits_2014 = read_csv("pitcher_exits_2014.csv")
+
+merged <- left_join(FWAR_2019, GWAR_2019, by = "PIT_NAME") %>% na.omit() 
 
 ## RESCALE (because WAR is relative at this point)
 sg = sum(merged$GWAR_og); sf = sum(merged$FWAR);
 merged = merged %>% mutate(GWAR = GWAR_og/sg*sf)
+### columns for easy plotting
+merged = merged %>% mutate(vert_distance = GWAR - FWAR) ### x=FWAR, y=GWAR
 
-merged = merged %>% mutate(
-  y=FWAR,
-  x=GWAR, #FIXME
-  theta = atan(y/x)-pi/4, #FIXME
-  #sign_theta = ifelse(theta > 0, 1, -1),
-  perp_distance = sqrt(x^2 + y^2)*sin(theta),
-  vert_distance = x - y
-)
-# View(merged)
+#############################
+########### PLOTS ###########
+#############################
 
 p1 = merged %>% ggplot(aes(x=FWAR,y=GWAR, fill = PIT_NAME)) +
   geom_abline(slope=1, intercept=0) +
