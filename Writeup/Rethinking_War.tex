@@ -1,35 +1,32 @@
-% !TEX TS-program = pdflatexmk
 
 \documentclass[12pt]{article}
+
 \usepackage{amsmath,amssymb}
 \usepackage{graphicx}
 \usepackage[margin=1in]{geometry}
-\usepackage{mathptmx}
-\usepackage{url}
-\usepackage{subcaption}
-\usepackage{changepage}
-\usepackage{amsfonts}
-\usepackage{booktabs}
-\usepackage{siunitx}
-
-
-\usepackage{stackengine}
-\usepackage{dsfont}
-\usepackage{verbatim}
-\usepackage[scr=boondox]{mathalfa}
+ \usepackage{mathptmx}
+ \usepackage{url}
+ \usepackage{subcaption}
+ \usepackage{amsfonts}
+ \usepackage{booktabs}
+ \usepackage{verbatim}
 \newcommand{\bR}{{\mathbb R}}
 \newcommand{\E}{{\mathbb E}}
+\usepackage{xcolor} \pagecolor[rgb]{0,0,0} \color[rgb]{0.8,0.8,0.8 } % DARK MODE for editing
+ \usepackage{xcolor} \pagecolor[rgb]{1,1,1} \color[rgb]{0,0,0} % LIGHT MODE 
+ \usepackage[round]{natbib}
+
 
 \usepackage{mathptmx}
-\title{Rethinking WAR for Pitchers: Grid WAR}
+\title{Introducing \textit{Grid WAR}: \\ Rethinking WAR for Starting Pitchers}
 \author{Ryan Brill, Justin Lipitz, Emma Segerman, Ezra Troy, Adi Wyner}
-\date{January 14, 2021}
+\date{March 1, 2022}
 
 \begin{document}
 \maketitle
 
 \begin{abstract}
-Traditional methods of computing WAR (wins above replacement) for pitchers have serious flaws. Specifically, Fangraphs and Baseball Reference compute a pitcher's WAR as a function of his performance averaged over the entire season, which is problematic because it ignores a pitcher's game-by-game variance. Hence we propose a new framework for computing a pitcher's season-long WAR as the summation of the WAR of each of his individual game performances. 
+Traditional methods of computing WAR (wins above replacement) for pitchers are flawed. Specifically, Fangraphs and Baseball Reference compute a pitcher's WAR as a function of his performance averaged over the entire season, which is problematic because they ignore a pitcher's game-by-game variance.  Hence we propose a new way to compute WAR for starting pitchers: \textit{Grid WAR} ($gWAR$). The idea is to compute a starter's $gWAR$ for each of his individual games. A starter's seasonal $gWAR$ is thus the sum of the $gWAR$ of each of his games. We find that $gWAR$ as a function of the number of runs $R$ a pitcher allows during a game is convex, which by Jensen's inequality implies that current implementations of WAR undervalue high variance pitchers.
 \end{abstract}
 
 \section{Introduction}
@@ -37,107 +34,123 @@ Traditional methods of computing WAR (wins above replacement) for pitchers have 
 % CITATIONS
 %https://www.espn.com/mlb/player/gamelog/_/id/28976/year/2014/category/pitching
 % https://www.fangraphs.com/leaders.aspx?pos=all&stats=sta&lg=all&qual=y&type=8&season=2014&month=0&season1=2014&ind=0&team=0&rost=0&age=0&filter=&players=0&startdate=2014-01-01&enddate=2014-12-31
-% https://library.fangraphs.com/war/calculating-war-pitchers/
-% https://www.baseball-reference.com/about/war_explained_pitch.shtml
 
-Traditional methods for computing WAR (wins above replacement) for pitchers, notably by Baseball Reference and Fangraphs, calculate WAR as a function of a pitcher's average performance. Specifically, in computing WAR, Baseball Reference averages a pitcher's performance over the course of a season via its $xRA$ statistic [CITE]. $xRA$, or ``expected runs allowed'', denotes a pitcher's average number of runs allowed per out. Additionally, Fangraphs averages a pitcher's performance over the course of a season via its $ifFIP$ statistic [CITE]. $ifFIP$ , or ``fielding independent pitching (with infield flies)", is defined by
+WAR (wins above replacement) is a fundamental statistic for valuing baseball players, and has recently been proposed to determine arbitration salaries \citep{war_arb}. So, it is of utmost importance to use a WAR statistic that accurately captures a player's contribution to his team. However, current popular implementations of WAR for starting pitchers, implemented by Fangraphs \citep{war_FG} and Baseball \citet{war_BR}, have flaws. Hence in this paper we propose a new way to compute WAR for starting pitchers, \textit{Grid WAR}. 
+
+\section{Problems with Current Implementations of WAR}
+
+\subsection{The Problem: Ignoring Variance}
+
+The primary flaw of traditional methods for computing WAR for pitchers, as implemented by Baseball Reference and Fangraphs, is WAR is calculated as a function of a pitcher's \textit{average} performance. Baseball Reference averages a pitcher's performance over the course of a season via $xRA$, or ``expected runs allowed''  \citep{war_BR}. $xRA$ is a function of a pitcher's average number of runs allowed per out. Fangraphs averages a pitcher's performance over the course of a season via $ifFIP$, or ``fielding independent pitching (with infield flies)" \citep{war_FG}. $ifFIP$ is defined by
 $$ifFIP := \frac{13\cdot HR + 3\cdot(BB+HBP) - 2\cdot(K+IFFB)}{IP} + ifFIP constant,$$
-which involves averaging some of a pitcher's statistics over his innings pitched. In this paper, we argue that using a pitcher's average performance to calculate his WAR is a bad way to measure his value on the mound, and so we derive an alternative approach to computing WAR.  
+which involves averaging some of a pitcher's statistics over his innings pitched. 
 
+To see why using a pitcher's \textit{average} performance to calculate his WAR is a bad way to measure his value on the mound, we consider Max Scherzer's six game stretch from June 12, 2014 through the 2014 all star game, shown in table \ref{Tab:Scherzer} \citep{Scherzer}. In Scherzer's six game stretch, he averages 15 runs over 41 innings, or $0.366$ runs per inning. So, on average, Scherzer pitches $3.3$ runs per complete game, which isn't great. If we look at each of Scherzer's individual games separately, however, we see that he has four dominant performances, one decent game, and one ``blowup''. This should be worth something close to four wins, significantly more than we would attribute to Scherzer by looking only at his 3.3 average runs per complete game. In other words, averaging Scherzer's performances significantly devalues his contributions during this six game stretch. 
 
-Consider Max Scherzer's six game stretch from June 12, 2014 through the 2014 all star game [CITE]. His performance over those six games is shown in table (\ref{Tab:p1}).  \\
+On this view, averaging over a pitcher's games is problematic because it ignores his game-by-game variance. Because ``\textit{you can only lose a game once}'', it makes more sense to give Scherzer zero credit for his one bad game than to distribute his one poor performance over all his other games via averaging. Hence we should not compute WAR as a function of a pitcher's average performance, and should compute season-long WAR as the summation of the WAR of his individual games. 
 
-\begin{table}[ht]
+\begin{table}[t!]
 \centering
+\caption{Max Scherzer's performance over six games prior to the 2014 all star break.}
 \begin{tabular}{|r|cccccc|c|} \hline
 \text{game} & 1 & 2 & 3 & 4 & 5 & 6 & \text{total} \\ \hline
 \text{earned runs} & 0 & 10 & 1 & 2 & 1 & 1 & 15 \\
 \text{innings pitched} & 9 & 4 & 6 & 7 & 8 & 7 & 41 \\ \hline
 \end{tabular}
-\caption{Max Scherzer's performance over six games prior to the 2014 all star break.}
-\label{Tab:p1}
+\label{Tab:Scherzer}
 \end{table}
 
-In Scherzer's six game stretch, he averages 15 runs over 41 innings, or $0.366$ runs per inning. So, on average, Scherzer pitches $3.3$ runs per complete game, which isn't great. If we look at each of Scherzer's individual games separately, however, we see that he has five dominant performances and one blowup, which is essentially equivalent to five wins and one loss. Pitching $3.3$ runs per complete game is certainly not as stellar as five nearly-guaranteed wins and one loss. On this view, a WAR statistic based upon averaging a pitcher's performance significantly devalues Scherzer's contributions during this six game stretch. Because ``you can only lose a game once'', it makes more sense to give Scherzer zero credit for his one blowup game than to distribute his one poor performance over all his other games via averaging. Hence we should not compute WAR as a function of a pitcher's average performance, and should compute season-long WAR as the summation of the WAR of his individual games. 
+\subsection{Mathematical Intuition: The Convexity of WAR}
 
-We mathematically ground this intuition as follows: WAR should be a nonlinear function. In other words, let's think of WAR as a function of $R$ and $I$, which refers to a pitcher allowing $R$ runs over $I$ innings. Then, letting $R_j$ denote a pitcher's number of runs allowed in inning $j \in \{1,...,n\}$ of the season, we expect
+We mathematically ground this intuition as follows: WAR should be a convex function in the number of runs allowed. To see why, let's think of a starting pitcher's WAR during the $j^{th}$ game as a function of his runs allowed during that game, $R_j$. If a pitcher throws the same number of runs in each complete game ($R_j \equiv R$ for all $j$), then summing the WAR over his individual games is equivalent to computing the WAR of his average performance,
 \begin{equation}
-WAR\bigg( \sum_{j=1}^{n} R_j, n \bigg) \neq  \sum_{j=1}^{n} WAR(R_j, 1),
-\label{eqn:war1}
+WAR\bigg( \frac{1}{n} \sum_{j=1}^{n}  R \bigg) = \frac{1}{n} \sum_{j=1}^{n} WAR(R).
+\label{eqn:war_convex_1}
 \end{equation}
-which is to say that WAR is a nonlinear function. In English, equation (\ref{eqn:war1}) tells us that the WAR of a pitcher's performance aggregated over a season is not equal to the aggregation of the WAR of a pitcher's individual game performances. As discussed previously, traditional WAR statistics compute a WAR function reminiscent of the left side of equation (\ref{eqn:war1}), whereas we aim to develop a WAR function based on the right side of equation (\ref{eqn:war1}).
+However, we've already conjectured that averaging over game-by-game performances undervalues pitchers such as Scherzer who exhibit some game-by-game variance in performance. Expressed mathematically, we expect
+\begin{equation}
+WAR\bigg( \frac{1}{n} \sum_{j=1}^{n}  R_j \bigg) < \frac{1}{n} \sum_{j=1}^{n} WAR(R_j).
+\label{eqn:war_convex_2}
+\end{equation}
+Mathematically, this means we expect WAR to be a convex function in the number of runs allowed. Traditional WAR metrics compute a WAR function reminiscent of the left side of equations (\ref{eqn:war_convex_1}) and (\ref{eqn:war_convex_2}), ignoring the right side of these equations. In this paper, by computing season-long WAR as the summation of the WAR of his individual games, as done on the right side of equation (\ref{eqn:war_convex_2}), we allow WAR to be a convex function.
 
-\section{Computing Grid War}
-
-\subsection{Overview}
-
-We wish to compute a pitcher's season-long WAR as the sum of the WAR of his individual game performances. We begin by computing a pitcher's ``win probability added'' during game $i$, which we define as the difference in his team's win probability just after his last pitch and just before his first pitch of the game. We use statistical techniques to estimate this difference in win probability as a function of the pitcher's number of earned runs, starting inning number, ending inning number, base-runner configuration at the time he starts and finishes pitching, and number of outs at the time he starts and finishes pitching. Then, we estimate the expected win probability added if the pitcher had been replaced a hypothetical replacement-level pitcher. We then define a pitcher's WAR in game $i$ is as the difference between his win probability added and that of the hypothetical replacement level pitcher. A pitcher's WAR over the whole season is thus defined as the sum of the WAR of his individual games.
-
-\subsection{Win Probability Added}
-
-In order to define the win probability added by pitcher $p$ during game $i$, we need to first define two helper functions. First, we define the function $f = f(I,R)$ which computes a team's probability of winning a baseball game after giving up $R$ runs through $I$ complete innings (averaged over all other confounders such as the performance of his team's batters). Second, we define the function $g = g(R,S,O)$ which computes the probability that, starting midway through an inning with $O \in \{0,1,2\}$ outs and men on base given by $S \in \{000,100,010,001,110,101,011,111\}$, a team scores exactly $R$ runs through the end of the inning. Because $f$ is a function of two discrete variables $I \in \{1,2,...,9\}$ and $R \in \{0,1,...27\}$ (where 27 serves as the maximum number of runs allowed to be pitched in a game), $f$ is fully specified by a 2D grid. Similarly, if we combine $S$ and $O$ into a 24-state tuple, then we may also view $g$ as a function of two discrete variables $R$ and $(S,O)$, and so $g$ is also fully specified by a 2D grid. As we end up defining a pitcher's WAR in terms of these helper functions $f$ and $g$, which are specified by 2D grids, we decide to name our metric \textit{Grid WAR}. 
-
-Now, using these helper functions $f$ and $g$, we wish to compute a pitcher's win probability added during a game. We begin by defining a pitcher's win probability added during a stretch of complete innings pitched. Suppose a pitcher begins pitching at the start of inning $I_0$, and that his team has already given up $R_0$ runs. Then suppose he pitches a number of complete innings, and exits the game at the end of inning $I_1$ having thrown $R_1$ runs. Then we define his win probability added during this time as
-$$f(I_1, R_0+R_1) - f(I_0 - 1, R_0).$$
-We use the convention that $f(I=0,\cdot) = 1/2$.
-
-We now define a pitcher's win probability added during a partial inning.  Suppose a pitcher begins pitching at the start of inning $I$, and that his team has already given up $R_0$ runs.  Then suppose he gives up $R_1$ runs, and exits the game midway through inning $I$ with base-state $S$ and number of outs $O$. Then we define his win probability added during the beginning-of-this-inning ($boi$) as
-$$boi(I,R_0,R_1,S,O) := \sum_{r \geq 0} g(r,S,O) f(I,R_0+R_1+r)   - f(I-1,R_0).$$
-
-Alternatively, suppose a pitcher begins pitching midway through inning $I$, starting with base-state $S$ and number of outs $O$. Then suppose he exits the game at the end of inning $I$ having given up $R_1$ runs. Suppose also that his team gives up $R_0$ runs through inning $I$, and $R_0'$ runs during inning $I$ but before he begins pitching. Then we define his win probability added during the end-of-this-inning ($eoi$) as
-$$eoi(I,R_0,R_0',R_1,S,O) := f(I,R_0+R_0'+R_1) - f(I-1,R_0) - boi(I,R_0,R_0',S,O) .$$
-
-Lastly, suppose a pitcher begins pitching midway through inning $I$, starting with base-state $S_0$ and number of outs $O_0$. Then suppose he gives up $R_1$ runs, and exits the game with base-state $S_1$ and number of outs $O_1$. Suppose also that his team gives up $R_0$ runs through inning $I$, and $R_0'$ runs during inning $I$ but before he begins pitching. Then we define his win probability added during the middle-of-this-inning ($moi$) as
-\begin{align*}
-moi(I,R_0,R_0',R_1,S_0,O_0,S_1,O_1) := & f(I,R_0+R_0'+R_1) - f(I-1,R_0) \\
-&- eoi(I,R_0,R_0',R_1,S_1,O_1) - boi(I,R_0,R_0',S_0,O_0).
-\end{align*}
-
-Now, we have defined the win probability added by a pitcher during any inning, whether it is a complete or partial inning. Then, we define the win probability added by a pitcher over the course of the season as the sum of the win probability added over all of his innings pitched. Now, we need only estimate the helper functions $f$ and $g$ from the data in order to compute each pitcher's win probability added over a season. 
-
-\subsection{Wins Above Replacement \& the Cascading Replacement Paradigm}
-
-We have formulated a method to compute a pitcher's win probability added over the course of a season, and we shall use this to define Grid WAR (GWAR). A WAR metric is intended to compare a pitcher to a \textit{replacement}-level pitcher, which is someone who would substitute for a pitcher if he got injured. We wish to define a pitcher's GWAR by the difference in his win probability added over the course of a season and that of a replacement-level player. Hence we need to quantify the performance of a replacement-level pitcher.
-
-In general, the replacement for a starter is a low-tier starter, the replacement for a closer is a late-inning-middle-reliever, the replacement for a late-inning-middle-reliever is a mid-game-middle-reliever, and the replacement for a mid-game-middle-reliever is a low-tier mid-game-middle-reliever. Naturally, we call this system of replacement the \textit{cascading replacement paradigm}. 
-
-%To this end, we create four archetypical replacement level pitchers: the low-tier starter, the low-tier middle-reliever, the average middle-reliever, and the average mid-late-inning-reliever. For each of these archetypes $a \in \{1,2,3,4\}$, we create a grid function $h_a = h_a(R)$ which computes archetype $a$'s probability of throwing $R$ runs during a complete inning, and a grid function $k_a = k_a(R,S,O)$ which computes archetype $a$'s probability of throwing $R$ runs from the middle of an inning with base-state $S$ and number of outs $O$ through the end of the inning. Note that $h_a(R) - k_a(R,S,O)$ gives the probability that archetype $a$ throws $R$ runs from the start of an inning to the middle of an inning if he exits with base-state $S$ and number of outs $O$. Further, note that $h_a(R) - k_a(R,S_1,O_1) - k_a(R,S_1,O_1)$ gives the probability that archetype $a$ throws $R$ runs during the middle of an inning, starting with base-state $S_0$ and number of outs $O_0$, and ending with base-state $S_1$ and number of outs $O_1$.
+% Lastly, a major flaw in current implementations of WAR is that they are extremely convoluted formulas. Hence in this paper, we propose a new way to compute WAR for starting pitchers which has a much more natural interpretation and understandable derivation.
 
 
 
-%To this end, we create four archetypical replacement level pitchers: the low-tier starter, the low-tier middle-reliever, the average middle-reliever, and the average mid-late-inning-reliever. Let $r_a$ denote the expected number of runs by archetype $a\in \{1,2,3,4\}$ in a complete inning. Let $r_a(S,O)$ be the expected number of runs by archetype $a$ starting midway through an inning with base-state $S$ and number of outs $O$ until the end of the inning. Note that $r_a - r_a(S,O)$ is the expected number of runs by archetype $a$ from the beginning of an inning until midway through an inning if he exits with base-state $S$ and number of outs $O$. Further, note that $r_a(S_1,O_1) - r_a(S_0,O_0)$ is the expected number of runs by archetype $a$ starting midway through an inning with base-state $S_0$ and number of outs $O_0$ until he is pulled midway through this inning with base-state $S_1$ and number of outs $O_1$. 
+\section{Defining \textit{Grid WAR} for Starting Pitchers}
 
+We wish to create a metric which computes a starting pitcher's WAR for an individual game. The idea is to compute a context-neutral and offense-invariant version of win-probability-added that is derived only from a pitcher's performance. 
 
+First, we define a starting pitcher's \textit{Grid WAR} ($gWAR$) for a game in which he exits at the end of an inning. We begin by creating the function $f=f(I,R)$ which, assuming both teams have league-average offenses and league-average defenses, computes the probability a team wins a game after giving up $R$ runs through $I$ innings. $f$ is a context-neutral version of win probability, as it depends only on the starter's performance. 
 
+To compute a wins \textit{above replacement} metric, however, we need to compare this context-neutral win-contribution to that of a potential replacement-level pitcher. We use a constant $w_{rep}$ which denotes the probability a team wins a game with a replacement-level starting pitcher, assuming both teams have a league-average offense and defense. We expect $w_{rep} < 0.5$ since replacement-level pitchers are worse than league-average pitchers. 
 
-\section{Computing the Grid Functions}
+Then, we define a starter's \textit{Grid WAR} during a game in which he gives up $R$ runs through $I$ complete innings as 
+\begin{equation}
+f(I, R) - w_{rep}.
+\label{eqn:war_f}
+\end{equation}
+We call our metric \textit{Grid WAR} because the function $f=f(I,R)$ is defined on the 2D grid $\{1,...,9\} \times \{1,...,25\}$.
+
+Next, we define a starting pitcher's \textit{Grid WAR} for a game in which he exits midway through an inning. We begin by creating another function $g=g(R,S,O)$ which, assuming both teams have a league-average offense and defense, computes the probability that, starting midway through an inning with $O \in \{0,1,2\}$ outs and base-state 
+$$S \in \{000,100,010,001,110,101,011,111\},$$
+a team scores exactly $R$ runs through the end of the inning. Then we define a starter's \textit{Grid WAR} during a game in which he gives up $R$ runs and leaves midway through inning $I$ with $O$ outs and base-state $S$ as the expected \textit{Grid WAR} at the end of the inning,
+\begin{equation}
+\sum_{r \geq 0} g(r,S,O) f(I,r+R) - w_{rep}.
+\label{eqn:war_g}
+\end{equation}
+
+Finally, we define a starting pitcher's \textit{Grid WAR} for an entire season as the sum of the \textit{Grid WAR} of his individual games. In order to compute \textit{Grid WAR} for each starting pitcher, we need only estimate the grid functions $f$ and $g$.
+
+\section{Estimating the Grid Functions $f$ and $g$}
 
 \subsection{Estimating $f$}
 
+First, we estimate the function $f=f(I,R)$ which, assuming both teams have league-average offenses, computes the probability a team wins a game after giving up $R$ runs through $I$ innings. For $I \in \{1,...,8\}$, we define $f(I,R)$ as the empirical proportion of games in which a team wins after giving up $R$ runs through $I$ innings. We use all games from 2010 to 2019. For $I \in \{1,...,8\}$ and $R \in \{1,...,15\}$, each $(I,R)$ has over [1000] occurences, which is enough to use the empirical proportion alone.  
+%For $I = 9$, we cannot simply use the empirical proportion because if a home team leads after the top of the $9^{th}$ inning, then the bottom of the $9^{th}$ is not played. So, we [DO WHAT].
+
+In figure [PLOT], we plot the functions $R \mapsto f(I,R)$ for each inning $I$. We see that [].
+
+[PLOT]
+
+[DISCUSS WAR AS A CONVEX FUNCTION]
+
+\subsection{Estimating $w_{rep}$}
+
+To compute a wins \textit{above replacement} metric, we need to compare the context-neutral win-contribution to that of a potential replacement-level pitcher. Thus we define a constant $w_{rep}$ which denotes the probability a team wins a game with a replacement-level starting pitcher, assuming both teams have a league-average offense and defense. We expect $w_{rep} < 0.5$ since replacement-level pitchers are worse than league-average pitchers. 
+
+It is difficult to estimate $w_{rep}$ because it is difficult to compile a list of replacement-level pitchers. According to \citet{ReplacementLevel}, \textit{replacement-level} is the ``level of production you could get from a player that would cost you nothing but the league minimum salary to acquire.'' Since we are not members of an MLB front office, this level of production is difficult to estimate. Ultimately, the value of $w_{rep}$ doesn't matter too much because we rescale all pitcher's \textit{Grid WAR} to sum to a fixed amount, to compare our results to those of Fangraphs. So, we arbitrarily set $w_{rep} = 0.41$. 
 
 \subsection{Estimating $g$}
 
+Second, we estimate the function $g=g(R,S,O)$ which, assuming both teams have league-average offenses, computes the probability that, starting midway through an inning with $O \in \{0,1,2\}$ outs and base-state 
+$$S \in \{000,100,010,001,110,101,011,111\},$$
+a team scores exactly $R$ runs through the end of the inning. We define $g(R,S,O)$ by the empirical proportion, for $R \in \{1,...,X\}$. We use the first 8 innings of every game from 2010 to 2019. We average over the first 8 innings for simplicity, and because $g$ isn't significantly different across innings. 
 
-\subsection{Replacement-Level Computations}
+[PLOT CURVES of $g(R,S,O)$ as a function of $R$ for some $(S,O)$ combinations]
+
+\section{Comparing \textit{Grid WAR} to Fangraphs WAR}
+
+[2D PLOT]
 
 
 
-%\subsection{Estimating $h_a$}
-%
-%
-%\subsection{Estimating $k_a$}
-
-
-
-\section{Examples}
+\section{Example Seasons}
 
 
 
 \section{Conclusion}
 
-Future Work: potentially modify win probability added to include other confounder's like the pitcher's team's runs, opposing fielder quality, etc
 
-much better way to compute WAR!
 
+\section{Future Work}
+WAR for relievers...
+
+
+% %%%% REFERENCES
+ \clearpage
+ \bibliography{../bib/refs}
+ \bibliographystyle{plainnat}
 
 \end{document}

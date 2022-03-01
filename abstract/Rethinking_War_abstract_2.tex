@@ -1,0 +1,47 @@
+% !TEX TS-program = pdflatexmk
+
+\documentclass[12pt]{article}
+\usepackage{amsmath,amssymb}
+\usepackage{graphicx}
+\usepackage[margin=0.75in]{geometry}
+\usepackage{mathptmx}
+\usepackage{url}
+\usepackage{subcaption}
+\usepackage{changepage}
+
+
+%\usepackage{tgschola}
+\usepackage{mathptmx}
+
+
+\usepackage{stackengine}
+\usepackage{dsfont}
+\usepackage{verbatim}
+\usepackage[scr=boondox]{mathalfa}
+\newcommand{\bR}{{\mathbb R}}
+\newcommand{\E}{{\mathbb E}}
+
+\begin{document}
+
+\section*{Introducing  Grid WAR: Rethinking WAR for starting pitchers}
+
+\subsubsection*{Ryan Brill, Justin Lipitz, Emma Segerman, Ezra Troy, Adi Wyner}
+
+WAR (wins above replacement) is a fundamental statistic for valuing players, and has recently been proposed to determine arbitration salaries \cite{war_arb}. So, it is of utmost importance to use a WAR statistic that accurately captures a player's contribution to his team. 
+
+Current popular implementations of WAR for starting pitchers, implemented by Fangraphs \cite{war_FG} and Baseball Reference \cite{war_BR}, have serious problems. First, these implementations of WAR focus on a pitcher's earned run average, failing to value low variance.  Second,  the WAR of a pitcher's total number of earned runs over a season should  be additive over the games; that is, season WAR should equal the sum of the WAR added by each of a pitcher's individual games. Current implementations do not have this property.  This is problematic since it means current versions of WAR undervalue certain pitchers, particularly those that are prone to an occasional blow-up. Finally, the current WAR formulas are extremely convoluted. We propose a new way to compute WAR for starting pitchers that  fixes all of these problems and has a much more natural interpretation and understandable derivation.
+
+The idea is to compute a context-neutral and offense invariant version of win probability added that is derived  only from a pitcher's performance. To do this, we create a 2D grid function $f=f(I,R)$ which computes the probability a team wins a game with a league average offense after giving up $R$ runs through $I$ innings. Additionally, we find a constant $w_{rep}$ which denotes the probability a team wins a game with a replacement-level starting pitcher, assuming both teams have league-average offenses. We expect $w_{rep} < 0.5$ since replacement-level pitchers are worse than league-average pitchers (we use $w_{rep} = 0.41$). Thus we define a starter's \textit{grid WAR} during a game in which he gives up $R$ runs through $I$ complete innings as 
+$$f(I, R) - w_{rep}.$$ 
+
+To account for a starter's last partial inning pitched, we create another 2D grid function $g=g(R,S,O)$ which computes the probability that, starting midway through an inning with $O \in \{0,1,2\}$ outs and base-state $S \in \{000,100,010,001,110,101,011,111\}$, a team scores exactly $R$ runs through the end of the inning. Then we define a starter's grid WAR during a game in which he gives up $R$ runs and leaves midway through inning $I$ with $O$ outs and base-state $S$ as the expected grid WAR at the end of the inning,
+$$\sum_{r \geq 0} g(r,S,O) f(I,r+R) - w_{rep}.$$ 
+
+We define a starter's grid WAR over the whole season as the sum of the grid WAR of his individual games. This allows us to properly take in to account a pitcher's game-by-game variance, as his good games are valued separately from the bad games. Moreover, by examining the grid, we see that $R \mapsto f(I,R)$ is convex which implies, from Jensen's inequality,  that current implementations of WAR undervalue high variance pitchers.
+
+%%%% REFERENCES
+\bibliography{../bib/refs}
+\bibliographystyle{plain}
+
+
+\end{document}
