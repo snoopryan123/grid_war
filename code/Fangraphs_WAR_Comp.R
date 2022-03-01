@@ -1,8 +1,10 @@
 library(tidyverse)
 library(plotly)
-output_folder = "./plots/"
+library(ggthemes)
 theme_set(theme_bw())
 theme_update(text = element_text(size=16))
+theme_update(plot.title = element_text(hjust = 0.5))
+output_folder = "./plots/"
 
 #############################
 ########### DATA ############
@@ -23,28 +25,42 @@ merged = merged %>% mutate(GWAR = GWAR_og/sg*sf)
 ### columns for easy plotting
 merged = merged %>% mutate(vert_distance = GWAR - FWAR) ### x=FWAR, y=GWAR
 
-#############################
-########### PLOTS ###########
-#############################
-
-p1 = merged %>% ggplot(aes(x=FWAR,y=GWAR, fill = PIT_NAME)) +
-  geom_abline(slope=1, intercept=0) +
-  geom_point() +
-  geom_smooth(method='lm', formula= y~x, se = FALSE, color="dodgerblue")
-ggplotly(p1)
-
-
-
+### examine these pitchers
 kk = 5
 merged %>% arrange(-vert_distance) %>% head(kk)
 merged %>% arrange(-vert_distance) %>% tail(kk)
 merged %>% arrange(-vert_distance) %>% filter(abs(vert_distance) <= 0.15)
-
 pit_names_examine = (bind_rows(merged %>% arrange(-vert_distance) %>% head(kk),
                                merged %>% arrange(-vert_distance) %>% tail(kk),
                                merged %>% arrange(-vert_distance) %>% filter(abs(vert_distance) <= 0.15)) %>%
                        select(PIT_NAME))$PIT_NAME
-pit_names_examine
+merged = merged %>% mutate(examine_pit = PIT_NAME %in% pit_names_examine)
+
+#############################
+########### PLOTS ###########
+#############################
+
+### Grid War vs. Fangraphs WAR for 2019
+pgf19 = merged %>% mutate(label = ifelse(examine_pit, PIT_NAME, "")) %>%
+  ggplot(aes(x=FWAR,y=GWAR, label = label)) +
+  theme_solarized() +
+  geom_abline(slope=1, intercept=0) +
+  # geom_smooth(method='lm', formula= y~x, se = FALSE, color="dodgerblue") +
+  geom_point() +
+  geom_text(hjust=-.05, vjust=0) +
+  labs(title="Grid WAR vs. Fangraphs WAR for Starting Pitchers in 2019") +
+  scale_x_continuous(name="Fangraphs WAR", limits = c(0,8)) +
+  scale_y_continuous(name="Grid WAR",limits = c(0,8)) #,breaks = BREAKS
+pgf19
+ggsave(paste0(output_folder,"GWAR_vs_FWAR_2019.png"), pgf19)
+# ggplotly(p1)
+
+
+ggplot(nba, aes(x= MIN, y= PTS, colour="green", label=Name))+
+  geom_point() +geom_text(hjust=0, vjust=0)
+
+
+
 
 # k=1
 # View(pitcher_exits_2019 %>% select(GAME_ID,INNING,PIT_NAME,CUM_RUNS,
