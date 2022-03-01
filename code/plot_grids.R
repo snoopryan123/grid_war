@@ -106,7 +106,7 @@ plot_gRSO <- function(O) {
     theme_solarized() +
     geom_point() +
     geom_line(size=1) +
-    labs(title="g(R,S,O=0) as a function of R, for different base states S",
+    labs(title=paste0("g(R|S,O=",O,") as a function of R, for different base states S"),
          x="runs allowed R from now until the end of this half inning",
          y="context-neutral probability")
   pg0
@@ -119,9 +119,9 @@ plot_gRSO <- function(O) {
   pg1
   pg2 = plot_gRSO(2)
   pg2
-  # ggsave(paste0(output_folder,"plot_gRSO_R0.png"), pg0)
-  # ggsave(paste0(output_folder,"plot_gRSO_R1.png"), pg1)
-  # ggsave(paste0(output_folder,"plot_gRSO_R2.png"), pg2)
+  ggsave(paste0(output_folder,"plot_gRSO_R0.png"), pg0)
+  ggsave(paste0(output_folder,"plot_gRSO_R1.png"), pg1)
+  ggsave(paste0(output_folder,"plot_gRSO_R2.png"), pg2)
 }
 
 
