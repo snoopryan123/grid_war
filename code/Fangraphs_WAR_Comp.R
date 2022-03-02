@@ -126,7 +126,61 @@ merged = merged %>% mutate(examine_pit = PIT_NAME %in% pit_names_examine)
   # ggsave(paste0(output_folder,"plot_cumRuns_aggregated_",year,".png"), p3)
 }
 
+### Noah Syndergaard vs. Mike Fiers
+{
+  dnf = pitcher_exits %>%
+    left_join(merged) %>%
+    filter(PIT_NAME %in% c("Noah Syndergaard", "Mike Fiers")) 
+  # dnf %>% group_by(PIT_NAME) %>% summarise(mr = mean(CUM_RUNS), sdr = sd(CUM_RUNS))
+  dnf1 = left_join(dnf, dnf %>% group_by(PIT_NAME,CUM_RUNS) %>% summarise(mi = mean(INNING), .groups="drop"))
+  # dnf1 %>% select(PIT_NAME,GAME_ID,INNING,CUM_RUNS,mi) %>% arrange(PIT_NAME,CUM_RUNS)
+  dnf2 = dnf1 %>% select(PIT_NAME,GAME_ID,INNING,CUM_RUNS,mi) %>% 
+    arrange(PIT_NAME,CUM_RUNS) %>% 
+    group_by(PIT_NAME,CUM_RUNS) %>% 
+    summarise(count = n(), mi = mi, .groups="drop") %>%
+    distinct() %>%
+    mutate(mi = round(mi,1))
+  pnf = dnf2 %>%
+    ggplot(aes(x=CUM_RUNS,y=count,label=mi)) +
+    facet_wrap(~PIT_NAME) +
+    # geom_histogram() + 
+    geom_col() +
+    geom_text(vjust = 1.5,color="white") +
+    # geom_text(data=dnf2, aes( label = mi), vjust = -0.2)
+    scale_x_continuous(name="Runs Allowed in a Game",breaks=seq(0,20,by=2)) +
+    scale_y_continuous(name="Count",breaks=seq(0,20,by=2))
+  # labs(title="Distribution of Runs Allowed in a Game")
+  pnf
+  # ggsave(paste0(output_folder,"plot_Fiers_Synderg_",year,".png"), pnf)
+}
 
+### Ryu vs. Lynn
+{
+  drl = pitcher_exits %>%
+    left_join(merged) %>%
+    filter(PIT_NAME %in% c("Lance Lynn", "Hyun-Jin Ryu")) 
+  # drl %>% group_by(PIT_NAME) %>% summarise(mr = mean(CUM_RUNS), sdr = sd(CUM_RUNS))
+  drl1 = left_join(drl, drl %>% group_by(PIT_NAME,CUM_RUNS) %>% summarise(mi = mean(INNING), .groups="drop"))
+  # dnf1 %>% select(PIT_NAME,GAME_ID,INNING,CUM_RUNS,mi) %>% arrange(PIT_NAME,CUM_RUNS)
+  drl2 = drl1 %>% select(PIT_NAME,GAME_ID,INNING,CUM_RUNS,mi) %>% 
+    arrange(PIT_NAME,CUM_RUNS) %>% 
+    group_by(PIT_NAME,CUM_RUNS) %>% 
+    summarise(Count = n(), mi = mi, .groups="drop") %>%
+    distinct() %>%
+    mutate(mi = round(mi,1))
+  prl = drl2 %>%
+    ggplot(aes(x=CUM_RUNS,y=Count,label=mi)) +
+    facet_wrap(~PIT_NAME) +
+    # geom_histogram() + 
+    geom_col() +
+    geom_text(vjust = 1.5,color="white") +
+    # geom_text(data=dnf2, aes( label = mi), vjust = -0.2)
+    scale_x_continuous(name="Runs Allowed in a Game",breaks=seq(0,20,by=2)) +
+    scale_y_continuous(name="Count",breaks=seq(0,20,by=2))
+  # labs(title="Distribution of Runs Allowed in a Game")
+  prl
+  # ggsave(paste0(output_folder,"plot_Lynn_Ryu_",year,".png"), prl)
+}
 
 
 
