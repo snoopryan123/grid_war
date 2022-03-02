@@ -1,11 +1,11 @@
 This is BibTeX, Version 0.99d (TeX Live 2021)
 Capacity: max_strings=200000, hash_size=200000, hash_prime=170003
-The top-level auxiliary file: Rethinking_War.aux
+The top-level auxiliary file: grid_war.aux
 The style file: plainnat.bst
 Database file #1: ../bib/refs.bib
 You've used 8 entries,
             2773 wiz_defined-function locations,
-            636 strings with 6111 characters,
+            636 strings with 6099 characters,
 and the built_in function-call counts, 2387 in all, are:
 = -- 208
 > -- 80
