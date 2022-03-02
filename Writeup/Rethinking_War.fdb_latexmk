@@ -1,14 +1,16 @@
 # Fdb version 3
-["bibtex Rethinking_War"] 1646194568 "Rethinking_War.aux" "Rethinking_War.bbl" "Rethinking_War" 1646194572
-  "../bib/refs.bib" 1646101732 1044 be43df53c52263a18df714b6a4f9eddc ""
+["bibtex Rethinking_War"] 1646201988 "Rethinking_War.aux" "Rethinking_War.bbl" "Rethinking_War" 1646201993
+  "../bib/refs.bib" 1646198231 1756 84b903026ef7d73bb32cc2707cbca923 ""
   "/usr/local/texlive/2021/texmf-dist/bibtex/bst/natbib/plainnat.bst" 1233624470 26816 ffe5423d2019860bad9f54bc402fac15 ""
-  "Rethinking_War.aux" 1646194571 2733 ecbd5d3133b50abb6f65508cb93c8a04 "pdflatex"
+  "Rethinking_War.aux" 1646201993 3932 6cad3e7aedd98155be279cb4975b1530 "pdflatex"
   (generated)
   "Rethinking_War.bbl"
   "Rethinking_War.blg"
-["pdflatex"] 1646194568 "Rethinking_War.tex" "Rethinking_War.pdf" "Rethinking_War" 1646194572
+["pdflatex"] 1646201989 "Rethinking_War.tex" "Rethinking_War.pdf" "Rethinking_War" 1646201993
+  "../writeup_plots/plot_cumRuns_aggregated_2019.png" 1646201016 162242 1733deb73d964730fe75387a9dfced16 ""
   "../writeup_plots/plot_fIR_R_smoothed.png" 1646111926 618121 1ec93b679a139d9acde517a3cd12e880 ""
   "../writeup_plots/plot_gRSO_R0.png" 1646156671 457194 5fd2ad4c0f6052a1e511a835d09ff3ca ""
+  "../writeup_plots/plot_gwar_vs_fwar_2019.png" 1646109217 388788 c9ed41c52f09402ba84792eed9447e4b ""
   "/usr/local/texlive/2021/texmf-dist/fonts/enc/dvips/base/8r.enc" 1165713224 4850 80dc9bab7f31fb78a000ccfed0e27cab ""
   "/usr/local/texlive/2021/texmf-dist/fonts/map/fontname/texfonts.map" 1577235249 3524 cb3e574dea2d1052e39280babc910dc8 ""
   "/usr/local/texlive/2021/texmf-dist/fonts/tfm/adobe/symbol/psyr.tfm" 1136768653 1408 5937f58aa508ea2cea4901c07d10f5fe ""
@@ -101,10 +103,10 @@
   "/usr/local/texlive/2021/texmf-var/fonts/map/pdftex/updmap/pdftex.map" 1616695603 5169178 a2ce6e2d73f603b690db6777d06dbccb ""
   "/usr/local/texlive/2021/texmf-var/web2c/pdftex/pdflatex.fmt" 1638393604 2724745 ebb6f274344b2b6acd48c93dcf71b352 ""
   "/usr/local/texlive/2021/texmf.cnf" 1616695596 577 4c1911a7228e554c6032256d3cf5567d ""
-  "Rethinking_War.aux" 1646194571 2733 ecbd5d3133b50abb6f65508cb93c8a04 "pdflatex"
-  "Rethinking_War.bbl" 1646194568 1276 d5cc4e108a18d0aa8c97ffde2da95bf2 "bibtex Rethinking_War"
-  "Rethinking_War.tex" 1646194564 15292 cd05a3db3a1ddcad5eb3611c63bff494 ""
+  "Rethinking_War.aux" 1646201993 3932 6cad3e7aedd98155be279cb4975b1530 "pdflatex"
+  "Rethinking_War.bbl" 1646201989 1946 6290d89f159c60b582da8f9c8ff8188a "bibtex Rethinking_War"
+  "Rethinking_War.tex" 1646201982 19446 b8f77d9926a7ef549c92dcab62285caa ""
   (generated)
-  "Rethinking_War.pdf"
-  "Rethinking_War.aux"
   "Rethinking_War.log"
+  "Rethinking_War.aux"
+  "Rethinking_War.pdf"

@@ -101,22 +101,27 @@ merged = merged %>% mutate(examine_pit = PIT_NAME %in% pit_names_examine)
 
 ### AGGREGATED HISTOGRAMS
 {
+  num_pits_per_bin = 7 #kk
   l = floor(min(merged$vert_distance))
-  s = round((merged %>% arrange(abs(vert_distance)) %>% filter(row_number() == kk))$vert_distance,2)
+  x0 = round((merged %>% arrange(vert_distance) %>% filter(row_number() == num_pits_per_bin))$vert_distance,2)
+  s = round((merged %>% arrange(abs(vert_distance)) %>% filter(row_number() == num_pits_per_bin))$vert_distance,2)
+  x1 = round((merged %>% arrange(-vert_distance) %>% filter(row_number() == num_pits_per_bin))$vert_distance,2)
   u = ceiling(max(merged$vert_distance))
   df3 = merged %>% mutate(bin = cut(vert_distance, 
-            breaks=c(l,-s-1,-s,s,s+1,u))) %>%
+            breaks=c(l,x0,-abs(s),abs(s),x1,u))) %>%
     select(PIT_NAME,bin,GWAR,FWAR) %>%
     arrange(bin) %>%
     select(PIT_NAME, bin) %>%
-    filter(bin != paste0("(",-s-1,",",-s,"]") & bin != paste0("(",s,",",s+1,"]"))
-  
+    filter(bin != paste0("(",x0,",",-abs(s),"]") & bin != paste0("(",abs(s),",",x1,"]"))
+  levels(df3$bin) = c("overvalued","x0","properly valued","x1", "undervalued")
   p3 = pitcher_exits %>% 
     left_join(df3) %>%
     filter(PIT_NAME %in% df3$PIT_NAME) %>%
     ggplot(aes(x=CUM_RUNS)) +
     facet_wrap(~bin) +
-    geom_histogram()
+    geom_histogram(aes(y=..density..)) + #geom_histogram() +
+    scale_x_continuous(name="Runs Allowed in a Game",breaks=seq(0,20,by=2),) +
+    labs(title="Distribution of Runs Allowed in a Game")
   p3
   # ggsave(paste0(output_folder,"plot_cumRuns_aggregated_",year,".png"), p3)
 }
