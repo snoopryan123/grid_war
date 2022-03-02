@@ -1,12 +1,14 @@
 # Fdb version 3
-["bibtex Rethinking_War"] 1646101864 "Rethinking_War.aux" "Rethinking_War.bbl" "Rethinking_War" 1646102200
+["bibtex Rethinking_War"] 1646194568 "Rethinking_War.aux" "Rethinking_War.bbl" "Rethinking_War" 1646194572
   "../bib/refs.bib" 1646101732 1044 be43df53c52263a18df714b6a4f9eddc ""
   "/usr/local/texlive/2021/texmf-dist/bibtex/bst/natbib/plainnat.bst" 1233624470 26816 ffe5423d2019860bad9f54bc402fac15 ""
-  "Rethinking_War.aux" 1646102199 2372 26d1751de6efa52a73fe850956f159bc "pdflatex"
+  "Rethinking_War.aux" 1646194571 2733 ecbd5d3133b50abb6f65508cb93c8a04 "pdflatex"
   (generated)
-  "Rethinking_War.blg"
   "Rethinking_War.bbl"
-["pdflatex"] 1646102198 "Rethinking_War.tex" "Rethinking_War.pdf" "Rethinking_War" 1646102200
+  "Rethinking_War.blg"
+["pdflatex"] 1646194568 "Rethinking_War.tex" "Rethinking_War.pdf" "Rethinking_War" 1646194572
+  "../writeup_plots/plot_fIR_R_smoothed.png" 1646111926 618121 1ec93b679a139d9acde517a3cd12e880 ""
+  "../writeup_plots/plot_gRSO_R0.png" 1646156671 457194 5fd2ad4c0f6052a1e511a835d09ff3ca ""
   "/usr/local/texlive/2021/texmf-dist/fonts/enc/dvips/base/8r.enc" 1165713224 4850 80dc9bab7f31fb78a000ccfed0e27cab ""
   "/usr/local/texlive/2021/texmf-dist/fonts/map/fontname/texfonts.map" 1577235249 3524 cb3e574dea2d1052e39280babc910dc8 ""
   "/usr/local/texlive/2021/texmf-dist/fonts/tfm/adobe/symbol/psyr.tfm" 1136768653 1408 5937f58aa508ea2cea4901c07d10f5fe ""
@@ -37,6 +39,7 @@
   "/usr/local/texlive/2021/texmf-dist/fonts/type1/public/amsfonts/cm/cmr10.pfb" 1248133631 35752 024fb6c41858982481f6968b5fc26508 ""
   "/usr/local/texlive/2021/texmf-dist/fonts/type1/public/amsfonts/cm/cmsy10.pfb" 1248133631 32569 5e5ddc8df908dea60932f3c484a54c0d ""
   "/usr/local/texlive/2021/texmf-dist/fonts/type1/public/amsfonts/cm/cmtt12.pfb" 1248133631 24252 1e4e051947e12dfb50fee0b7f4e26e3a ""
+  "/usr/local/texlive/2021/texmf-dist/fonts/type1/public/amsfonts/symbols/msbm10.pfb" 1248133631 34694 ad62b13721ee8eda1dcc8993c8bd7041 ""
   "/usr/local/texlive/2021/texmf-dist/fonts/type1/urw/symbol/usyr.pfb" 1136849748 33709 b09d2e140b7e807d3a97058263ab6693 ""
   "/usr/local/texlive/2021/texmf-dist/fonts/type1/urw/times/utmb8a.pfb" 1136849748 44729 811d6c62865936705a31c797a1d5dada ""
   "/usr/local/texlive/2021/texmf-dist/fonts/type1/urw/times/utmbi8a.pfb" 1136849748 44656 0cbca70e0534538582128f6b54593cca ""
@@ -98,10 +101,10 @@
   "/usr/local/texlive/2021/texmf-var/fonts/map/pdftex/updmap/pdftex.map" 1616695603 5169178 a2ce6e2d73f603b690db6777d06dbccb ""
   "/usr/local/texlive/2021/texmf-var/web2c/pdftex/pdflatex.fmt" 1638393604 2724745 ebb6f274344b2b6acd48c93dcf71b352 ""
   "/usr/local/texlive/2021/texmf.cnf" 1616695596 577 4c1911a7228e554c6032256d3cf5567d ""
-  "Rethinking_War.aux" 1646102199 2372 26d1751de6efa52a73fe850956f159bc "pdflatex"
-  "Rethinking_War.bbl" 1646101864 1276 d5cc4e108a18d0aa8c97ffde2da95bf2 "bibtex Rethinking_War"
-  "Rethinking_War.tex" 1646102198 12310 72b9d4b0b84ccd660099836e378391cf ""
+  "Rethinking_War.aux" 1646194571 2733 ecbd5d3133b50abb6f65508cb93c8a04 "pdflatex"
+  "Rethinking_War.bbl" 1646194568 1276 d5cc4e108a18d0aa8c97ffde2da95bf2 "bibtex Rethinking_War"
+  "Rethinking_War.tex" 1646194564 15292 cd05a3db3a1ddcad5eb3611c63bff494 ""
   (generated)
-  "Rethinking_War.log"
   "Rethinking_War.pdf"
   "Rethinking_War.aux"
+  "Rethinking_War.log"
