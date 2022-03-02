@@ -1,0 +1,59 @@
+\begin{thebibliography}{8}
+\providecommand{\natexlab}[1]{#1}
+\providecommand{\url}[1]{\texttt{#1}}
+\expandafter\ifx\csname urlstyle\endcsname\relax
+  \providecommand{\doi}[1]{doi: #1}\else
+  \providecommand{\doi}{doi: \begingroup \urlstyle{rm}\Url}\fi
+
+\bibitem[Brill(2021)]{dropboxRetrosheet}
+Ryan Brill.
+\newblock Cleaned retrosheet play-by-play data.
+\newblock \\ \url{https://upenn.box.com/v/retrosheet-pa-1990-2000}, June 2021.
+
+\bibitem[ESPN(2014)]{Scherzer}
+ESPN.
+\newblock Max scherzer 2014 game log.
+\newblock
+  \url{https://www.espn.com/mlb/player/gamelog/_/id/28976/year/2014/category/pitching},
+  2014.
+
+\bibitem[Fangraphs(2010)]{ReplacementLevel}
+Fangraphs.
+\newblock Replacement level.
+\newblock \url{https://library.fangraphs.com/misc/war/replacement-level/},
+  2010.
+
+\bibitem[Fangraphs(2019)]{Fangraphs2019War}
+Fangraphs.
+\newblock Fangraphs 2019 starting pitcher war leaderboard.
+\newblock
+  \url{https://www.fangraphs.com/leaders.aspx?pos=all&stats=sta&lg=all&qual=y&type=8&season=2019&month=0&season1=2019&ind=0&team=0&rost=0&age=0&filter=&players=0&startdate=&enddate=},
+  2019.
+
+\bibitem[Perry(2021)]{war_arb}
+Dayn Perry.
+\newblock Mlb proposes determining arbitration salaries by using the war
+  statistic, per report.
+\newblock
+  \url{https://www.cbssports.com/mlb/news/mlb-proposes-determining-arbitration-salaries-by-using-the-war-statistic-per-report/},
+  2021.
+
+\bibitem[Reference(2011)]{war_BR}
+Baseball Reference.
+\newblock Pitcher war calculations and details.
+\newblock
+  \url{https://www.baseball-reference.com/about/war_explained_pitch.shtml},
+  2011.
+
+\bibitem[Retrosheet(2021)]{retroRaw}
+Retrosheet.
+\newblock Retrosheet play-by-play data files (event files).
+\newblock \\ \url{https://www.retrosheet.org/game.htm}, 2021.
+
+\bibitem[Slowinski(2012)]{war_FG}
+Piper Slowinski.
+\newblock War for pitchers.
+\newblock \url{https://library.fangraphs.com/war/calculating-war-pitchers/},
+  2012.
+
+\end{thebibliography}
