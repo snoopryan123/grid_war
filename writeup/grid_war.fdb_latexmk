@@ -1,12 +1,12 @@
 # Fdb version 3
-["bibtex grid_war"] 1646250751 "grid_war.aux" "grid_war.bbl" "grid_war" 1646250756
+["bibtex grid_war"] 1646361627 "grid_war.aux" "grid_war.bbl" "grid_war" 1646361730
   "../bib/refs.bib" 1646250430 1757 d0f5c667e0ca0fcf6fb7578a7d3dc712 ""
   "/usr/local/texlive/2021/texmf-dist/bibtex/bst/natbib/plainnat.bst" 1233624470 26816 ffe5423d2019860bad9f54bc402fac15 ""
-  "grid_war.aux" 1646250755 5181 d330c63f09e73ecca61e0b804af09bcc "pdflatex"
+  "grid_war.aux" 1646361730 6205 731400cf7b9686eda708db546dc29c7d "pdflatex"
   (generated)
-  "grid_war.bbl"
   "grid_war.blg"
-["pdflatex"] 1646250751 "grid_war.tex" "grid_war.pdf" "grid_war" 1646250756
+  "grid_war.bbl"
+["pdflatex"] 1646361726 "grid_war.tex" "grid_war.pdf" "grid_war" 1646361730
   "../writeup_plots/plot_Fiers_Synderg_2019.png" 1646239010 169548 6855b4fd3f3a730d137bd16867f15481 ""
   "../writeup_plots/plot_Lynn_Ryu_2019.png" 1646240017 159264 6d4ecdfd2aa292bf289d363966e058d8 ""
   "../writeup_plots/plot_cumRuns_aggregated_2019.png" 1646201016 162242 1733deb73d964730fe75387a9dfced16 ""
@@ -105,10 +105,10 @@
   "/usr/local/texlive/2021/texmf-var/fonts/map/pdftex/updmap/pdftex.map" 1616695603 5169178 a2ce6e2d73f603b690db6777d06dbccb ""
   "/usr/local/texlive/2021/texmf-var/web2c/pdftex/pdflatex.fmt" 1638393604 2724745 ebb6f274344b2b6acd48c93dcf71b352 ""
   "/usr/local/texlive/2021/texmf.cnf" 1616695596 577 4c1911a7228e554c6032256d3cf5567d ""
-  "grid_war.aux" 1646250755 5181 d330c63f09e73ecca61e0b804af09bcc "pdflatex"
-  "grid_war.bbl" 1646250751 1946 6290d89f159c60b582da8f9c8ff8188a "bibtex grid_war"
-  "grid_war.tex" 1646250649 26426 a16661a86ca8825ae7b05408e07a6876 ""
+  "grid_war.aux" 1646361730 6205 731400cf7b9686eda708db546dc29c7d "pdflatex"
+  "grid_war.bbl" 1646361628 1946 6290d89f159c60b582da8f9c8ff8188a "bibtex grid_war"
+  "grid_war.tex" 1646361725 27852 4dd6e052a70b57c76a87265c6fbe5916 ""
   (generated)
-  "grid_war.log"
   "grid_war.pdf"
   "grid_war.aux"
+  "grid_war.log"

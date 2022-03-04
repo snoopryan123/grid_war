@@ -169,67 +169,68 @@ In figure \ref{fig:g0} we plot the distribution of $g(R|S,O=0)$, with $O=0$ outs
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 \section{Results}
 
-We compute the \textit{Grid WAR} of each starting pitcher in 2019 using data scraped from \citet{retroRaw}. Our cleaned data is freely available for download on Dropbox \citep{dropboxRetrosheet}. We acquire the 2019 FanGraphs WAR ($fWAR$) of 58 starting pitchers from \citet{Fangraphs2019War}. To legitimize comparison between $gWAR$ and $fWAR$, we rescale $gWAR$ so that the sum of these pitchers' $gWAR$ equals the sum of their $fWAR$. Because their $fWAR$ sums to 205 and their $gWAR$ sums to 198, the impact of rescaling is miniscule. 
+We compute the \textit{Grid WAR} ($gWAR$) of each starting pitcher in 2019 using data scraped from \citet{retroRaw}. Our cleaned data, consisting of every plate appearance from 1990 to 2020, is freely available for download on Dropbox \citep{dropboxRetrosheet}. We acquire the 2019 FanGraphs WAR ($fWAR$) of 58 starting pitchers from \citet{Fangraphs2019War}. To legitimize comparison between $gWAR$ and $fWAR$, we rescale $gWAR$ so that the sum of these pitchers' $gWAR$ equals the sum of their $fWAR$. Because their $fWAR$ sums to 205 and their $gWAR$ sums to 198, the impact of rescaling is small. 
 
 \subsection{\textit{Grid WAR} vs. Fangraphs WAR in 2019}
 
-In figure \ref{fig:gwarVfwar19} we plot 2019 $gWAR$ vs. $fWAR$ for each of these starting pitchers. We define the metric \texttt{vertical distance} ($vd$), which is a pitcher's difference in $gWAR$ and $fWAR$,
+In figure \ref{fig:gwarVfwar19} we plot $gWAR$ vs. $fWAR$ for starting pitchers in 2019. We define the metric \texttt{vertical distance} ($vd$), which is a pitcher's difference in $gWAR$ and $fWAR$,
 \begin{equation}
 vd := gWAR - fWAR.
 \label{eqn:vd}
 \end{equation}
-In figure \ref{fig:gwarVfwar19}, a player's $vd$ is his $y$ value minus his $x$ value. According to \textit{Grid WAR}, players with large positive $vd$ values are undervalued, players with small $|vd|$ values are equally valued, and players with large negative $vd$ values are overvalued, relative to FanGraphs. In figure \ref{fig:gwarVfwar19}, we include the names of the five most undervalued, equally valued, and overvalued starting pitchers, determined via their $vd$ scores. 
+In figure \ref{fig:gwarVfwar19}, a player's $vd$ is the $y$-distance from the point $(x,y)=(fWAR,gWAR)$ to the line $y=x$. According to \textit{Grid WAR}, players with large positive $vd$ values are undervalued, players with small $|vd|$ values are equally valued, and players with large negative $vd$ values are overvalued, relative to FanGraphs. In figure \ref{fig:gwarVfwar19}, we include the names of the five most undervalued, equally valued, and overvalued starting pitchers, determined via their $vd$ scores. 
 
 As discussed in section \ref{sec:convexityOfWAR}, by the convexity of \textit{Grid WAR}, we expected most of the points in figure \ref{fig:gwarVfwar19} to lie above the $y=x$ line. However, we see that this is not the case. We suspect this is because FanGraphs WAR is a complicated formula which adds many adjustments on top of a pitcher's average performance \citep{war_FG}. Nevertheless, examining individual player-seasons sheds light on the difference between each of these players' $gWAR$ and $fWAR$ values. 
 
-
 \begin{figure}[t!]
 \centering
-\caption{\textit{Grid WAR} vs. FanGraphs WAR in 2019.} %The names of the five most undervalued, equally valued, and overvalued starting pitchers in 2019 are included.} 
+\caption{\textit{Grid WAR} vs. FanGraphs WAR in 2019. The names of the five most undervalued, equally valued, and overvalued starting pitchers in 2019, according to $gWAR$ relative to $fWAR$, are included.} 
 \includegraphics[width=15cm]{../writeup_plots/plot_gwar_vs_fwar_2019.png}
 \label{fig:gwarVfwar19}
 \end{figure}
 
 \subsection{Overvalued vs. Undervalued Pitchers on Aggregate in 2019}
 
-In figure \ref{fig:cumRunsAggregated19}, we bin the 2019 starting pitchers into three categories - overvalued (negative $vd$), equally valued (low $|vd|$), and undervalued (high $vd$) - and plot the empirical distribution of runs allowed in a game, for each bin. We see that undervalued pitchers have a high relative proportion of games with 0 and 1 run allowed. This makes sense: averaging a pitcher's performance over all his games dilutes his exceptional games, which undervalues his performance by the convexity of \textit{Grid WAR}.
-
-Moreover, both overvalued and equally values pitchers have a high relative proportion of games with 2 and 3 runs allowed. The difference between these two categories appears to be that equally valued pitchers have a higher relative proportion of games with 0 and 1 run allowed, whereas overvalued pitchers have fatter tails.
+In figure \ref{fig:cumRunsAggregated19}, we bin the 2019 starting pitchers into three categories - overvalued (negative $vd$), equally valued (low $|vd|$), and undervalued (high $vd$) - and plot the empirical distribution of runs allowed in a game, for each bin. We see that undervalued pitchers have a high relative proportion of games with 0 and 1 run allowed. This makes sense: averaging a pitcher's performance over all his games dilutes his exceptional games, which undervalues his performance by the convexity of \textit{Grid WAR}. Furthermore, both overvalued and equally values pitchers have a high relative proportion of games with 2 and 3 runs allowed. The difference between these two categories appears to be that equally valued pitchers have a higher relative proportion of games with 0 and 1 run allowed, whereas overvalued pitchers have fatter tails.
 
 \begin{figure}[t!]
 \centering
-\caption{The distribution of runs allowed in a game for overvalued, equally valued, and undervalued starting pitchers in 2019.} 
+\caption{The distribution of runs allowed in a game for overvalued, equally valued, and undervalued starting pitchers in 2019. The distribution of undervalued pitchers is concentrated on allowing 0, 1, and 2 runs per game. The distribution of overvalued pitchers is concentrated on allowing 2 and 3 runs per game. The distributions of equally valued pitchers is concentrated on allowing 0, 1, 2, and 3 runs per game, with a skinnier tail than that of overvalued pitchers. } 
 \includegraphics[width=15cm]{../writeup_plots/plot_cumRuns_aggregated_2019.png}
 \label{fig:cumRunsAggregated19}
 \end{figure}
 
-
-
 \subsection{Noah Syndergaard vs. Mike Fiers in 2019}
 
-Interestingly, FanGraphs says Noah Syndergaard has 4.3 WAR in 2019, whereas Mike Fiers has a 1.7 WAR in 2019. However, as shown in figure \ref{fig:gwarVfwar19}, Syndergaard has a 2.43 $gWAR$, whereas Fiers has a 4.12 $gWAR$. In fact, Mike Fiers is the most undervalued pitcher in 2019, according to $gWAR$, with $vd = 2.4$. In true Moneyball fashion, in 2019, at the ripe age of 33, Mike Fiers played for the Oakland Athletics. Upon first glance, noting that Syndergaard is a well-regarded pitcher, we fear that we made a mistake. Nevertheless, examining their 2019 game-by-game statistics reveals why $gWAR$ more accurately values both Fiers and Syndergaards' contributions.
+Previously, we considered the difference between overvalued, equally valued, and undervalued pitchers on aggregate. Now, we examine these differences by considering individual player-seasons, and we see similar trends. We begin with Noah Syndergaard and Mike Fiers. 
 
-In figure \ref{fig:cumRunsFiersSynderg} we plot the histogram of runs allowed in a game for Mike Fiers and Noah Syndergaard in 2019. The number in the bin corresponding to allowing $r$ runs in a game refers to the mean number of innings pitched in those games. For example, Mike Fiers allowed 1 run in 10 games, and pitched an average of 6.3 innings in those games. Fiers' allows 0, 1, or 2 runs allowed, 
+In 2019,  Noah Syndergaard has 4.3 $fWAR$ and 2.3 $gWAR$, whereas Mike Fiers has 1.7 $fWAR$ and 4.12 $gWAR$. In fact, Mike Fiers is the most undervalued starting pitcher in 2019, according to \textit{Grid WAR}, with a $vd$ of 2.4. In true Moneyball fashion, in 2019, at the ripe age of 33, Mike Fiers played for the Oakland Athletics. Upon first glance, noting that Syndergaard is a well-regarded pitcher, we fear that we made a mistake. Nevertheless, examining their 2019 game-by-game statistics allows us to understand their differences in $gWAR$ and $fWAR$, and suggests that \textit{Grid WAR} is not mistaken after all.
 
-Fiers has a high proportion of games in which he allows 0, 1, or 2 runs. On the other hand, Syndergaard has a high proportion of games in which he allows 2, 3, or 4 runs. Also, both pitchers have a similar mean number of innings pitched for each of these runs-allowed bins, so there is no bias caused by one pitcher leaving a game earlier than the other. Therefore, it makes sense that Fiers' $gWAR$ is so much higher than Syndergaards'. Again, by the convexity of $gWAR$, allowing 0 or 1 run allowed is extremely valuable. Nonetheless, it is perplexing why Syndergaards' $fWAR$ is so high and Fiers' $fWAR$ is so low. Even with additional adjustments such as fielding adjustments, a quick glance at their runs-allowed distributions (as in figure \ref{fig:cumRunsFiersSynderg}) shows this is preposterous.  
+In figure \ref{fig:cumRunsFiersSynderg} we plot the histogram of runs allowed in a game for Mike Fiers and Noah Syndergaard in 2019. The number in the bin corresponding to allowing $r$ runs in a game refers to the mean number of innings pitched in those games. For example, Mike Fiers allowed 1 run in 10 games, and pitched an average of 6.3 innings in those games. Note that because both pitchers have a similar mean number of innings pitched for each of these runs-allowed bins, there is negigible bias caused by one pitcher leaving a game earlier than the other. 
+
+Fiers has a high proportion of games in which he allows 0, 1, or 2 runs. On the other hand, Syndergaard has a high proportion of games in which he allows 2, 3, or 4 runs. Therefore, it makes sense that Fiers' $gWAR$ is so much higher than Syndergaards'. Again, by the convexity of $gWAR$, allowing 0 or 1 run is extremely valuable. Nonetheless, it is perplexing why Syndergaards' $fWAR$ is so high and Fiers' $fWAR$ is so low. 
 
 
 \begin{figure}[t!]
 \centering
-\caption{Histogram of runs allowed in a game for Mike Fiers and Noah Syndergaard in 2019. The number in the bin corresponding to allowing $r$ runs in a game refers to the mean number of innings pitched in games those games.} 
+\caption{Histogram of runs allowed in a game for Mike Fiers and Noah Syndergaard in 2019. The number in the bin corresponding to allowing $r$ runs in a game refers to the mean number of innings pitched in games those games. Fiers' distribution is concentrated on allowing 0, 1, and 2 runs per game, which is why he has a high $gWAR$ of 4.12. Syndergaard's distribution is concentrated on allowing 2, 3, and 4 runs per game, which is why he has a lower $gWAR$ of 2.3.} 
 \includegraphics[width=15cm]{../writeup_plots/plot_Fiers_Synderg_2019.png}
 \label{fig:cumRunsFiersSynderg}
 \end{figure}
 
 \subsection{Lance Lynn vs. Hyun-Jin Ryu in 2019}
 
-In 2019, Lance Lynn had the third highest $fWAR$ of all starting pitchers at 6.7. Hyun-Jin Ryu also had a high $fWAR$ of 4.9. However, as shown in figure \ref{fig:gwarVfwar19}, their roles are reversed - Ryu has a 6.7 $gWAR$ and Lynn has a 4.3 $gWAR$. In fact, Lance Lynn is the most overvalued pitcher in 2019, according to $gWAR$, with $vd = -2.4$. Again, examining their 2019 game-by-game statistics reveals why $gWAR$ more accurately values both Lynn and Ryus' contributions.
+Now, we consider the individual player-seasons of Lance Lynn and Hyun-Jin Ryu.
 
-In figure \ref{fig:cumRunsLynnRyu} we plot Lance Lynn and Hyun-Jin Ryus' runs-allowed histograms in 2019. We see that Ryu's runs-allowed distribution is concentrated on allowing 0, 1 or 2 runs, whereas Lynn's distribution is concentrated on allowing 1, 2, and 3 runs. Again, by the convexity of $gWAR$, all the games in which Ryu allows 0 runs are valuable enough to give him 2 more $gWAR$ than Lynn. Also, both pitchers have a similar mean number of innings pitched for each of these runs-allowed bins, so there is no bias caused by one pitcher leaving a game earlier than the other. Therefore, it makes sense that Ryu's $gWAR$ is so much higher than Lynn's, and $fWAR$'s valuations look perplexing. 
+In 2019, Lance Lynn has 6.7 $fWAR$ and 4.3 $gWAR$, whereas Hyun-Jin Ryu has 4.9 $fWAR$ and 6.7 $gWAR$ - roles reversed! In fact, Lance Lynn has the third highest $fWAR$ of all starting pitchers in 2019. He is also the most overvalued pitcher in 2019, according to $gWAR$, with a $vd$ of -2.4. Again, examining their 2019 game-by-game statistics allows us to understand their differences in $gWAR$ and $fWAR$.
+
+In figure \ref{fig:cumRunsLynnRyu} we plot the histogram of runs allowed in a game for Lynn and Ryu in 2019. Again, the number in the bin corresponding to allowing $r$ runs in a game refers to the mean number of innings pitched in those games. For example, Ryu allowed 0 runs in 10 games, and pitched an average of 7.2 innings in those games. Note that because both pitchers have a similar mean number of innings pitched for each of these runs-allowed bins, there is negigible bias caused by one pitcher leaving a game earlier than the other. 
+
+We see that Ryu's runs-allowed distribution is concentrated on allowing 0, 1 or 2 runs, whereas Lynn's distribution is concentrated on allowing 1, 2, and 3 runs. The primary difference in their distributions appears to be that Ryu allows 0 runs in 8 more games than Lynn, and Lynn allows 4 runs in 3 more games than Ryu. Again, by the convexity of $gWAR$, all the games in which Ryu allows 0 runs are extremely valuable, and are enough to give him 2 more $gWAR$ than Lynn. Also, that Lynn's distribution is concentrated on allowing 1, 2, and 3 runs, as opposed to 3, 4, and 5 runs per game explains why he still has a high $gWAR$, particularly in comparison to Syndergaard from the previous section.
 
 \begin{figure}[t!]
 \centering
-\caption{Histogram of runs allowed in a game for Lance Lynn and Hyun-Jin Ryu in 2019. The number in the bin corresponding to allowing $r$ runs in a game refers to the mean number of innings pitched in games those games.} 
+\caption{Histogram of runs allowed in a game for Lance Lynn and Hyun-Jin Ryu in 2019. The number in the bin corresponding to allowing $r$ runs in a game refers to the mean number of innings pitched in those games. Ryu's distribution is concentrated on allowing 0, 1, and 2 runs per game, which is why he has an extremely high $gWAR$ of 6.7. Lynn's distribution is concentrated on allowing 1, 2, and 3 runs per game, which is why he has a high $gWAR$ of 4.3, and a significantly lower $gWAR$ than Ryu's.} 
 \includegraphics[width=15cm]{../writeup_plots/plot_Lynn_Ryu_2019.png}
 \label{fig:cumRunsLynnRyu}
 \end{figure}
@@ -244,7 +245,7 @@ In figure \ref{fig:cumRunsLynnRyu} we plot Lance Lynn and Hyun-Jin Ryus' runs-al
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 \section{Conclusion}
 
-Traditional methods of computing WAR are flawed because they compute WAR as a function of a pitcher's \textit{average} performance. Averaging over pitcher performance is a subpar way to value a pitcher's performance because it ignores a pitcher's game-by-game variance and ignores the convexity of WAR. So, in this paper, we devise \textit{Grid WAR}, a new way to compute a starting pitcher's WAR. We compute a pitcher's $gWAR$ in each of his individual games, and define his seasonal $gWAR$ as the sum of the $gWAR$ of his individual games. We compute $gWAR$ on a set of starting pitchers in 2019, and compare them to their FanGraphs WAR. Examining the trends of pitchers who are overvalued, equally valued, and undervalued by $gWAR$ relative to $fWAR$ in 2019, we see that $gWAR$ highly values games in which a pitcher allows few runs (0 or 1). This makes sense, becuase by the convexity of WAR, the more runs a pitcher allows, giving up an additional run has less of a marginal impact. Additionally, by examining individual player-seasons in 2019, we see the convexity of WAR again highly value pitchers who allow few runs in many games. Overall, this paper leaves us with the following important lessons: do not ignore variance, and do not ignore convexity.
+Traditional methods of computing WAR are flawed because they compute WAR as a function of a pitcher's \textit{average} performance. Averaging over pitcher performance is a subpar way to value a pitcher's performance because it ignores a pitcher's game-by-game variance and ignores the convexity of WAR. So, in this paper, we devise \textit{Grid WAR}, a new way to compute a starting pitcher's WAR. We compute a pitcher's $gWAR$ in each of his individual games, and define his seasonal $gWAR$ as the sum of the $gWAR$ of his individual games. We compute $gWAR$ on a set of starting pitchers in 2019, and compare them to their FanGraphs WAR. Examining the trends of pitchers who are overvalued, equally valued, and undervalued by $gWAR$ relative to $fWAR$ in 2019, we see that $gWAR$ highly values games in which a pitcher allows few runs (0 or 1). This makes sense, becuase by the convexity of WAR, the more runs a pitcher allows, giving up an additional run has less of a marginal impact. Additionally, by examining individual player-seasons in 2019, we see the convexity of WAR again highly value pitchers who allow few runs in many games. 
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 \subsection{Future Work}
