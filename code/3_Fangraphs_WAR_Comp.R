@@ -40,10 +40,14 @@ kk = 5
 # merged %>% arrange(-vert_distance) %>% head(kk)
 # merged %>% arrange(-vert_distance) %>% tail(kk)
 # merged %>% arrange(abs(vert_distance)) %>% head(kk)
-pit_names_examine = (bind_rows(merged %>% arrange(-vert_distance) %>% head(kk),
-                               merged %>% arrange(-vert_distance) %>% tail(kk),
-                               merged %>% arrange(abs(vert_distance)) %>% head(kk)) %>%
-                       select(PIT_NAME))$PIT_NAME
+# pit_names_examine = (bind_rows(merged %>% arrange(-vert_distance) %>% head(kk),
+#                                merged %>% arrange(-vert_distance) %>% tail(kk),
+#                                merged %>% arrange(abs(vert_distance)) %>% head(kk)) %>%
+#                        select(PIT_NAME))$PIT_NAME
+pit_names_examine = c("Justin Verlander", "Max Scherzer", "Jacob deGrom", "Lance Lynn",
+                      "Sonny Gray","Jose Berrios", "Mike Soroka","Marcus Stroman",
+                      "Sandy Alcantara","Reynaldo Lopez", "Dakota Hudson", "Mike Leake",
+                      "Julio Teheran","Jose Berrios", "Clayton Kershaw","Jose Quintana")
 merged = merged %>% mutate(examine_pit = PIT_NAME %in% pit_names_examine)
 
 #############################
@@ -53,15 +57,17 @@ merged = merged %>% mutate(examine_pit = PIT_NAME %in% pit_names_examine)
 ### Grid War vs. Fangraphs WAR for 2019
 {
   pgf = merged %>% mutate(label = ifelse(examine_pit, PIT_NAME, "")) %>%
-    #ggplot(aes(x=FWAR,y=GWAR, label = label)) +
-    ggplot(aes(x=FWAR,y=GWAR, label = PIT_NAME)) +
+    ggplot(aes(x=FWAR,y=GWAR, label = label)) + ##label = PIT_NAME
     geom_abline(slope=1, intercept=0) +
     # geom_smooth(method='lm', formula= y~x, se = FALSE, color="dodgerblue") +
     geom_point() +
-    geom_text(hjust=-.05, vjust=0) +
+    geom_text(hjust=-.05, vjust=-0.05) +
     # labs(title=paste0("Grid WAR vs. Fangraphs WAR for Starting Pitchers in ",year)) +
-    scale_x_continuous(name="Fangraphs WAR")#, limits = c(0,10)) +
-    scale_y_continuous(name="Grid WAR")#,limits = c(-5,16))
+    # geom_label(data= data.frame(x = c(6),y = c(6),label = c("y=x")), 
+    #            aes(x=x, y=y, label=label),                  
+    #            color="black", size=5 , fontface="bold") +
+    scale_x_continuous(name="Fangraphs WAR", limits = c(0,8)) +
+    scale_y_continuous(name="Grid WAR",limits = c(1,8)) 
   pgf
   # ggsave(paste0(output_folder,"plot_GWAR_vs_FWAR_",year,".png"), pgf)
   # ggplotly(pgf)
