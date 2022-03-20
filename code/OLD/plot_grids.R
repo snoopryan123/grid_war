@@ -4,8 +4,9 @@ library(ggthemes)
 library(cowplot)
 library(latex2exp)
 theme_set(theme_bw())
-theme_update(text = element_text(size=16))
+theme_update(text = element_text(size=18))
 theme_update(plot.title = element_text(hjust = 0.5))
+# theme_set(theme_solarized())
 output_folder = "./plots/"
 
 #############################
@@ -28,13 +29,13 @@ names(g_grid) = c("c", paste0("r", 0:(ncol(g_grid)-2)) )
   WPii$runs = rep(0:(nrow(WPi)-1), 9)
   pWPii = WPii %>% filter(runs <= 13) %>%
     ggplot(aes(x=runs,y=values,color=ind)) + 
-    theme_solarized() +
     geom_point() + 
     geom_line(size=1) +
     # geom_smooth(se=FALSE) +
-    labs(title=TeX("$f(I,R)$ as a function of $R$, for each $I$"),
-         y="context-neutral win probability",
-         x="runs allowed through the end of the given inning")
+    labs(
+      # title=TeX("$f(I,R)$ as a function of $R$, for each $I$"),
+      y="context-neutral win probability",
+      x="runs allowed through the end of the given inning")
   pWPii
   # ggsave(paste0(output_folder,"plot_fIR_R.png"), pWPii)
   # plotly::ggplotly(pWPii)
@@ -44,13 +45,13 @@ names(g_grid) = c("c", paste0("r", 0:(ncol(g_grid)-2)) )
 {
   pWPiis = WPii %>% filter(runs <= 13) %>%
     ggplot(aes(x=runs,y=values,color=ind)) + 
-    theme_solarized() +
     geom_point() + 
     # geom_line(size=1) +
     geom_smooth(se=FALSE) +
-    labs(title=TeX("smoothed $f(I,R)$ as a function of $R$, for each $I$"),
-         y="context-neutral win probability",
-         x="runs allowed through the end of the given inning")
+    labs(
+      # title=TeX("smoothed $f(I,R)$ as a function of $R$, for each $I$"),
+      y="context-neutral win probability",
+      x="runs allowed through the end of the given inning")
   pWPiis
   # ggsave(paste0(output_folder,"plot_fIR_R_smoothed.png"), pWPiis)
 }
@@ -63,11 +64,11 @@ names(g_grid) = c("c", paste0("r", 0:(ncol(g_grid)-2)) )
   WPrr$inn = rep(1:9, 14)
   pWPrr = WPrr %>% 
     ggplot(aes(x=inn,y=values,color=ind)) +
-    theme_solarized() +
     geom_point() + 
     geom_line(size=1) +
     # geom_smooth(se=FALSE) +
-    labs(title=TeX("$f(I,R)$ as a function of $R$, for each $I$"),
+    labs(
+      title=TeX("$f(I,R)$ as a function of $R$, for each $I$"),
          y="context-neutral win probability",
          x="runs allowed through the end of the given inning")
   pWPrr
@@ -79,7 +80,6 @@ names(g_grid) = c("c", paste0("r", 0:(ncol(g_grid)-2)) )
 {
   pWPrrs = WPrr %>% 
     ggplot(aes(x=inn,y=values,color=ind)) +
-    theme_solarized() +
     geom_point() + 
     # geom_line(size=1) +
     geom_smooth(se=FALSE) +
@@ -103,12 +103,12 @@ plot_gRSO <- function(O) {
   RP0$S = g_grid$c[8*O + 1:8]
   RP0$r = as.numeric(str_sub( RP0$ind,2))
   pg0 = RP0 %>% ggplot(aes(color=S,x=r,y=values)) +
-    theme_solarized() +
     geom_point() +
     geom_line(size=1) +
-    labs(title=paste0("g(R|S,O=",O,") as a function of R, for different base states S"),
-         x="runs allowed R from now until the end of this half inning",
-         y="context-neutral probability")
+    labs(
+      # title=paste0("g(R|S,O=",O,") as a function of R, for different base states S"),
+      x="runs allowed R from now until the end of this half inning",
+      y="context-neutral probability")
   pg0
 }
 
@@ -119,9 +119,9 @@ plot_gRSO <- function(O) {
   pg1
   pg2 = plot_gRSO(2)
   pg2
-  ggsave(paste0(output_folder,"plot_gRSO_R0.png"), pg0)
-  ggsave(paste0(output_folder,"plot_gRSO_R1.png"), pg1)
-  ggsave(paste0(output_folder,"plot_gRSO_R2.png"), pg2)
+  # ggsave(paste0(output_folder,"plot_gRSO_R0.png"), pg0)
+  # ggsave(paste0(output_folder,"plot_gRSO_R1.png"), pg1)
+  # ggsave(paste0(output_folder,"plot_gRSO_R2.png"), pg2)
 }
 
 

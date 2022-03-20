@@ -1,4 +1,4 @@
-This is pdfTeX, Version 3.141592653-2.6-1.40.22 (TeX Live 2021) (preloaded format=pdflatex 2021.12.1)  3 MAR 2022 21:42
+This is pdfTeX, Version 3.141592653-2.6-1.40.22 (TeX Live 2021) (preloaded format=pdflatex 2021.12.1)  3 MAR 2022 21:55
 entering extended mode
  restricted \write18 enabled.
  %&-line parsing enabled.
@@ -411,12 +411,12 @@ LaTeX Font Info:    Font shape `OT1/ptm/bx/n' in size <17.28> not available
 (Font)              Font shape `OT1/ptm/b/n' tried instead on input line 113.
 LaTeX Font Info:    Font shape `OT1/ptm/bx/n' in size <10> not available
 (Font)              Font shape `OT1/ptm/b/n' tried instead on input line 113.
-<../writeup_plots/plot_fIR_R_smoothed.png, id=21, 2642.87375pt x 2403.98125pt>
+<../writeup_plots/plot_fIR_R_smoothed.png, id=21, 2337.73375pt x 2111.89pt>
 File: ../writeup_plots/plot_fIR_R_smoothed.png Graphic file (type png)
 <use ../writeup_plots/plot_fIR_R_smoothed.png>
 Package pdftex.def Info: ../writeup_plots/plot_fIR_R_smoothed.png  used on inpu
 t line 127.
-(pdftex.def)             Requested size: 426.79134pt x 388.20299pt.
+(pdftex.def)             Requested size: 426.79134pt x 385.53757pt.
 
 Overfull \hbox (17.86067pt too wide) in paragraph at lines 149--150
 \OT1/ptm/m/n/12 To com-pute a wins \OT1/ptm/m/it/12 above re-place-ment \OT1/pt
@@ -424,44 +424,44 @@ m/m/n/12 met-ric, we need to com-pare the context-neutral win-contribution
  []
 
 [4] [5 <../writeup_plots/plot_fIR_R_smoothed.png>]
-<../writeup_plots/plot_gRSO_R0.png, id=31, 2542.49875pt x 2579.6375pt>
+<../writeup_plots/plot_gRSO_R0.png, id=31, 2337.73375pt x 2111.89pt>
 File: ../writeup_plots/plot_gRSO_R0.png Graphic file (type png)
 <use ../writeup_plots/plot_gRSO_R0.png>
 Package pdftex.def Info: ../writeup_plots/plot_gRSO_R0.png  used on input line 
 164.
-(pdftex.def)             Requested size: 426.79134pt x 433.0219pt.
-<../writeup_plots/plot_gwar_vs_fwar_2019.png, id=32, 2851.65375pt x 2646.88875p
-t>
+(pdftex.def)             Requested size: 426.79134pt x 385.53757pt.
+<../writeup_plots/plot_gwar_vs_fwar_2019.png, id=32, 2663.9525pt x 2559.5625pt>
+
 File: ../writeup_plots/plot_gwar_vs_fwar_2019.png Graphic file (type png)
 <use ../writeup_plots/plot_gwar_vs_fwar_2019.png>
 Package pdftex.def Info: ../writeup_plots/plot_gwar_vs_fwar_2019.png  used on i
 nput line 188.
-(pdftex.def)             Requested size: 426.79134pt x 396.12764pt.
+(pdftex.def)             Requested size: 426.79134pt x 410.0461pt.
  [6]
-<../writeup_plots/plot_cumRuns_aggregated_2019.png, id=37, 2990.17125pt x 1575.
-8875pt>
+<../writeup_plots/plot_cumRuns_aggregated_2019.png, id=37, 2818.53pt x 1299.856
+25pt>
 File: ../writeup_plots/plot_cumRuns_aggregated_2019.png Graphic file (type png)
 
 <use ../writeup_plots/plot_cumRuns_aggregated_2019.png>
 Package pdftex.def Info: ../writeup_plots/plot_cumRuns_aggregated_2019.png  use
 d on input line 199.
-(pdftex.def)             Requested size: 426.79134pt x 224.92699pt.
+(pdftex.def)             Requested size: 426.79134pt x 196.8146pt.
  [7 <../writeup_plots/plot_gRSO_R0.png>] [8 <../writeup_plots/plot_gwar_vs_fwar
 _2019.png>]
-<../writeup_plots/plot_Fiers_Synderg_2019.png, id=47, 2990.17125pt x 1575.8875p
-t>
+<../writeup_plots/plot_Fiers_Synderg_2019.png, id=47, 3232.075pt x 1299.85625pt
+>
 File: ../writeup_plots/plot_Fiers_Synderg_2019.png Graphic file (type png)
 <use ../writeup_plots/plot_Fiers_Synderg_2019.png>
 Package pdftex.def Info: ../writeup_plots/plot_Fiers_Synderg_2019.png  used on 
 input line 217.
-(pdftex.def)             Requested size: 426.79134pt x 224.92699pt.
+(pdftex.def)             Requested size: 426.79134pt x 171.62518pt.
  [9 <../writeup_plots/plot_cumRuns_aggregated_2019.png>]
-<../writeup_plots/plot_Lynn_Ryu_2019.png, id=52, 2990.17125pt x 1575.8875pt>
+<../writeup_plots/plot_Lynn_Ryu_2019.png, id=52, 3232.075pt x 1299.85625pt>
 File: ../writeup_plots/plot_Lynn_Ryu_2019.png Graphic file (type png)
 <use ../writeup_plots/plot_Lynn_Ryu_2019.png>
 Package pdftex.def Info: ../writeup_plots/plot_Lynn_Ryu_2019.png  used on input
  line 234.
-(pdftex.def)             Requested size: 426.79134pt x 224.92699pt.
+(pdftex.def)             Requested size: 426.79134pt x 171.62518pt.
  [10 <../writeup_plots/plot_Fiers_Synderg_2019.png>] [11 <../writeup_plots/plot
 _Lynn_Ryu_2019.png>] (./grid_war.bbl
 Underfull \hbox (badness 10000) in paragraph at lines 21--25
@@ -528,7 +528,7 @@ cal/texlive/2021/texmf-dist/fonts/type1/urw/times/utmb8a.pfb></usr/local/texliv
 e/2021/texmf-dist/fonts/type1/urw/times/utmbi8a.pfb></usr/local/texlive/2021/te
 xmf-dist/fonts/type1/urw/times/utmr8a.pfb></usr/local/texlive/2021/texmf-dist/f
 onts/type1/urw/times/utmri8a.pfb>
-Output written on grid_war.pdf (12 pages, 1379935 bytes).
+Output written on grid_war.pdf (12 pages, 1376098 bytes).
 PDF statistics:
  101 PDF objects out of 1000 (max. 8388607)
  63 compressed objects within 1 object stream
