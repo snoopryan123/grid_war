@@ -1,4 +1,4 @@
-This is pdfTeX, Version 3.141592653-2.6-1.40.22 (TeX Live 2021) (preloaded format=pdflatex 2021.12.1)  3 MAR 2022 21:55
+This is pdfTeX, Version 3.141592653-2.6-1.40.22 (TeX Live 2021) (preloaded format=pdflatex 2021.12.1)  20 MAR 2022 19:21
 entering extended mode
  restricted \write18 enabled.
  %&-line parsing enabled.
@@ -411,59 +411,49 @@ LaTeX Font Info:    Font shape `OT1/ptm/bx/n' in size <17.28> not available
 (Font)              Font shape `OT1/ptm/b/n' tried instead on input line 113.
 LaTeX Font Info:    Font shape `OT1/ptm/bx/n' in size <10> not available
 (Font)              Font shape `OT1/ptm/b/n' tried instead on input line 113.
-<../writeup_plots/plot_fIR_R_smoothed.png, id=21, 2337.73375pt x 2111.89pt>
+<../writeup_plots/plot_fIR_R_smoothed.png, id=21, 2500.34125pt x 2056.68375pt>
 File: ../writeup_plots/plot_fIR_R_smoothed.png Graphic file (type png)
 <use ../writeup_plots/plot_fIR_R_smoothed.png>
 Package pdftex.def Info: ../writeup_plots/plot_fIR_R_smoothed.png  used on inpu
-t line 127.
-(pdftex.def)             Requested size: 426.79134pt x 385.53757pt.
-
-Overfull \hbox (17.86067pt too wide) in paragraph at lines 149--150
+t line 129.
+(pdftex.def)             Requested size: 426.79134pt x 351.04382pt.
+ [4]
+Overfull \hbox (17.86067pt too wide) in paragraph at lines 151--152
 \OT1/ptm/m/n/12 To com-pute a wins \OT1/ptm/m/it/12 above re-place-ment \OT1/pt
 m/m/n/12 met-ric, we need to com-pare the context-neutral win-contribution
  []
 
-[4] [5 <../writeup_plots/plot_fIR_R_smoothed.png>]
-<../writeup_plots/plot_gRSO_R0.png, id=31, 2337.73375pt x 2111.89pt>
+[5 <../writeup_plots/plot_fIR_R_smoothed.png>]
+<../writeup_plots/plot_gRSO_R0.png, id=31, 2500.34125pt x 2056.68375pt>
 File: ../writeup_plots/plot_gRSO_R0.png Graphic file (type png)
 <use ../writeup_plots/plot_gRSO_R0.png>
 Package pdftex.def Info: ../writeup_plots/plot_gRSO_R0.png  used on input line 
-164.
-(pdftex.def)             Requested size: 426.79134pt x 385.53757pt.
-<../writeup_plots/plot_gwar_vs_fwar_2019.png, id=32, 2663.9525pt x 2559.5625pt>
-
+166.
+(pdftex.def)             Requested size: 426.79134pt x 351.04382pt.
+ [6]
+<../writeup_plots/plot_gwar_vs_fwar_2019.png, id=36, 2793.43625pt x 2492.31125p
+t>
 File: ../writeup_plots/plot_gwar_vs_fwar_2019.png Graphic file (type png)
 <use ../writeup_plots/plot_gwar_vs_fwar_2019.png>
 Package pdftex.def Info: ../writeup_plots/plot_gwar_vs_fwar_2019.png  used on i
-nput line 188.
-(pdftex.def)             Requested size: 426.79134pt x 410.0461pt.
- [6]
-<../writeup_plots/plot_cumRuns_aggregated_2019.png, id=37, 2818.53pt x 1299.856
-25pt>
-File: ../writeup_plots/plot_cumRuns_aggregated_2019.png Graphic file (type png)
+nput line 190.
+(pdftex.def)             Requested size: 426.79134pt x 380.75194pt.
 
-<use ../writeup_plots/plot_cumRuns_aggregated_2019.png>
-Package pdftex.def Info: ../writeup_plots/plot_cumRuns_aggregated_2019.png  use
-d on input line 199.
-(pdftex.def)             Requested size: 426.79134pt x 196.8146pt.
- [7 <../writeup_plots/plot_gRSO_R0.png>] [8 <../writeup_plots/plot_gwar_vs_fwar
-_2019.png>]
-<../writeup_plots/plot_Fiers_Synderg_2019.png, id=47, 3232.075pt x 1299.85625pt
->
-File: ../writeup_plots/plot_Fiers_Synderg_2019.png Graphic file (type png)
-<use ../writeup_plots/plot_Fiers_Synderg_2019.png>
-Package pdftex.def Info: ../writeup_plots/plot_Fiers_Synderg_2019.png  used on 
-input line 217.
-(pdftex.def)             Requested size: 426.79134pt x 171.62518pt.
- [9 <../writeup_plots/plot_cumRuns_aggregated_2019.png>]
-<../writeup_plots/plot_Lynn_Ryu_2019.png, id=52, 3232.075pt x 1299.85625pt>
-File: ../writeup_plots/plot_Lynn_Ryu_2019.png Graphic file (type png)
-<use ../writeup_plots/plot_Lynn_Ryu_2019.png>
-Package pdftex.def Info: ../writeup_plots/plot_Lynn_Ryu_2019.png  used on input
- line 234.
-(pdftex.def)             Requested size: 426.79134pt x 171.62518pt.
- [10 <../writeup_plots/plot_Fiers_Synderg_2019.png>] [11 <../writeup_plots/plot
-_Lynn_Ryu_2019.png>] (./grid_war.bbl
+
+LaTeX Warning: Reference `fig:cumRunsAggregated19' on page 7 undefined on input
+ line 196.
+
+[7 <../writeup_plots/plot_gRSO_R0.png>]
+
+LaTeX Warning: Reference `fig:cumRunsFiersSynderg' on page 8 undefined on input
+ line 211.
+
+[8 <../writeup_plots/plot_gwar_vs_fwar_2019.png>]
+
+LaTeX Warning: Reference `fig:cumRunsLynnRyu' on page 9 undefined on input line
+ 229.
+
+[9] [10] (./grid_war.bbl
 Underfull \hbox (badness 10000) in paragraph at lines 21--25
 []\OT1/ptm/m/n/12 Fangraphs.  Re-place-ment level.  $\OT1/cmtt/m/n/12 https : /
  / library . fangraphs . com / misc / war /
@@ -505,33 +495,37 @@ Underfull \hbox (badness 10000) in paragraph at lines 54--58
 s : / / library . fangraphs . com / war /
  []
 
-) [12
+) [11
 
-] (./grid_war.aux) ) 
+] (./grid_war.aux)
+
+LaTeX Warning: There were undefined references.
+
+ ) 
 Here is how much of TeX's memory you used:
- 5851 strings out of 478994
- 88268 string characters out of 5858184
- 393523 words of memory out of 5000000
- 23214 multiletter control sequences out of 15000+600000
- 460349 words of font info for 146 fonts, out of 8000000 for 9000
+ 5834 strings out of 478994
+ 87476 string characters out of 5858184
+ 393497 words of memory out of 5000000
+ 23199 multiletter control sequences out of 15000+600000
+ 461456 words of font info for 147 fonts, out of 8000000 for 9000
  1141 hyphenation exceptions out of 8191
  72i,9n,78p,1171b,309s stack positions out of 5000i,500n,10000p,200000b,80000s
-{/usr/local/texlive/2021/texmf-dist/fonts/enc/dvips/base/8r
-.enc}</usr/local/texlive/2021/texmf-dist/fonts/type1/public/amsfonts/cm/cmex10.
-pfb></usr/local/texlive/2021/texmf-dist/fonts/type1/public/amsfonts/cm/cmmi10.p
-fb></usr/local/texlive/2021/texmf-dist/fonts/type1/public/amsfonts/cm/cmr10.pfb
-></usr/local/texlive/2021/texmf-dist/fonts/type1/public/amsfonts/cm/cmsy10.pfb>
-</usr/local/texlive/2021/texmf-dist/fonts/type1/public/amsfonts/cm/cmtt12.pfb><
-/usr/local/texlive/2021/texmf-dist/fonts/type1/public/amsfonts/symbols/msbm10.p
-fb></usr/local/texlive/2021/texmf-dist/fonts/type1/urw/symbol/usyr.pfb></usr/lo
-cal/texlive/2021/texmf-dist/fonts/type1/urw/times/utmb8a.pfb></usr/local/texliv
-e/2021/texmf-dist/fonts/type1/urw/times/utmbi8a.pfb></usr/local/texlive/2021/te
-xmf-dist/fonts/type1/urw/times/utmr8a.pfb></usr/local/texlive/2021/texmf-dist/f
-onts/type1/urw/times/utmri8a.pfb>
-Output written on grid_war.pdf (12 pages, 1376098 bytes).
+{/usr/local/texlive/2021/texmf-dist/fonts/enc/dvips/base/8r.enc}</usr/local/t
+exlive/2021/texmf-dist/fonts/type1/public/amsfonts/cm/cmex10.pfb></usr/local/te
+xlive/2021/texmf-dist/fonts/type1/public/amsfonts/cm/cmmi10.pfb></usr/local/tex
+live/2021/texmf-dist/fonts/type1/public/amsfonts/cm/cmr10.pfb></usr/local/texli
+ve/2021/texmf-dist/fonts/type1/public/amsfonts/cm/cmsy10.pfb></usr/local/texliv
+e/2021/texmf-dist/fonts/type1/public/amsfonts/cm/cmtt12.pfb></usr/local/texlive
+/2021/texmf-dist/fonts/type1/public/amsfonts/symbols/msbm10.pfb></usr/local/tex
+live/2021/texmf-dist/fonts/type1/urw/symbol/usyr.pfb></usr/local/texlive/2021/t
+exmf-dist/fonts/type1/urw/times/utmb8a.pfb></usr/local/texlive/2021/texmf-dist/
+fonts/type1/urw/times/utmbi8a.pfb></usr/local/texlive/2021/texmf-dist/fonts/typ
+e1/urw/times/utmr8a.pfb></usr/local/texlive/2021/texmf-dist/fonts/type1/urw/tim
+es/utmri8a.pfb>
+Output written on grid_war.pdf (11 pages, 969441 bytes).
 PDF statistics:
- 101 PDF objects out of 1000 (max. 8388607)
- 63 compressed objects within 1 object stream
+ 92 PDF objects out of 1000 (max. 8388607)
+ 61 compressed objects within 1 object stream
  0 named destinations out of 1000 (max. 500000)
- 31 words of extra memory for PDF output out of 10000 (max. 10000000)
+ 16 words of extra memory for PDF output out of 10000 (max. 10000000)
 

@@ -88,9 +88,9 @@ Traditional methods for computing WAR are reminiscent of the left side of equati
 
 We wish to create a metric which computes a starting pitcher's WAR for an individual game. The idea is to compute a context-neutral and offense-invariant version of win-probability-added that is derived only from a pitcher's performance. 
 
-First, we define a starting pitcher's \textit{Grid WAR} ($gWAR$) for a game in which he exits at the end of an inning. To do so, we create the function $f=f(I,R)$ which, assuming both teams have league-average offenses and league-average fielding, computes the probability a team wins a game after giving up $R$ runs through $I$ innings. $f$ is a context-neutral version of win probability, as it depends only on the starter's performance. 
+First, we define a starting pitcher's \textit{Grid WAR} ($gWAR$) for a game in which he exits at the end of an inning. To do so, we create the function $f=f(I,R)$ which, assuming both teams have league-average offenses, computes the probability a team wins a game after giving up $R$ runs through $I$ innings. $f$ is a context-neutral version of win probability, as it depends only on the starter's performance. 
 
-To compute a wins \textit{above replacement} metric, we need to compare this context-neutral win-contribution to that of a potential replacement-level pitcher. We use a constant $w_{rep}$ which denotes the probability a team wins a game with a replacement-level starting pitcher, assuming both teams have league-average offenses and fielding. We expect $w_{rep} < 0.5$ since replacement-level pitchers are worse than league-average pitchers. 
+To compute a wins \textit{above replacement} metric, we need to compare this context-neutral win-contribution to that of a potential replacement-level pitcher. We use a constant $w_{rep}$ which denotes the probability a team wins a game with a replacement-level starting pitcher, assuming both teams have league-average offenses. We expect $w_{rep} < 0.5$ since replacement-level pitchers are worse than league-average pitchers. 
 
 Then, we define a starter's \textit{Grid WAR} during a game in which he gives up $R$ runs through $I$ complete innings as 
 \begin{equation}
@@ -99,7 +99,7 @@ f(I, R) - w_{rep}.
 \end{equation}
 We call our metric \textit{Grid WAR} because the function $f=f(I,R)$ is defined on the 2D grid $\{1,...,9\} \times \{1,...,25\}$.
 
-Next, we define a starting pitcher's \textit{Grid WAR} for a game in which he exits midway through an inning. To do so, we create a function $g=g(R|S,O)$ which, assuming both teams have league-average offenses and fielding, computes the probability that, starting midway through an inning with $O \in \{0,1,2\}$ outs and base-state 
+Next, we define a starting pitcher's \textit{Grid WAR} for a game in which he exits midway through an inning. To do so, we create a function $g=g(R|S,O)$ which, assuming both teams have league-average offenses, computes the probability that, starting midway through an inning with $O \in \{0,1,2\}$ outs and base-state 
 $$S \in \{000,100,010,001,110,101,011,111\},$$
 a team scores exactly $R$ runs through the end of the inning. Then we define a starter's \textit{Grid WAR} during a game in which he gives up $R$ runs and leaves midway through inning $I$ with $O$ outs and base-state $S$ as the expected \textit{Grid WAR} at the end of the inning,
 \begin{equation}
@@ -116,14 +116,16 @@ In this section, we estimate $f$, $w_{rep}$, and $g$. To do so, we use data scra
 
 \subsection{Estimating $f$}
 
-First, we estimate the function $f=f(I,R)$ which, assuming both teams have league-average offenses and fielding, computes the probability a team wins a game after giving up $R$ runs through $I$ complete innings. For $I \in \{1,...,8\}$, we define $f(I,R)$ as the empirical proportion of games in which a team wins after giving up $R$ runs through $I$ innings. Specifically, we bin and average over the variables $(I,R)$, and smooth over the variable $R$, using data from all games from 2010 to 2019. 
-%For $I = 9$, we cannot simply use the empirical proportion because if a home team leads after the top of the $9^{th}$ inning, then the bottom of the $9^{th}$ is not played. So, we [DO WHAT].
+First, we estimate the function $f=f(I,R)$ which, assuming both teams have league-average offenses, computes the probability a team wins a game after giving up $R$ runs through $I$ complete innings. We estimate $f$ using logistic regression. The response variable is a binary variable indicating whether a pitcher's team won a game after giving up $R$ runs through $I$ innings. We model $I$ and $R$ as fixed effects (i.e., we have separate coefficients for each value of $I$ and $R$). In order to make $f$ context neutral, we also adjust for home field, National vs. American league, and the year, each as a fixed effect. This process is essentially equivalent to binning, averaging, and smoothing over the variables $(I,R)$ after adjusting for confounders. Additionally, recall that if a home team leads after the top of the $9^{th}$ inning, then the bottom of the $9^{th}$ is not played. Therefore, to avoid selection bias, we exclude all $9^{th}$ inning instances in which a pitcher pitches at home.
 
-In figure \ref{fig:fR}, we plot the functions $R \mapsto f(I,R)$ for each inning $I$. For each inning $I$, $R \mapsto f(I,R)$ is decreasing. This makes sense: within an inning, if you allow more runs, you are less likely to win the game. Also, $R \mapsto f(I,R)$ is convex. This makes sense: if you have already allowed a high number of runs, there is a lesser relative impact of throwing an additional run. Conversely, if you have allowed few runs thus far, there is a high relative impact of throwing an additional run. Furthermore, for each $R$, the function $I \mapsto f(I,R)$ is increasing. This makes sense: giving up $R$ runs through $I$ innings is worse than giving up $R$ runs through $I+i$ innings for $i > 0$, because giving up $R$ runs through $I+i$ innings implies you gave up fewer than $R$ runs through $I$ innings, on average.
+%%% For $I \in \{1,...,8\}$, we define $f(I,R)$ as the empirical proportion of games in which a team wins after giving up $R$ runs through $I$ innings. Specifically, we bin and average over the variables $(I,R)$, and smooth over the variable $R$, using data from all games from 2010 to 2019. 
+% %For $I = 9$, we cannot simply use the empirical proportion because if a home team leads after the top of the $9^{th}$ inning, then the bottom of the $9^{th}$ is not played. So, we [DO WHAT].
+
+In figure \ref{fig:fR}, we plot the functions $R \mapsto f(I,R)$ for each inning $I$, for an away-team American League pitcher in 2019. For each inning $I$, $R \mapsto f(I,R)$ is decreasing. This makes sense: within an inning, if you allow more runs, you are less likely to win the game. Also, $R \mapsto f(I,R)$ is mostly convex. This makes sense: if you have already allowed a high number of runs, there is a lesser relative impact of throwing an additional run. Conversely, if you have allowed few runs thus far, there is a high relative impact of throwing an additional run. Furthermore, for each $R$, the function $I \mapsto f(I,R)$ is increasing. This makes sense: giving up $R$ runs through $I$ innings is worse than giving up $R$ runs through $I+i$ innings for $i > 0$, because giving up $R$ runs through $I+i$ innings implies you gave up fewer than $R$ runs through $I$ innings, on average.
 
 \begin{figure}[t!]
 \centering
-\caption{The function $R \mapsto f(I,R)$ for each inning $I$.} 
+\caption{The function $R \mapsto f(I,R)$ for each inning $I$, for an away-team American League pitcher in 2019.} 
 \includegraphics[width=15cm]{../writeup_plots/plot_fIR_R_smoothed.png}
 \label{fig:fR}
 \end{figure}
@@ -146,13 +148,13 @@ In other words, for a pitcher who pitches exactly $I=i$ innings in each game, th
 
 \subsection{Estimating $w_{rep}$}
 
-To compute a wins \textit{above replacement} metric, we need to compare the context-neutral win-contribution to that of a potential replacement-level pitcher. Thus we define a constant $w_{rep}$ which denotes the context-neutral probability a team wins a game with a replacement-level starting pitcher, assuming both teams have a league-average offense and fielding. We expect $w_{rep} < 0.5$ since replacement-level pitchers are worse than league-average pitchers. 
+To compute a wins \textit{above replacement} metric, we need to compare the context-neutral win-contribution to that of a potential replacement-level pitcher. Thus we define a constant $w_{rep}$ which denotes the context-neutral probability a team wins a game with a replacement-level starting pitcher, assuming both teams have a league-average offense. We expect $w_{rep} < 0.5$ since replacement-level pitchers are worse than league-average pitchers. 
 
 It is difficult to estimate $w_{rep}$ because it is difficult to compile a list of replacement-level pitchers. According to \citet{ReplacementLevel}, \textit{replacement-level} is the ``level of production you could get from a player that would cost you nothing but the league minimum salary to acquire.'' Since we are not members of an MLB front office, this level of production is difficult to estimate. Ultimately, the value of $w_{rep}$ doesn't matter too much because we rescale all pitcher's \textit{Grid WAR} to sum to a fixed amount, to compare our results to those of Fangraphs. So, we arbitrarily set $w_{rep} = 0.41$. 
 
 \subsection{Estimating $g$}
 
-Now, we estimate the function $g=g(R|S,O)$ which, assuming both teams have league-average offenses and fielding, computes the probability that, starting midway through an inning with $O \in \{0,1,2\}$ outs and base-state 
+Now, we estimate the function $g=g(R|S,O)$ which, assuming both teams have league-average offenses, computes the probability that, starting midway through an inning with $O \in \{0,1,2\}$ outs and base-state 
 $$S \in \{000,100,010,001,110,101,011,111\},$$
 a team scores exactly $R$ runs through the end of the inning. We estimate $g(R|S,O)$ using the empirical distribution, for $R \in \{1,...,13\}$. Specifically, we bin and average over the variables $(R,S,O)$, using data from every game from 2010 to 2019. Because $g$ isn't significantly different across innings, we use data from each of the first eight innings.
 
@@ -193,12 +195,12 @@ As discussed in section \ref{sec:convexityOfWAR}, by the convexity of \textit{Gr
 
 In figure \ref{fig:cumRunsAggregated19}, we bin the 2019 starting pitchers into three categories - overvalued (negative $vd$), equally valued (low $|vd|$), and undervalued (high $vd$) - and plot the empirical distribution of runs allowed in a game, for each bin. We see that undervalued pitchers have a high relative proportion of games with 0 and 1 run allowed. This makes sense: averaging a pitcher's performance over all his games dilutes his exceptional games, which undervalues his performance by the convexity of \textit{Grid WAR}. Furthermore, both overvalued and equally values pitchers have a high relative proportion of games with 2 and 3 runs allowed. The difference between these two categories appears to be that equally valued pitchers have a higher relative proportion of games with 0 and 1 run allowed, whereas overvalued pitchers have fatter tails.
 
-\begin{figure}[t!]
-\centering
-\caption{The distribution of runs allowed in a game for overvalued, equally valued, and undervalued starting pitchers in 2019. The distribution of undervalued pitchers is concentrated on allowing 0, 1, and 2 runs per game. The distribution of overvalued pitchers is concentrated on allowing 2 and 3 runs per game. The distributions of equally valued pitchers is concentrated on allowing 0, 1, 2, and 3 runs per game, with a skinnier tail than that of overvalued pitchers. } 
-\includegraphics[width=15cm]{../writeup_plots/plot_cumRuns_aggregated_2019.png}
-\label{fig:cumRunsAggregated19}
-\end{figure}
+% \begin{figure}[t!]
+% \centering
+% \caption{The distribution of runs allowed in a game for overvalued, equally valued, and undervalued starting pitchers in 2019. The distribution of undervalued pitchers is concentrated on allowing 0, 1, and 2 runs per game. The distribution of overvalued pitchers is concentrated on allowing 2 and 3 runs per game. The distributions of equally valued pitchers is concentrated on allowing 0, 1, 2, and 3 runs per game, with a skinnier tail than that of overvalued pitchers. } 
+% \includegraphics[width=15cm]{../writeup_plots/plot_cumRuns_aggregated_2019.png}
+% \label{fig:cumRunsAggregated19}
+% \end{figure}
 
 \subsection{Noah Syndergaard vs. Mike Fiers in 2019}
 
@@ -211,12 +213,12 @@ In figure \ref{fig:cumRunsFiersSynderg} we plot the histogram of runs allowed in
 Fiers has a high proportion of games in which he allows 0, 1, or 2 runs. On the other hand, Syndergaard has a high proportion of games in which he allows 2, 3, or 4 runs. Therefore, it makes sense that Fiers' $gWAR$ is so much higher than Syndergaards'. Again, by the convexity of $gWAR$, allowing 0 or 1 run is extremely valuable. Nonetheless, it is perplexing why Syndergaards' $fWAR$ is so high and Fiers' $fWAR$ is so low. 
 
 
-\begin{figure}[t!]
-\centering
-\caption{Histogram of runs allowed in a game for Mike Fiers and Noah Syndergaard in 2019. The number in the bin corresponding to allowing $r$ runs in a game refers to the mean number of innings pitched in games those games. Fiers' distribution is concentrated on allowing 0, 1, and 2 runs per game, which is why he has a high $gWAR$ of 4.12. Syndergaard's distribution is concentrated on allowing 2, 3, and 4 runs per game, which is why he has a lower $gWAR$ of 2.3.} 
-\includegraphics[width=15cm]{../writeup_plots/plot_Fiers_Synderg_2019.png}
-\label{fig:cumRunsFiersSynderg}
-\end{figure}
+% \begin{figure}[t!]
+% \centering
+% \caption{Histogram of runs allowed in a game for Mike Fiers and Noah Syndergaard in 2019. The number in the bin corresponding to allowing $r$ runs in a game refers to the mean number of innings pitched in games those games. Fiers' distribution is concentrated on allowing 0, 1, and 2 runs per game, which is why he has a high $gWAR$ of 4.12. Syndergaard's distribution is concentrated on allowing 2, 3, and 4 runs per game, which is why he has a lower $gWAR$ of 2.3.} 
+% \includegraphics[width=15cm]{../writeup_plots/plot_Fiers_Synderg_2019.png}
+% \label{fig:cumRunsFiersSynderg}
+% \end{figure}
 
 \subsection{Lance Lynn vs. Hyun-Jin Ryu in 2019}
 
@@ -228,12 +230,12 @@ In figure \ref{fig:cumRunsLynnRyu} we plot the histogram of runs allowed in a ga
 
 We see that Ryu's runs-allowed distribution is concentrated on allowing 0, 1 or 2 runs, whereas Lynn's distribution is concentrated on allowing 1, 2, and 3 runs. The primary difference in their distributions appears to be that Ryu allows 0 runs in 8 more games than Lynn, and Lynn allows 4 runs in 3 more games than Ryu. Again, by the convexity of $gWAR$, all the games in which Ryu allows 0 runs are extremely valuable, and are enough to give him 2 more $gWAR$ than Lynn. Also, that Lynn's distribution is concentrated on allowing 1, 2, and 3 runs, as opposed to 3, 4, and 5 runs per game explains why he still has a high $gWAR$, particularly in comparison to Syndergaard from the previous section.
 
-\begin{figure}[t!]
-\centering
-\caption{Histogram of runs allowed in a game for Lance Lynn and Hyun-Jin Ryu in 2019. The number in the bin corresponding to allowing $r$ runs in a game refers to the mean number of innings pitched in those games. Ryu's distribution is concentrated on allowing 0, 1, and 2 runs per game, which is why he has an extremely high $gWAR$ of 6.7. Lynn's distribution is concentrated on allowing 1, 2, and 3 runs per game, which is why he has a high $gWAR$ of 4.3, and a significantly lower $gWAR$ than Ryu's.} 
-\includegraphics[width=15cm]{../writeup_plots/plot_Lynn_Ryu_2019.png}
-\label{fig:cumRunsLynnRyu}
-\end{figure}
+% \begin{figure}[t!]
+% \centering
+% \caption{Histogram of runs allowed in a game for Lance Lynn and Hyun-Jin Ryu in 2019. The number in the bin corresponding to allowing $r$ runs in a game refers to the mean number of innings pitched in those games. Ryu's distribution is concentrated on allowing 0, 1, and 2 runs per game, which is why he has an extremely high $gWAR$ of 6.7. Lynn's distribution is concentrated on allowing 1, 2, and 3 runs per game, which is why he has a high $gWAR$ of 4.3, and a significantly lower $gWAR$ than Ryu's.} 
+% \includegraphics[width=15cm]{../writeup_plots/plot_Lynn_Ryu_2019.png}
+% \label{fig:cumRunsLynnRyu}
+% \end{figure}
 
 
 
