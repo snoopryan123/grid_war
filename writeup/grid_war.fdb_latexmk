@@ -1,12 +1,18 @@
 # Fdb version 3
-["bibtex grid_war"] 1647818465 "grid_war.aux" "grid_war.bbl" "grid_war" 1647818522
+["bibtex grid_war"] 1647825167 "grid_war.aux" "grid_war.bbl" "grid_war" 1647825226
   "../bib/refs.bib" 1646250430 1757 d0f5c667e0ca0fcf6fb7578a7d3dc712 ""
   "/usr/local/texlive/2021/texmf-dist/bibtex/bst/natbib/plainnat.bst" 1233624470 26816 ffe5423d2019860bad9f54bc402fac15 ""
-  "grid_war.aux" 1647818522 4383 873219943ec51435ceb081050108bf1b "pdflatex"
+  "grid_war.aux" 1647825226 7314 8ea635c8d8b6e4a2812441adfe0a9867 "pdflatex"
   (generated)
-  "grid_war.blg"
   "grid_war.bbl"
-["pdflatex"] 1647818519 "grid_war.tex" "grid_war.pdf" "grid_war" 1647818522
+  "grid_war.blg"
+["pdflatex"] 1647825218 "grid_war.tex" "grid_war.pdf" "grid_war" 1647825226
+  "../writeup_plots/p2_2019.png" 1647815933 190829 0a2a5dda87d3a18936f48ec1321f45d0 ""
+  "../writeup_plots/p3_2019.png" 1647815934 189311 8e13fe1de7e80d1d60b256d247f9a0f4 ""
+  "../writeup_plots/p5_2019.png" 1647815936 188653 398e5f43854fafd43887297041ca7a5d ""
+  "../writeup_plots/p7_2019.png" 1647815938 186335 dc4e234ac49d5ed96818272ae1dc76ae ""
+  "../writeup_plots/p8_2019.png" 1647825208 187146 aabff2b5b2a6f0127738656ab269fefd ""
+  "../writeup_plots/plot_cumRuns_aggregated_2019.png" 1647824712 131397 64ee7ec7e8269f70011eb639b2d89111 ""
   "../writeup_plots/plot_fIR_R_smoothed.png" 1647630790 514490 de7dc9d873bb984b531c3ad74ecf4582 ""
   "../writeup_plots/plot_gRSO_R0.png" 1647794879 388855 f99acfc0525181ec16e1cd0eb658bed7 ""
   "../writeup_plots/plot_gwar_vs_fwar_2019.png" 1647816896 333493 ba9e4a0b57fdb881404e2ad6760406f0 ""
@@ -102,10 +108,10 @@
   "/usr/local/texlive/2021/texmf-var/fonts/map/pdftex/updmap/pdftex.map" 1616695603 5169178 a2ce6e2d73f603b690db6777d06dbccb ""
   "/usr/local/texlive/2021/texmf-var/web2c/pdftex/pdflatex.fmt" 1638393604 2724745 ebb6f274344b2b6acd48c93dcf71b352 ""
   "/usr/local/texlive/2021/texmf.cnf" 1616695596 577 4c1911a7228e554c6032256d3cf5567d ""
-  "grid_war.aux" 1647818522 4383 873219943ec51435ceb081050108bf1b "pdflatex"
-  "grid_war.bbl" 1647818465 1946 6290d89f159c60b582da8f9c8ff8188a "bibtex grid_war"
-  "grid_war.tex" 1647818518 28713 95446ff96acda49a4d0a210fdca2e723 ""
+  "grid_war.aux" 1647825226 7314 8ea635c8d8b6e4a2812441adfe0a9867 "pdflatex"
+  "grid_war.bbl" 1647825167 1946 6290d89f159c60b582da8f9c8ff8188a "bibtex grid_war"
+  "grid_war.tex" 1647825219 40130 a15c8d6d6962aa2e04d5f1cec62258a1 ""
   (generated)
-  "grid_war.log"
   "grid_war.pdf"
   "grid_war.aux"
+  "grid_war.log"

@@ -32,6 +32,7 @@ merged <- left_join(FWAR_2019, GWAR_2019, by = "PIT_NAME") %>% na.omit() %>% mut
 # merged = merged %>% mutate(GWAR = GWAR_og/sg*sf)
 mu_g = mean(merged$GWAR_og); sig_g = sd(merged$GWAR_og); mu_f = mean(merged$FWAR); sig_f = sd(merged$FWAR); 
 merged = merged %>% mutate(GWAR = (GWAR_og - mu_g)/sig_g*sig_f + mu_f)
+print(c(sum(merged$FWAR), sum(merged$GWAR)))
 ### columns for easy plotting
 merged = merged %>% mutate(vert_distance = GWAR - FWAR) ### x=FWAR, y=GWAR
 
@@ -125,10 +126,11 @@ merged = merged %>% mutate(examine_pit = PIT_NAME %in% pit_names_examine)
   levels(df3$bin) = c("overvalued","x0","equally valued","x1", "undervalued")
   p3 = pitcher_exits %>% 
     left_join(df3) %>%
+    filter(bin != "equally valued") %>% ### ????
     filter(PIT_NAME %in% df3$PIT_NAME) %>%
     ggplot(aes(x=CUM_RUNS)) +
     facet_wrap(~bin) +
-    geom_histogram(aes(y=..density..)) + #geom_histogram() +
+    geom_histogram(aes(y=..density..),size=4,fill="black") + #geom_histogram() +
     # labs(title="Distribution of Runs Allowed in a Game") +
     scale_x_continuous(name="Runs Allowed in a Game",breaks=seq(0,20,by=2),)
   p3
@@ -201,8 +203,10 @@ pb2
 ### most undervalued vs. most overvalued
 puo1 = pit1_vs_pit2_hists("Julio Teheran","Jose Berrios")
 puo1
-puo2 = pit1_vs_pit2_hists("Clayton Kershaw","Jose Quintana")
+puo2 = pit1_vs_pit2_hists("Mike Fiers","Jose Quintana")
 puo2
+
+
 
 
 # ggsave(paste0(output_folder,"p1_",year,".png"), pg1)
