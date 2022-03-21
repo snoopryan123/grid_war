@@ -141,7 +141,7 @@ merged = merged %>% mutate(examine_pit = PIT_NAME %in% pit_names_examine)
 
 
 ### pitcher vs. pitcher histograms
-pit1_vs_pit2_hists <- function(name1, name2) {
+pit1_vs_pit2_hists <- function(name1, name2, diff=TRUE) {
   drl = pitcher_exits %>%
     left_join(merged) %>%
     filter(PIT_NAME %in% c(name1, name2)) 
@@ -156,18 +156,23 @@ pit1_vs_pit2_hists <- function(name1, name2) {
     mutate(mi = round(mi,1))
   drl1_name1 = drl2 %>% filter(PIT_NAME == name1)
   drl1_name2 = drl2 %>% filter(PIT_NAME == name2)
-  diff_df = merge(drl1_name1, drl1_name2, by="CUM_RUNS", all=T) %>%
-    mutate(Count.x = replace_na(Count.x,0),
-           Count.y = replace_na(Count.y,0)) %>%
-    mutate(Count = Count.x - Count.y) %>%
-    select(CUM_RUNS,Count) %>%
-    mutate(PIT_NAME = "Difference", mi=NA)
-  drl3 = bind_rows(drl2, diff_df)
-  drl3$PIT_NAME = factor(drl3$PIT_NAME, levels=c(name1,name2,"Difference"))
-  drl3 = drl3 %>% mutate(color = 
-          ifelse(PIT_NAME=="Difference" & Count > 0, "darkgreen",
-          ifelse(PIT_NAME=="Difference" & Count < 0, "firebrick",
-          "black")))
+  if (diff) {
+    diff_df = merge(drl1_name1, drl1_name2, by="CUM_RUNS", all=T) %>%
+      mutate(Count.x = replace_na(Count.x,0),
+             Count.y = replace_na(Count.y,0)) %>%
+      mutate(Count = Count.x - Count.y) %>%
+      select(CUM_RUNS,Count) %>%
+      mutate(PIT_NAME = "Difference", mi=NA)
+    drl3 = bind_rows(drl2, diff_df)
+    drl3$PIT_NAME = factor(drl3$PIT_NAME, levels=c(name1,name2,"Difference"))
+    drl3 = drl3 %>% mutate(color = 
+                             ifelse(PIT_NAME=="Difference" & Count > 0, "darkgreen",
+                                    ifelse(PIT_NAME=="Difference" & Count < 0, "firebrick",
+                                           "black")))
+  } else {
+    drl3 = drl2
+    drl3$color = "black"
+  }
   prl = drl3 %>%
     ggplot(aes(x=CUM_RUNS,y=Count,label=mi)) +
     facet_wrap(~PIT_NAME) +
@@ -201,9 +206,9 @@ pb2 = pit1_vs_pit2_hists("Dakota Hudson", "Mike Leake")
 pb2
 
 ### most undervalued vs. most overvalued
-puo1 = pit1_vs_pit2_hists("Julio Teheran","Jose Berrios")
+puo1 = pit1_vs_pit2_hists("Julio Teheran","Jose Berrios",diff=FALSE)
 puo1
-puo2 = pit1_vs_pit2_hists("Mike Fiers","Jose Quintana")
+puo2 = pit1_vs_pit2_hists("Mike Fiers","Jose Quintana",diff=FALSE)
 puo2
 
 

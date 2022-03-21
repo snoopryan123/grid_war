@@ -256,21 +256,15 @@ We compute the \textit{Grid WAR} ($gWAR$) of each starting pitcher in 2019 using
 \label{fig:gwarVfwar19}
 \end{figure}
 
-\subsection{\textit{Grid WAR} vs. Fangraphs WAR in 2019}
+\subsection{Comparing Undervalued and Overvalued Players in 2019}
 
-In figure \ref{fig:gwarVfwar19} we plot $gWAR$ vs. $fWAR$ for starting pitchers in 2019. We define the metric \texttt{vertical distance} ($vd$), which is a pitcher's difference in $gWAR$ and $fWAR$,
+In figure \ref{fig:gwarVfwar19} we plot $gWAR$ vs. $fWAR$ for starting pitchers in 2019.
+ We define the metric \texttt{vertical distance} ($vd$), which is a pitcher's difference in $gWAR$ and $fWAR$,
 \begin{equation}
 vd := gWAR - fWAR.
 \label{eqn:vd}
 \end{equation}
 In figure \ref{fig:gwarVfwar19}, a player's $vd$ is the $y$-distance from the point $(x,y)=(fWAR,gWAR)$ to the line $y=x$. According to \textit{Grid WAR}, players with large positive $vd$ values are undervalued, players with small $|vd|$ values are equally valued, and players with large negative $vd$ values are overvalued, relative to FanGraphs.
-
-As discussed in section \ref{sec:convexityOfWAR}, by the convexity of \textit{Grid WAR}, we expected most of the points in figure \ref{fig:gwarVfwar19} to lie above the $y=x$ line. However, we see that this is not the case. We suspect this is because FanGraphs WAR
-treats partial innings differently and adjusts for confounders differently from us \citep{war_FG}. Nevertheless, examining individual player-seasons sheds light on the difference between each of these players' $gWAR$ and $fWAR$ values. 
-
-\subsubsection{Comparing Undervalued and Overvalued Players in 2019}
-
-In figure \ref{fig:cumRunsAggregated19}, we bin the 2019 starting pitchers into three categories - overvalued (negative $vd$), equally valued (low $|vd|$), and undervalued (high $vd$) - and plot the empirical distribution of runs allowed in a game, for each bin. We see that undervalued pitchers have a high relative proportion of games with 0 and 1 run allowed. This makes sense: averaging a pitcher's performance over all his games dilutes his exceptional games, which undervalues his performance by the convexity of \textit{Grid WAR}. Furthermore, both overvalued and equally values pitchers have a high relative proportion of games with 2 and 3 runs allowed. The difference between these two categories appears to be that equally valued pitchers have a higher relative proportion of games with 0 and 1 run allowed, whereas overvalued pitchers have fatter tails.
 
 \begin{figure}[t!]
 \centering
@@ -279,9 +273,10 @@ In figure \ref{fig:cumRunsAggregated19}, we bin the 2019 starting pitchers into 
 \label{fig:cumRunsAggregated19}
 \end{figure}
 
+As discussed in section \ref{sec:convexityOfWAR}, by the convexity of \textit{Grid WAR}, we expect most of the points in figure \ref{fig:gwarVfwar19} to lie above the $y=x$ line. However, we see that this is not the case. We suspect this is because FanGraphs WAR
+treats partial innings differently and adjusts for confounders differently from us \citep{war_FG}. %Nevertheless, examining individual player-seasons sheds light on the difference between each of these players' $gWAR$ and $fWAR$ values. 
 
-In figure \ref{fig:p7}, we compare the most undervalued to the most overvalued starting pitcher in 2019, according to $gWAR$ relative to $fWAR$. Specifically, 
-Julio Teheran is the most undervalued pitcher in 2019, with $gWAR - fWAR = 2.5$, and Jose Berrios is the most overvalued pitcher in 2019, with $gWAR - fWAR = -2.0$. We again notice than Teheran pitches more games allowing 0 or 1 run, and Berriors pitches more games allowing 2, 4, and 5 runs. By the convexity of $gWAR$, the value of allowing 1 fewer run increases as the number of runs decreases, so games in which a pitcher allows 0 or 1 run are extremely valuable. So, since Teheran's runs-allowed distributions is concentrated around allowing 0 or 1 run, whereas Berrios' distirbution is concertrated on allowing 2 or 3 runs, it makes sense than Teheran is undervalued and Berrios is overvalued. 
+In figure \ref{fig:cumRunsAggregated19}, we bin the 2019 starting pitchers into two categories - overvalued (negative $vd$) and undervalued (high $vd$) - and plot the empirical distribution of runs allowed in a game, for each bin. We see that undervalued pitchers have a high relative proportion of games with 0 and 1 run allowed. This makes sense: averaging a pitcher's performance over all his games dilutes his exceptional games, which undervalues his performance by the convexity of \textit{Grid WAR}. Furthermore, overvalued pitchers have a high relative proportion of games with 2 and 3 runs allowed.
 
 \begin{figure}[t!]
 \centering
@@ -290,7 +285,6 @@ Julio Teheran is the most undervalued pitcher in 2019, with $gWAR - fWAR = 2.5$,
 \label{fig:p7}
 \end{figure}
 
-
 \begin{figure}[t!]
 \centering
 \caption{Histogram of runs allowed in a game for Mike Fiers and Jose Quintana in 2019. Fiers is undervalued in 2019 according to $gWAR$ relative to $fWAR$, and Quintana is overvalued. Fiers' $gWAR - fWAR$ is 1.57 and Quintana's $gWAR - fWAR$ is -1.87. The number in the bin corresponding to allowing $r$ runs in a game refers to the mean number of innings pitched in games those games.} 
@@ -298,18 +292,9 @@ Julio Teheran is the most undervalued pitcher in 2019, with $gWAR - fWAR = 2.5$,
 \label{fig:p8}
 \end{figure}
 
+We see a similar trend when we examine the individual player-seasons of undervalued and overvalued pitchers. In figure \ref{fig:p7}, we compare the most undervalued to the most overvalued starting pitcher in 2019, according to $gWAR$ relative to $fWAR$. Specifically, Julio Teheran is the most undervalued pitcher in 2019, with $gWAR - fWAR = 2.5$, and Jose Berrios is the most overvalued pitcher in 2019, with $gWAR - fWAR = -2.0$. We again notice than Teheran pitches more games allowing 0 or 1 run, and Berriors pitches more games allowing 2, 4, and 5 runs. Again, by the convexity of $gWAR$, games in which a pitcher allows 0 or 1 runs are much more valuable than games in which he allows 2 or more runs. 
 
-
-% \subsection{Overvalued vs. Undervalued Pitchers on Aggregate in 2019}
-
-% In figure \ref{fig:cumRunsAggregated19}, we bin the 2019 starting pitchers into three categories - overvalued (negative $vd$), equally valued (low $|vd|$), and undervalued (high $vd$) - and plot the empirical distribution of runs allowed in a game, for each bin. We see that undervalued pitchers have a high relative proportion of games with 0 and 1 run allowed. This makes sense: averaging a pitcher's performance over all his games dilutes his exceptional games, which undervalues his performance by the convexity of \textit{Grid WAR}. Furthermore, both overvalued and equally values pitchers have a high relative proportion of games with 2 and 3 runs allowed. The difference between these two categories appears to be that equally valued pitchers have a higher relative proportion of games with 0 and 1 run allowed, whereas overvalued pitchers have fatter tails.
-
-% \begin{figure}[t!]
-% \centering
-% \caption{The distribution of runs allowed in a game for overvalued, equally valued, and undervalued starting pitchers in 2019. The distribution of undervalued pitchers is concentrated on allowing 0, 1, and 2 runs per game. The distribution of overvalued pitchers is concentrated on allowing 2 and 3 runs per game. The distributions of equally valued pitchers is concentrated on allowing 0, 1, 2, and 3 runs per game, with a skinnier tail than that of overvalued pitchers. } 
-% \includegraphics[width=15cm]{../writeup_plots/plot_cumRuns_aggregated_2019.png}
-% \label{fig:cumRunsAggregated19}
-% \end{figure}
+Additionally, in figure \ref{fig:p8}, we compare Mike Fiers to Jose Quintana. According to $gWAR$ relative to $fWAR$, Fiers is undervalued (with $gWAR - fWAR = 1.57$) and Quintana is overvalued (with $gWAR - fWAR = -1.87$). Fiers' distribution is concentrated around allowing 1 run, whereas Quintana's distribution is concentrated around allowing 3 runs. Allowing 1 run in a game instead of 3 is extremely valuable, by the convexity of $gWAR$. 
 
 \subsection{Comparing Players with Similar $fWAR$ and Different $gWAR$ Values in 2019}
 
