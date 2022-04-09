@@ -174,14 +174,15 @@ pit1_vs_pit2_hists <- function(name1, name2, diff=TRUE) {
     drl3$color = "black"
   }
   prl = drl3 %>%
-    ggplot(aes(x=CUM_RUNS,y=Count,label=mi)) +
+    # ggplot(aes(x=CUM_RUNS,y=Count,label=mi)) +
+    ggplot(aes(x=CUM_RUNS,y=Count)) +
     facet_wrap(~PIT_NAME) +
     # geom_histogram() + 
     geom_col(fill=drl3$color) +
-    geom_text(vjust = 1.5,color="white") +
+    # geom_text(vjust = 1.5,color="white") +
     # geom_text(data=dnf2, aes( label = mi), vjust = -0.2)
     scale_x_continuous(name="Runs Allowed in a Game",breaks=seq(0,20,by=2)) +
-    scale_y_continuous(name="Count",breaks=seq(0,20,by=2))
+    scale_y_continuous(name="Count",breaks=seq(-20,20,by=2))
   # labs(title="Distribution of Runs Allowed in a Game")
   prl
   # ggsave(paste0(output_folder,"plot_Lynn_Ryu_",year,".png"), prl)
@@ -214,14 +215,14 @@ puo2
 
 
 
-# ggsave(paste0(output_folder,"p1_",year,".png"), pg1)
-# ggsave(paste0(output_folder,"p2_",year,".png"), pg2)
-# ggsave(paste0(output_folder,"p3_",year,".png"), pd1)
-# ggsave(paste0(output_folder,"p4_",year,".png"), pd2)
-# ggsave(paste0(output_folder,"p5_",year,".png"), pb1)
-# ggsave(paste0(output_folder,"p6_",year,".png"), pb2)
-# ggsave(paste0(output_folder,"p7_",year,".png"), puo1)
-# ggsave(paste0(output_folder,"p8_",year,".png"), puo2)
+# ggsave(paste0(output_folder,"p1_",year,".png"), pg1, width=8.6, height=3.72)
+ggsave(paste0(output_folder,"p2_",year,".png"), pg2, width=8.6, height=3.72)
+ggsave(paste0(output_folder,"p3_",year,".png"), pd1, width=8.6, height=3.72)
+# ggsave(paste0(output_folder,"p4_",year,".png"), pd2, width=8.6, height=3.72)
+ggsave(paste0(output_folder,"p5_",year,".png"), pb1, width=8.6, height=3.72)
+# ggsave(paste0(output_folder,"p6_",year,".png"), pb2, width=8.6, height=3.72)
+ggsave(paste0(output_folder,"p7_",year,".png"), puo1, width=6.83, height=3.5)
+ggsave(paste0(output_folder,"p8_",year,".png"), puo2, width=6.83, height=3.5)
 
 
 
