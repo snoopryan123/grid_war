@@ -51,6 +51,8 @@ pit_names_examine = c("Justin Verlander", "Max Scherzer", "Jacob deGrom", "Lance
                       "Julio Teheran","Jose Berrios", "Clayton Kershaw","Jose Quintana")
 merged = merged %>% mutate(examine_pit = PIT_NAME %in% pit_names_examine)
 
+data.frame(merged %>% filter(examine_pit))
+
 #############################
 ########### PLOTS ###########
 #############################
@@ -70,7 +72,7 @@ merged = merged %>% mutate(examine_pit = PIT_NAME %in% pit_names_examine)
     scale_x_continuous(name="Fangraphs WAR", limits = c(0,8)) +
     scale_y_continuous(name="Grid WAR",limits = c(1,8)) 
   pgf
-  # ggsave(paste0(output_folder,"plot_GWAR_vs_FWAR_",year,".png"), pgf)
+  # ggsave(paste0(output_folder,"plot_GWAR_vs_FWAR_",year,".png"), pgf, width=8, height=8)
   # ggplotly(pgf)
 }
 
@@ -134,7 +136,7 @@ merged = merged %>% mutate(examine_pit = PIT_NAME %in% pit_names_examine)
     # labs(title="Distribution of Runs Allowed in a Game") +
     scale_x_continuous(name="Runs Allowed in a Game",breaks=seq(0,20,by=2),)
   p3
-  # ggsave(paste0(output_folder,"plot_cumRuns_aggregated_",year,".png"), p3)
+  # ggsave(paste0(output_folder,"plot_cumRuns_aggregated_",year,".png"), p3, width=8, height=4)
 }
 
 

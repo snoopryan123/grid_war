@@ -1,47 +1,23 @@
 library(tidyverse)
+# f_grid <- read.csv("f_grid.csv",row.names = 1, header= TRUE) #read_csv("f_grid.csv", rown)
 f_lrm <- readRDS("f_lrm.rds") 
 g_grid <- read.csv("g_grid.csv",row.names = 1, header= TRUE)
 war2_ogg = read_csv("war2.csv")
-park_fx_df = read_csv("park_effects.csv")
 war2_og <- war2_ogg %>% 
   filter(SP_IND | lag(SP_IND, default=FALSE)) %>%
-  mutate(PIT_LEAGUE = ifelse(BAT_HOME_IND, AWAY_LEAGUE, HOME_LEAGUE)) %>%
-  left_join(park_fx_df) %>%
-  mutate(park_effect = replace_na(park_effect, 0))
+  mutate(PIT_LEAGUE = ifelse(BAT_HOME_IND, AWAY_LEAGUE, HOME_LEAGUE)) 
 
 max_inning_runs=10 
-f <- function(i,r,alpha, home,lg,yr) {
-  ### i == inning, r == runs, alpha == park effect
+f <- function(i,r, home,lg,yr) {
+  ### i == inning, r == runs
   r = ifelse(r+1 >= max_inning_runs, max_inning_runs, r)
-  # f_df = tibble(BAT_HOME_IND = home, PIT_LEAGUE = lg, YEAR = yr, 
-  #               INNING = i, CUM_RUNS = r*(1+alpha) ) ### cant do this since grid evaluation on integers only
-  # f_df = tibble(BAT_HOME_IND = home, PIT_LEAGUE = lg, YEAR = yr, 
-  #               INNING = i, CUM_RUNS =  )
-  # predict(f_lrm, f_df, type="response")[[1]]
-  
-  ### park adjustment...
-  r.minus.1 = ifelse(r > 0, r-1, 0)
-  r.plus.1 = ifelse(r < max_inning_runs, r+1, max_inning_runs)
-  f_ir.minus.1 = predict(f_lrm, 
-                 tibble(BAT_HOME_IND = home, PIT_LEAGUE = lg, YEAR = yr, INNING = i, CUM_RUNS = r.minus.1), 
-                 type="response")[[1]]
-  f_ir = predict(f_lrm, 
-                 tibble(BAT_HOME_IND = home, PIT_LEAGUE = lg, YEAR = yr, INNING = i, CUM_RUNS = r), 
-                 type="response")[[1]]
-  f_ir.plus.1 = predict(f_lrm, 
-                 tibble(BAT_HOME_IND = home, PIT_LEAGUE = lg, YEAR = yr, INNING = i, CUM_RUNS = r.plus.1), 
-                 type="response")[[1]]
-  h = abs(alpha)
-  ifelse(alpha < 0 & r < max_inning_runs,   (1-h)*f_ir + h*f_ir.plus.1,
-  ifelse(alpha > 0 & r > 0,                 (1-h)*f_ir + h*f_ir.minus.1,
-  ifelse(alpha > 0,                         (1-h)*f_ir - h*f_ir.plus.1,
-                                            (1+h)*f_ir - h*f_ir.minus.1 # alpha < 0
-  )))
+  f_df = tibble(BAT_HOME_IND = home, PIT_LEAGUE = lg, YEAR = yr, 
+                INNING = i, CUM_RUNS = r)
+  predict(f_lrm, f_df, type="response")[[1]]
 }
-# f(1,3,0.05, 1,"AL",2019)
-# f(1,3,-0.05, 1,"AL",2019)
+### f(1,3,1,"AL",2019)
 
-expected_gwar_eoi <- function(i,j,exit_at_end, alpha,home,lg,yr) {
+expected_gwar_eoi <- function(i,j,exit_at_end, home,lg,yr) {
   ### i == inning, j == runs
   result <- numeric(length(exit_at_end))
   for (aaa in 1:length(exit_at_end)) {
@@ -49,7 +25,7 @@ expected_gwar_eoi <- function(i,j,exit_at_end, alpha,home,lg,yr) {
     if (e==0) {
       #nothing
     } else {
-      result[aaa] <- f(i[aaa], j[aaa], alpha=alpha[aaa],home=home[aaa],lg=lg[aaa],yr=yr[aaa])
+      result[aaa] <- f(i[aaa], j[aaa], home=home[aaa],lg=lg[aaa],yr=yr[aaa])
     }
   }
   return(result)
@@ -60,7 +36,7 @@ g <- function(i,j) {
   g_grid[i,j+1][[1]]
 }
 
-expected_gwar <- function(i,j,k,exit_in_mid, alpha,home,lg,yr) {
+expected_gwar <- function(i,j,k,exit_in_mid, home,lg,yr) {
   ### i == inning, k == runs prior to exiting, j == outs & base state
   result <- numeric(length(exit_in_mid))
   for (aaa in 1:length(exit_in_mid)) {
@@ -72,7 +48,7 @@ expected_gwar <- function(i,j,k,exit_in_mid, alpha,home,lg,yr) {
     } else { # e == 1
       #browser()
       for(w in 0:max_inning_runs) {
-        ss <- ss + f(i[aaa], k[aaa] + w, alpha=alpha[aaa],home=home[aaa],lg=lg[aaa],yr=yr[aaa]) * g(j[aaa], w) 
+        ss <- ss + f(i[aaa], k[aaa] + w, home=home[aaa],lg=lg[aaa],yr=yr[aaa]) * g(j[aaa], w) 
       }
     }
     result[aaa] = ss
@@ -97,16 +73,15 @@ get_yearly_gwar_data <- function(year) {
     mutate(exit_at_end_of_inning = if_else(final == 1 & max_row == 1, 1, 0)) %>%
     mutate(exit_in_middle = if_else(final == 0 & max_row == 1, 1, 0)) %>%
     mutate(GWAR_eoi = expected_gwar_eoi(INNING,CUM_RUNS,exit_at_end_of_inning,
-                                        alpha=park_effect,home=BAT_HOME_IND,lg=PIT_LEAGUE,yr=YEAR)) %>%
+                                        home=BAT_HOME_IND,lg=PIT_LEAGUE,yr=YEAR)) %>%
     ungroup() %>%
     group_by(GAME_ID, BAT_HOME_IND) %>%
     mutate(GWAR_moi = expected_gwar(INNING, lead(INN_SITCH, default="0 000"), lead(CUM_RUNS, default=0), exit_in_middle,
-                                    alpha=park_effect,home=BAT_HOME_IND,lg=PIT_LEAGUE,yr=YEAR)) %>%
+                                    home=BAT_HOME_IND,lg=PIT_LEAGUE,yr=YEAR)) %>%
     ungroup()
   
   war_all
 }
-
 w_rep = 0.41 #FIXME #aribtrary
 get_pitcher_exits <- function(war_all_szn) {
   pitcher_exits <- war_all_szn %>% 
@@ -124,18 +99,17 @@ get_seasonal_war <- function(pitcher_exits) {
   Seasonal_GWAR
 }
 
-# takes ~10 minutes 
+# takes ~5 minutes
 war_all_2019 = get_yearly_gwar_data(2019)
 pitcher_exits_2019 = get_pitcher_exits(war_all_2019)
 GWAR_2019 = get_seasonal_war(pitcher_exits_2019)
 
+war_all_2014 = get_yearly_gwar_data(2014)
+pitcher_exits_2014 = get_pitcher_exits(war_all_2014)
+GWAR_2014 = get_seasonal_war(pitcher_exits_2014)
+
 write_csv(pitcher_exits_2019, "pitcher_exits_2019.csv")
 write_csv(GWAR_2019, "GWAR_2019.csv")
-
-# war_all_2014 = get_yearly_gwar_data(2014)
-# pitcher_exits_2014 = get_pitcher_exits(war_all_2014)
-# GWAR_2014 = get_seasonal_war(pitcher_exits_2014)
-
 # write_csv(pitcher_exits_2014, "pitcher_exits_2014.csv")
 # write_csv(GWAR_2014, "GWAR_2014.csv")
 
