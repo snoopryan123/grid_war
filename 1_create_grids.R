@@ -94,17 +94,6 @@ WPii$runs = rep(0:(nrow(WPi)-1), 9)
   # ggsave(paste0(output_folder,"plot_fIR_R_smoothed.png"), pWPiis)
 }
 
-# ### Examine WP vs Runs, for each inning
-# WPr = as_tibble(WP)
-# colnames(WPr) = paste0("runs",0:(ncol(WP)-1))
-# WPrr = stack(WPr[,1:14]) 
-# WPrr$inn = rep(1:9, 14)
-# pWPrr = WPrr %>%
-#   ggplot(aes(x=inn,y=values,color=ind)) + geom_point() + geom_line()
-# plotly::ggplotly(pWPrr)
-
-# write.csv(as.data.frame(WP), file = "f_grid.csv")
-
 #######################
 #### CREATE GRID 2 ####
 #######################
@@ -141,7 +130,7 @@ war2 <- war2 %>%
 war2$INN_SITCH <- paste(war2$OUTS_CT, war2$BASE_STATE)
 
 ### Save war_2
-# write_csv(war2, "war2.csv")
+write_csv(war2, "war2.csv")
 
 E0 <- war2 %>%
   mutate(inn_sitch_seq = case_when(
@@ -196,8 +185,6 @@ for (i in 1:nrow(N)) {
 seq_toINN_SITCH = Brill_starters %>% group_by(sequence) %>% slice_head() %>% select(sequence, INN_SITCH) %>% arrange(sequence)
 rownames(P) <- seq_toINN_SITCH$INN_SITCH
 colnames(P) <- 0:(ncol(P)-1)#paste0("rest_of_inn_runs", 0:(ncol(P)-1))
-
-# write.csv(as.data.frame(P), file = "g_grid.csv")
 
 #############################
 ########## g PLOTS ##########
