@@ -88,7 +88,7 @@ otq_effects1 = tibble(stack(otq_effects)) %>% rename(otq = values) %>%
 data.frame(otq_effects1)
 
 ### combine offensive and defensive team quality dataframes
-tq_effects = left_join(dtq_effects1, otq_effects1)
+tq_effects = left_join(dtq_effects1, otq_effects1) %>% mutate(YEAR = as.numeric(YEAR))
 tq_effects
 
 ### plot 2019 otq
@@ -109,7 +109,13 @@ dtq_otq_plot_2019 = tq_effects %>%
   geom_point() +
   geom_text(aes(hjust=0, vjust=1.5)) +
   scale_x_continuous(name = "defensive team quality", breaks = seq(-1,1,by=0.05)) +
-  scale_y_continuous(name = "offensive team quality", breaks = seq(-1,1,by=0.05)) 
+  scale_y_continuous(name = "offensive team quality", breaks = seq(-1,1,by=0.05)) +
+  geom_vline(aes(xintercept=0), linetype="dashed", alpha=0.5) +
+  geom_hline(aes(yintercept=0), linetype="dashed", alpha=0.5) +
+  annotate("text", x = -0.05, y=-0.10, label = "Good Defensive Team, \n Bad Offensive Team", color="dodgerblue2") +
+  annotate("text", x = 0.05, y=-0.10, label = "Bad Defensive Team, \n Bad Offensive Team", color="dodgerblue2") +
+  annotate("text", x = -0.05, y=0.10, label = "Good Defensive Team, \n Good Offensive Team", color="dodgerblue2") +
+  annotate("text", x = 0.05, y=0.10, label = "Bad Defensive Team, \n Good Offensive Team", color="dodgerblue2")
 dtq_otq_plot_2019
 ggsave("plots/plot_2019_otq_dtq.png", dtq_otq_plot_2019, width=8, height=8)
 
@@ -117,34 +123,43 @@ ggsave("plots/plot_2019_otq_dtq.png", dtq_otq_plot_2019, width=8, height=8)
 ### PARK EFFECTS ###
 ####################
 
+### road team's offensive production at each park
+### runs scored by away teams ~ factor(park) + away_team_off_q + home_team_def_q
+### per 9 innings
 
-unique(war2$PARK)
+park_df = OTQ2 %>%
+  left_join(tq_effects %>% select(TEAM, YEAR, otq) %>% rename(AWAY_TEAM_ID = TEAM, AWAY_TEAM_otq = otq)) %>%
+  left_join(tq_effects %>% select(TEAM, YEAR, dtq) %>% rename(HOME_TEAM_ID = TEAM, HOME_TEAM_dtq = dtq))
+park_df
+park_df1 = park_df %>% left_join(park_df %>% group_by(PARK) %>% summarise(count = n()) %>% arrange(count))
+park_df2 = park_df1 %>% filter(count > 15)
 
+park_lm = lm(CUM_RUNS ~ factor(PARK) + AWAY_TEAM_otq + HOME_TEAM_dtq + 0, data=park_df2)
+park_effects = coefficients(park_lm)
+park_effects1 = tibble(stack(park_effects)) %>% 
+  filter(ind != "AWAY_TEAM_otq" & ind != "HOME_TEAM_dtq") %>%
+  rename(park_effect = values, PARK = ind) %>%
+  mutate(PARK = str_remove(PARK, "factor\\(PARK\\)")) %>%
+  ### de-mean the park effects, and get park-effects-per-9
+  mutate(park_effect = park_effect - mean(park_effect),
+         park_effect = park_effect/9
+        ) %>%
+  arrange(park_effect) 
+data.frame(park_effects1)
 
+### plot park effects
+plot_park_effects = park_effects1 %>%
+  ggplot(aes(x=park_effect, y=reorder(PARK, park_effect))) +
+  geom_point(shape=21, size=3, fill="black") +
+  # scale_x_continuous(breaks = seq(-1,1,by=0.05)) + 
+  ylab("park") +
+  labs(x="park effect")
+plot_park_effects
+ggsave("plots/plot_park_effects.png", plot_park_effects, width=8, height=8)
 
+### save park effects
+write_csv(park_effects1, "park_effects.csv")
 
-D1 = war2 %>% select(GAME_ID, YEAR, INNING, HOME_TEAM_ID, AWAY_TEAM_ID, BAT_HOME_IND, BAT_ID, PIT_ID, PARK, EVENT_RUNS, CUM_RUNS)
-# View(D1)
-
-D2 = D1 %>% filter(BAT_HOME_IND == 0) %>%
-  group_by(GAME_ID, BAT_HOME_IND) %>%
-  slice_tail() %>%
-  ungroup()
-D3 = D2 %>% left_join(D2 %>% group_by(PARK) %>% summarise(count = n()) %>% arrange(count))
-D4 = D3 %>% filter(count > 15)
-
-
-
-park_lm = lm(CUM_RUNS ~ factor(PARK), data=D4)
-
-park_factors_0 = sort(park_lm$coefficients[2:length(park_lm$coefficients)])
-park_factors_0
-
-
-
-#########################
-### DEFENSIVE EFFECTS ###
-#########################
 
 
 
