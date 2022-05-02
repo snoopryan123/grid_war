@@ -223,10 +223,12 @@ pb2
 merged %>% arrange(-vert_distance) %>% head(kk)
 merged %>% arrange(-vert_distance) %>% tail(kk)
 
-puo2 = pit1_vs_pit2_hists("Clayton Kershaw","Jeff Samardzija",diff=FALSE)
+puo1 = pit1_vs_pit2_hists("Julio Teheran","Clayton Kershaw",diff=FALSE)
+puo1
+puo2 = pit1_vs_pit2_hists("Jose Berrios","Jose Quintana",diff=FALSE)
 puo2
-puo3 = pit1_vs_pit2_hists("Shane Bieber","Jose Berrios",diff=FALSE)
-puo3
+# puo3 = pit1_vs_pit2_hists("Shane Bieber","Jose Berrios",diff=FALSE)
+# puo3
 
 
 
@@ -237,7 +239,7 @@ ggsave(paste0(output_folder,"p3_",year,".png"), pd1, width=8.6, height=3.72)
 # ggsave(paste0(output_folder,"p4_",year,".png"), pd2, width=8.6, height=3.72)
 ggsave(paste0(output_folder,"p5_",year,".png"), pb1, width=8.6, height=3.72)
 # ggsave(paste0(output_folder,"p6_",year,".png"), pb2, width=8.6, height=3.72)
-ggsave(paste0(output_folder,"p7_",year,".png"), puo3, width=6.83, height=3.5)
+ggsave(paste0(output_folder,"p7_",year,".png"), puo1, width=6.83, height=3.5)
 ggsave(paste0(output_folder,"p8_",year,".png"), puo2, width=6.83, height=3.5)
 
 

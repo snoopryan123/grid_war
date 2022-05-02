@@ -36,7 +36,7 @@ f <- function(i,r,alpha, home,lg,yr) {
   h = ifelse(h < 0, 0, h)
   ifelse(alpha < 0 & r < max_inning_runs,   (1-h)*f_ir + h*f_ir.plus.1,
   ifelse(alpha > 0 & r > 0,                 (1-h)*f_ir + h*f_ir.minus.1,
-  ifelse(alpha > 0,                         (1-h)*f_ir - h*f_ir.plus.1,
+  ifelse(alpha > 0,                         (1+h)*f_ir - h*f_ir.plus.1,
                                             (1+h)*f_ir - h*f_ir.minus.1 # alpha < 0
   )))
 }
