@@ -31,7 +31,9 @@ f <- function(i,r,alpha, home,lg,yr) {
   f_ir.plus.1 = predict(f_lrm, 
                  tibble(BAT_HOME_IND = home, PIT_LEAGUE = lg, YEAR = yr, INNING = i, CUM_RUNS = r.plus.1), 
                  type="response")[[1]]
-  h = abs(alpha)
+  h = abs(alpha)*i
+  h = ifelse(h > 1, 1, h)
+  h = ifelse(h < 0, 0, h)
   ifelse(alpha < 0 & r < max_inning_runs,   (1-h)*f_ir + h*f_ir.plus.1,
   ifelse(alpha > 0 & r > 0,                 (1-h)*f_ir + h*f_ir.minus.1,
   ifelse(alpha > 0,                         (1-h)*f_ir - h*f_ir.plus.1,
@@ -124,7 +126,7 @@ get_seasonal_war <- function(pitcher_exits) {
   Seasonal_GWAR
 }
 
-# takes ~10 minutes 
+# takes ~15 minutes 
 war_all_2019 = get_yearly_gwar_data(2019)
 pitcher_exits_2019 = get_pitcher_exits(war_all_2019)
 GWAR_2019 = get_seasonal_war(pitcher_exits_2019)

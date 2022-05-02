@@ -108,8 +108,8 @@ dtq_otq_plot_2019 = tq_effects %>%
   ggplot(aes(x=dtq, y=otq, label=TEAM)) +
   geom_point() +
   geom_text(aes(hjust=0, vjust=1.5)) +
-  scale_x_continuous(name = "defensive team quality", breaks = seq(-1,1,by=0.05)) +
-  scale_y_continuous(name = "offensive team quality", breaks = seq(-1,1,by=0.05)) +
+  scale_x_continuous(name = "team defensive quality", breaks = seq(-1,1,by=0.05)) +
+  scale_y_continuous(name = "team offensive quality", breaks = seq(-1,1,by=0.05)) +
   geom_vline(aes(xintercept=0), linetype="dashed", alpha=0.5) +
   geom_hline(aes(yintercept=0), linetype="dashed", alpha=0.5) +
   annotate("text", x = -0.05, y=-0.10, label = "Good Defensive Team, \n Bad Offensive Team", color="dodgerblue2") +

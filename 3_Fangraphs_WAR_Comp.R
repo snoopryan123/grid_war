@@ -47,8 +47,11 @@ kk = 5
 #                        select(PIT_NAME))$PIT_NAME
 pit_names_examine = c("Justin Verlander", "Max Scherzer", "Jacob deGrom", "Lance Lynn",
                       "Sonny Gray","Jose Berrios", "Mike Soroka","Marcus Stroman",
-                      "Sandy Alcantara","Reynaldo Lopez", "Dakota Hudson", "Mike Leake",
-                      "Julio Teheran","Jose Berrios", "Clayton Kershaw","Jose Quintana")
+                      "Sandy Alcantara","Reynaldo Lopez", "Mike Leake",
+                      #"Mike Fiers", "Dakota Hudson",
+                      "Julio Teheran","Jose Berrios", "Clayton Kershaw",
+                      "Jose Quintana","Jeff Samardzija","Shane Bieber"
+                      )
 merged = merged %>% mutate(examine_pit = PIT_NAME %in% pit_names_examine)
 
 data.frame(merged %>% filter(examine_pit))
@@ -72,7 +75,7 @@ data.frame(merged %>% filter(examine_pit))
     scale_x_continuous(name="Fangraphs WAR", limits = c(0,8)) +
     scale_y_continuous(name="Grid WAR",limits = c(1,8)) 
   pgf
-  # ggsave(paste0(output_folder,"plot_GWAR_vs_FWAR_",year,".png"), pgf, width=8, height=8)
+  ggsave(paste0(output_folder,"plot_GWAR_vs_FWAR_",year,".png"), pgf, width=8, height=8)
   # ggplotly(pgf)
 }
 
@@ -136,7 +139,7 @@ data.frame(merged %>% filter(examine_pit))
     # labs(title="Distribution of Runs Allowed in a Game") +
     scale_x_continuous(name="Runs Allowed in a Game",breaks=seq(0,20,by=2),)
   p3
-  # ggsave(paste0(output_folder,"plot_cumRuns_aggregated_",year,".png"), p3, width=8, height=4)
+  ggsave(paste0(output_folder,"plot_cumRuns_aggregated_",year,".png"), p3, width=8, height=4)
 }
 
 
@@ -209,10 +212,21 @@ pb2 = pit1_vs_pit2_hists("Dakota Hudson", "Mike Leake")
 pb2
 
 ### most undervalued vs. most overvalued
-puo1 = pit1_vs_pit2_hists("Julio Teheran","Jose Berrios",diff=FALSE)
-puo1
-puo2 = pit1_vs_pit2_hists("Mike Fiers","Jose Quintana",diff=FALSE)
+# puo1 = pit1_vs_pit2_hists("Julio Teheran","Jose Berrios",diff=FALSE)
+# puo1
+
+# puo2 = pit1_vs_pit2_hists("Mike Fiers","Jose Quintana",diff=FALSE)
+# puo2
+# puo3 = pit1_vs_pit2_hists("Dakota Hudson","Jose Berrios",diff=FALSE)
+# puo3
+
+merged %>% arrange(-vert_distance) %>% head(kk)
+merged %>% arrange(-vert_distance) %>% tail(kk)
+
+puo2 = pit1_vs_pit2_hists("Clayton Kershaw","Jeff Samardzija",diff=FALSE)
 puo2
+puo3 = pit1_vs_pit2_hists("Shane Bieber","Jose Berrios",diff=FALSE)
+puo3
 
 
 
@@ -223,7 +237,7 @@ ggsave(paste0(output_folder,"p3_",year,".png"), pd1, width=8.6, height=3.72)
 # ggsave(paste0(output_folder,"p4_",year,".png"), pd2, width=8.6, height=3.72)
 ggsave(paste0(output_folder,"p5_",year,".png"), pb1, width=8.6, height=3.72)
 # ggsave(paste0(output_folder,"p6_",year,".png"), pb2, width=8.6, height=3.72)
-ggsave(paste0(output_folder,"p7_",year,".png"), puo1, width=6.83, height=3.5)
+ggsave(paste0(output_folder,"p7_",year,".png"), puo3, width=6.83, height=3.5)
 ggsave(paste0(output_folder,"p8_",year,".png"), puo2, width=6.83, height=3.5)
 
 
