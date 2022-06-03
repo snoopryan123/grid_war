@@ -77,13 +77,6 @@ model {
       beta_dyg_raw[DYG[i]-1]  ~ normal(theta_dy[DY[i]], tau_d);
     }
   }
-  // for (i in 2:n) {
-  //   theta_oy[OY[i]]  ~ normal(mu_o, sigma_o);
-  //   theta_dy[DY[i]]  ~ normal(mu_d, sigma_d);
-  //   beta_p[P[i]]     ~ normal(mu_p, sigma_p);
-  //   beta_oyg[OYG[i]] ~ normal(theta_oy[OY[i]], tau_o);
-  //   beta_dyg[DYG[i]] ~ normal(theta_dy[DY[i]], tau_d);
-  // }
   y ~ poisson(lambda);
 }
 
