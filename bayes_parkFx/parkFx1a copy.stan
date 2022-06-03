@@ -60,30 +60,13 @@ model {
   tau_o ~ inv_gamma(0.5, 0.5);
   tau_d ~ inv_gamma(0.5, 0.5);
   
-  for (i in 1:n) {
-    if (OY[i] != 1) {
-      theta_oy_raw[OY[i]-1]  ~ normal(mu_o, sigma_o);
-    }
-    if (DY[i] != 1) {
-      theta_dy_raw[DY[i]-1]  ~ normal(mu_d, sigma_d);
-    }
-    if (P[i] != 1) {
-      beta_p_raw[P[i]-1]  ~ normal(mu_p, sigma_p);
-    }
-    if (OYG[i] != 1) {
-      beta_oyg_raw[OYG[i]-1]  ~ normal(theta_oy[OY[i]], tau_o);
-    }
-    if (DYG[i] != 1) {
-      beta_dyg_raw[DYG[i]-1]  ~ normal(theta_dy[DY[i]], tau_d);
-    }
+  for (i in 2:n) {
+    theta_oy[OY[i]]  ~ normal(mu_o, sigma_o);
+    theta_dy[DY[i]]  ~ normal(mu_d, sigma_d);
+    beta_p[P[i]]     ~ normal(mu_p, sigma_p);
+    beta_oyg[OYG[i]] ~ normal(theta_oy[OY[i]], tau_o);
+    beta_dyg[DYG[i]] ~ normal(theta_dy[DY[i]], tau_d);
   }
-  // for (i in 2:n) {
-  //   theta_oy[OY[i]]  ~ normal(mu_o, sigma_o);
-  //   theta_dy[DY[i]]  ~ normal(mu_d, sigma_d);
-  //   beta_p[P[i]]     ~ normal(mu_p, sigma_p);
-  //   beta_oyg[OYG[i]] ~ normal(theta_oy[OY[i]], tau_o);
-  //   beta_dyg[DYG[i]] ~ normal(theta_dy[DY[i]], tau_d);
-  // }
   y ~ poisson(lambda);
 }
 
