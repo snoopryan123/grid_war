@@ -1,12 +1,12 @@
 library(tidyverse)
 library(rstan)
 library(splines)
-library(ggthemes)
-library(latex2exp)
-library(glmnet)
-library(plotly)
-library(cowplot)
-library(lme4)
+# library(ggthemes)
+# library(latex2exp)
+# library(glmnet)
+# library(plotly)
+# library(cowplot)
+# library(lme4)
 theme_set(theme_bw())
 theme_update(text = element_text(size=18))
 theme_update(plot.title = element_text(hjust = 0.5))
@@ -32,18 +32,18 @@ war2 <- read_csv("../war2.csv") ### dataset
 ### runs scored thru 8 innings ~ park_effect + team_off_q + team_def_q + spline(time)
 ### time is a fixed effect, other parameters are random intercepts
 park_df0 = war2 %>% 
-  select(GAME_ID, YEAR, DAYS_SINCE_SZN_START, BAT_HOME_IND, INNING, HOME_TEAM_ID, AWAY_TEAM_ID, PARK, CUM_RUNS) %>% #,INN_RUNS) %>%
-  # filter(ifelse(BAT_HOME_IND == 1, INNING <= 8, INNING <= 9)) %>%
-  filter(INNING <= 8) %>%
-  # group_by(GAME_ID, BAT_HOME_IND, INNING) %>%
-  group_by(GAME_ID, BAT_HOME_IND) %>%
+  select(GAME_ID, YEAR, DAYS_SINCE_SZN_START, BAT_HOME_IND, INNING, HOME_TEAM_ID, AWAY_TEAM_ID, PARK, INN_RUNS, CUM_RUNS) %>% 
+  filter(ifelse(BAT_HOME_IND == 1, INNING <= 8, INNING <= 9)) %>%
+  group_by(GAME_ID, BAT_HOME_IND, INNING) %>%
+  # filter(INNING <= 8) %>%
+  # group_by(GAME_ID, BAT_HOME_IND) %>%
   slice_tail() %>%
   ungroup() %>%
   mutate(OFF_TEAM_ID = ifelse(BAT_HOME_IND == 1, HOME_TEAM_ID, AWAY_TEAM_ID),
          DEF_TEAM_ID = ifelse(BAT_HOME_IND == 1, AWAY_TEAM_ID, HOME_TEAM_ID)) %>%
   arrange(BAT_HOME_IND, GAME_ID, INNING) 
-park_df = park_df0 %>% left_join(park_df0 %>% group_by(PARK) %>% summarise(park.count = n()) %>% 
-                                   arrange(park.count)) %>% filter(park.count > 300) %>% select(-park.count)
+park_df = park_df0 %>% left_join(park_df0 %>% group_by(PARK) %>% summarise(park.count = n()) %>% arrange(park.count)) %>% 
+          filter(park.count > 300) %>% select(-park.count)
 park_df[1:18,]
 
 #####################################
@@ -60,8 +60,8 @@ sim_df1 = park_df %>% filter(2018 <= YEAR & YEAR <= 2019) %>%
     OYG = factor(as.character(OY:G)), ## do not change this line...
     DYG = factor(as.character(DY:G))  ## do not change this line...
   ) %>%
-  select(-c(PARK,OFF_TEAM_ID,DEF_TEAM_ID,INNING,HOME_TEAM_ID,AWAY_TEAM_ID,CUM_RUNS,GAME_ID,YEAR,G))
-sim_df1
+  select(-c(PARK,OFF_TEAM_ID,DEF_TEAM_ID,HOME_TEAM_ID,AWAY_TEAM_ID,CUM_RUNS,INN_RUNS,GAME_ID,YEAR,G)) #INNING
+sim_df1[1:19,]
 
 sim_df2 = sim_df1 %>% 
   mutate(
@@ -71,7 +71,7 @@ sim_df2 = sim_df1 %>%
     OYG = unclass(OYG),#unclass(OYG),
     DYG = unclass(DYG)
   )
-sim_df2
+sim_df2[1:19,]
 # sort(unique(sim_df2$OYG)) ##BAD
 # sort(unique(sim_df2$DYG)) ##BAD
 
@@ -87,12 +87,12 @@ n_dyg = max(SIM_DF$DYG)
 mu_p = 0
 mu_oy = 0
 mu_dy = 0
-sig_p = 0.2
-sig_o = 0.2
-sig_d = 0.1
-tau_o = 0.4
-tau_d = 0.2
-alpha = 0.75
+sig_p = 0.02
+sig_o = 0.02
+sig_d = 0.01
+tau_o = 0.04
+tau_d = 0.02
+alpha = 0.075
 
 beta_p = rnorm(n_p, mean=mu_p, sd=sig_p)
 theta_oy = rnorm(n_oy, mean=mu_oy, sd=sig_o)
@@ -111,11 +111,11 @@ for (g in 1:n_dyg) {
 }
 
 # ### identifiability
-# theta_oy[1] = 0
-# theta_dy[1] = 0
-# beta_p[1] = 0
-# beta_oyg[1] = 0
-# beta_dyg[1] = 0
+theta_oy[1] = 0
+theta_dy[1] = 0
+beta_p[1] = 0
+beta_oyg[1] = 0
+beta_dyg[1] = 0
 
 ### generate y
 eta = alpha + beta_p[SIM_DF$P] + beta_oyg[SIM_DF$OYG] + beta_dyg[SIM_DF$DYG]
@@ -144,15 +144,16 @@ params_true <- list(
 ##################
 
 model1 <- stan_model(file = "parkFx1.stan", model_name = "parkFx1")
+model1a <- stan_model(file = "parkFx1a.stan", model_name = "parkFx1a")
 
-fit_model1 <- function() { #fold_num=NA
+fit_model <- function(model_stan) { #fold_num=NA
   # train the model
-  fit <- sampling(model1,
+  fit <- sampling(model_stan,
                   data = data_train,
                   iter = NUM_ITS,
                   pars=c("beta_p_raw","theta_oy_raw","theta_dy_raw",
                          "beta_oyg_raw","beta_dyg_raw",
-                         # "eta",
+                         "eta", ###
                          "beta_oyg", "beta_dyg"), 
                   include=FALSE,
                   chains = cores, #1 #cores, 
