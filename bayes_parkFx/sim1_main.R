@@ -161,7 +161,7 @@ params_true <- list(
 ### Stan Model ###
 ##################
 
-model1 <- stan_model(file = "parkFx1.stan", model_name = "parkFx1")
+# model1 <- stan_model(file = "parkFx1.stan", model_name = "parkFx1")
 model1a <- stan_model(file = "parkFx1a.stan", model_name = "parkFx1a")
 
 fit_model <- function(model_stan) { #fold_num=NA
@@ -171,7 +171,7 @@ fit_model <- function(model_stan) { #fold_num=NA
                   iter = NUM_ITS,
                   pars=c("beta_p_raw","theta_oy_raw","theta_dy_raw",
                          "beta_oyg_raw","beta_dyg_raw",
-                         "eta", ###
+                         "lambda", "eta", ###
                          "beta_oyg", "beta_dyg"), 
                   include=FALSE,
                   chains = cores, #1 #cores, 

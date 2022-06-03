@@ -21,20 +21,29 @@ parameters {
   real<lower=0> tau_o;
   real<lower=0> tau_d;
   
-  real<lower=0> alpha;
+  // real<lower=0> alpha;
+  // 
+  // vector<lower=0>[n_p] beta_p;
+  // vector<lower=0>[n] beta_oyg;
+  // vector<lower=0>[n] beta_dyg;
+  // vector<lower=0>[n_oy] theta_oy;
+  // vector<lower=0>[n_dy] theta_dy;
+  
+  real alpha;
 
-  vector<lower=0>[n_p] beta_p;
-  vector<lower=0>[n] beta_oyg;
-  vector<lower=0>[n] beta_dyg;
-  vector<lower=0>[n_oy] theta_oy;
-  vector<lower=0>[n_dy] theta_dy;
+  vector[n_p] beta_p;
+  vector[n] beta_oyg;
+  vector[n] beta_dyg;
+  vector[n_oy] theta_oy;
+  vector[n_dy] theta_dy;
 }
 transformed parameters {
   vector[n] eta;    
-  // eta = log(lambda), y ~ poisson(lambda)
+  vector[n] lambda;
   for (i in 1:n) {
     eta[i] = log(alpha + beta_p[P[i]] + beta_oyg[OYG[i]] + beta_dyg[DYG[i]]);
   }
+  lambda = exp(eta);
 }
 model {
   alpha ~ normal(0,2);
@@ -54,7 +63,8 @@ model {
     beta_oyg[OYG[i]] ~ normal(theta_oy[OY[i]], tau_o);
     beta_dyg[DYG[i]] ~ normal(theta_dy[DY[i]], tau_d);
   }
-  y ~ poisson_log(eta);
+  // y ~ poisson_log(eta);
+  y ~ poisson(lambda);
 }
 
 
