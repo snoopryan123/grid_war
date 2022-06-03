@@ -12,6 +12,7 @@ theme_update(text = element_text(size=18))
 theme_update(plot.title = element_text(hjust = 0.5))
 if(!interactive()) pdf(NULL)
 rstan_options(auto_write = TRUE)
+NUM_CHAINS = 1
 ##### uncomment these if working on my computer #####
 # cores = 1
 # NUM_ITS = 10
@@ -173,7 +174,7 @@ fit_model <- function(model_stan) { #fold_num=NA
                          "lambda", "eta", ###
                          "beta_oyg", "beta_dyg"), 
                   include=FALSE,
-                  chains = cores, #1 #cores, 
+                  chains = NUM_CHAINS,
                   cores = cores, # HPCC
                   seed = 12345)
   fit
