@@ -1,5 +1,5 @@
 data {
-  int<lower=0> n;             // number of observations == number of innings
+  int<lower=0> n;             // number of observations == number of innings (or, games)
   int<lower=0> n_p;           // number of parks
   int<lower=0> n_oy;          // number of offensive-team-seasons
   int<lower=0> n_dy;          // number of defensive-team-seasons

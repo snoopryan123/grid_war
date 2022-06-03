@@ -33,17 +33,23 @@ war2 <- read_csv("../war2.csv") ### dataset
 ### time is a fixed effect, other parameters are random intercepts
 park_df0 = war2 %>% 
   select(GAME_ID, YEAR, DAYS_SINCE_SZN_START, BAT_HOME_IND, INNING, HOME_TEAM_ID, AWAY_TEAM_ID, PARK, INN_RUNS, CUM_RUNS) %>% 
-  filter(ifelse(BAT_HOME_IND == 1, INNING <= 8, INNING <= 9)) %>%
-  group_by(GAME_ID, BAT_HOME_IND, INNING) %>%
-  # filter(INNING <= 8) %>%
-  # group_by(GAME_ID, BAT_HOME_IND) %>%
+  ####################################################################
+  ##### if you want INNING-BY-INNING, uncomment the next 2 lines #####
+  # filter(ifelse(BAT_HOME_IND == 1, INNING <= 8, INNING <= 9)) %>%
+  # group_by(GAME_ID, BAT_HOME_IND, INNING) %>%
+  ####################################################################
+  ####### if you want GAME-BY-GAME, uncomment the next 2 lines #######
+  filter(INNING <= 8) %>%
+  group_by(GAME_ID, BAT_HOME_IND) %>%
+  ####################################################################
   slice_tail() %>%
   ungroup() %>%
   mutate(OFF_TEAM_ID = ifelse(BAT_HOME_IND == 1, HOME_TEAM_ID, AWAY_TEAM_ID),
          DEF_TEAM_ID = ifelse(BAT_HOME_IND == 1, AWAY_TEAM_ID, HOME_TEAM_ID)) %>%
   arrange(BAT_HOME_IND, GAME_ID, INNING) 
 park_df = park_df0 %>% left_join(park_df0 %>% group_by(PARK) %>% summarise(park.count = n()) %>% arrange(park.count)) %>% 
-          filter(park.count > 300) %>% select(-park.count)
+          filter(park.count > 300) %>%  ### >300 innings (or games) per park
+          select(-park.count)
 park_df[1:18,]
 
 #####################################
@@ -61,7 +67,7 @@ sim_df1 = park_df %>% filter(2018 <= YEAR & YEAR <= 2019) %>%
     DYG = factor(as.character(DY:G))  ## do not change this line...
   ) %>%
   select(-c(PARK,OFF_TEAM_ID,DEF_TEAM_ID,HOME_TEAM_ID,AWAY_TEAM_ID,CUM_RUNS,INN_RUNS,GAME_ID,YEAR,G)) #INNING
-sim_df1[1:19,]
+sim_df1
 
 sim_df2 = sim_df1 %>% 
   mutate(
@@ -71,7 +77,7 @@ sim_df2 = sim_df1 %>%
     OYG = unclass(OYG),#unclass(OYG),
     DYG = unclass(DYG)
   )
-sim_df2[1:19,]
+sim_df2
 # sort(unique(sim_df2$OYG)) ##BAD
 # sort(unique(sim_df2$DYG)) ##BAD
 
@@ -84,15 +90,27 @@ n_dy = max(SIM_DF$DY)
 n_oyg = max(SIM_DF$OYG)
 n_dyg = max(SIM_DF$DYG)
 
+### GAME-BY-GAME parameters
 mu_p = 0
 mu_oy = 0
 mu_dy = 0
-sig_p = 0.02
-sig_o = 0.02
-sig_d = 0.01
-tau_o = 0.04
-tau_d = 0.02
-alpha = 0.075
+sig_p = 0.2
+sig_o = 0.2
+sig_d = 0.1
+tau_o = 0.4
+tau_d = 0.2
+alpha = 0.75
+
+# ### INNING-BY-INNING parameters
+# mu_p = 0
+# mu_oy = 0
+# mu_dy = 0
+# sig_p = 0.02
+# sig_o = 0.02
+# sig_d = 0.01
+# tau_o = 0.04
+# tau_d = 0.02
+# alpha = 0.075
 
 beta_p = rnorm(n_p, mean=mu_p, sd=sig_p)
 theta_oy = rnorm(n_oy, mean=mu_oy, sd=sig_o)
