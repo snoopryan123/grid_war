@@ -1,6 +1,4 @@
 library(tidyverse)
-library(lme4)
-library(splines)
 library(plotly)
 library(ggthemes)
 library(cowplot)
@@ -49,12 +47,12 @@ data.frame(dtq_effects1)
 dtq_plot_2019 = dtq_effects1 %>%
   filter(YEAR == 2019) %>%
   ggplot(aes(x=dtq, y=reorder(TEAM, dtq))) +
-  geom_point(shape=21, size=3, fill="black") +
+  geom_point(shape=21, size=3, fill="black") + 
   scale_x_continuous(breaks = seq(-1,1,by=0.05)) + #, limits = c(-0.15, 0.15)
   ylab("team") +
   labs(x="defensive team quality")
-# dtq_plot_2019
-# ggsave("plots/plot_2019_dtq.png", dtq_plot_2019, width=8, height=8)
+dtq_plot_2019
+ggsave("plots/plot_2019_dtq.png", dtq_plot_2019, width=8, height=8)
 
 ##############################
 ### OFFENSIVE TEAM QUALITY ### 
@@ -101,8 +99,8 @@ otq_plot_2019 = otq_effects1 %>%
   scale_x_continuous(breaks = seq(-1,1,by=0.05)) + #, limits = c(-0.15, 0.15)
   ylab("team") +
   labs(x="defensive team quality")
-# otq_plot_2019
-# ggsave("plots/plot_2019_otq.png", otq_plot_2019, width=8, height=8)
+otq_plot_2019
+ggsave("plots/plot_2019_otq.png", otq_plot_2019, width=8, height=8)
 
 ### plot 2019 dtq and otq
 dtq_otq_plot_2019 = tq_effects %>%
@@ -118,49 +116,35 @@ dtq_otq_plot_2019 = tq_effects %>%
   annotate("text", x = 0.05, y=-0.10, label = "Bad Defensive Team, \n Bad Offensive Team", color="dodgerblue2") +
   annotate("text", x = -0.05, y=0.10, label = "Good Defensive Team, \n Good Offensive Team", color="dodgerblue2") +
   annotate("text", x = 0.05, y=0.10, label = "Bad Defensive Team, \n Good Offensive Team", color="dodgerblue2")
-# dtq_otq_plot_2019
-# ggsave("plots/plot_2019_otq_dtq.png", dtq_otq_plot_2019, width=8, height=8)
+dtq_otq_plot_2019
+ggsave("plots/plot_2019_otq_dtq.png", dtq_otq_plot_2019, width=8, height=8)
 
 ####################
 ### PARK EFFECTS ###
 ####################
 
-### runs scored in an inning ~ park_effect + team_off_q + team_def_q + spline(time)
-### time is a fixed effect, other parameters are random intercepts
+### road team's offensive production at each park
+### runs scored by away teams ~ factor(park) + away_team_off_q + home_team_def_q
+### per 9 innings
 
-park_df = war2 %>% 
-  select(GAME_ID, YEAR, DAYS_SINCE_SZN_START, BAT_HOME_IND, INNING, HOME_TEAM_ID, AWAY_TEAM_ID, PARK, INN_RUNS, CUM_RUNS) %>%
-  filter(ifelse(BAT_HOME_IND == 1, INNING <= 8, INNING <= 9)) %>%
-  group_by(GAME_ID, BAT_HOME_IND, INNING) %>%
-  slice_tail() %>%
-  ungroup() %>%
-  mutate(OFF_TEAM_ID = ifelse(BAT_HOME_IND == 1, HOME_TEAM_ID, AWAY_TEAM_ID),
-         DEF_TEAM_ID = ifelse(BAT_HOME_IND == 1, AWAY_TEAM_ID, HOME_TEAM_ID))
-park_df[1:18,]
+park_df = OTQ2 %>%
+  left_join(tq_effects %>% select(TEAM, YEAR, otq) %>% rename(AWAY_TEAM_ID = TEAM, AWAY_TEAM_otq = otq)) %>%
+  left_join(tq_effects %>% select(TEAM, YEAR, dtq) %>% rename(HOME_TEAM_ID = TEAM, HOME_TEAM_dtq = dtq))
+park_df
+park_df1 = park_df %>% left_join(park_df %>% group_by(PARK) %>% summarise(count = n()) %>% arrange(count))
+park_df2 = park_df1 %>% filter(count > 15)
 
-# park_df1 = park_df %>% filter(PARK %in% c("ANA01", "LOS03"))
-park_df1 = park_df %>% left_join(park_df %>% group_by(PARK) %>% summarise(count = n()) %>% arrange(count)) %>% filter(count > 300)
-
-
-# mem1 = lmer(INN_RUNS ~ PARK + (1 | OFF_TEAM_ID:YEAR) , data = park_df1) #+ (1 | DEF_TEAM_ID)
-
-# mem2 = lmer(INN_RUNS ~ 0 + PARK + bs(DAYS_SINCE_SZN_START, df=11) + 
-#                       (1 | OFF_TEAM_ID:YEAR) + (1 | DEF_TEAM_ID:YEAR) , data = park_df1) 
-mem2 = lmer(INN_RUNS ~ 0 + PARK + bs(DAYS_SINCE_SZN_START, df=11) + 
-              (1 | OFF_TEAM_ID:YEAR:BAT_HOME_IND) + (1 | DEF_TEAM_ID:YEAR:BAT_HOME_IND) , data = park_df1) 
-mem2
-
-
-# ranef(mem2)
-
-fixed_effects = fixef(mem2)
-park_effects = fixed_effects[startsWith(names(fixed_effects), "PARK")]
-names(park_effects) = str_sub(names(park_effects), 5)
+park_lm = lm(CUM_RUNS ~ factor(PARK) + AWAY_TEAM_otq + HOME_TEAM_dtq + 0, data=park_df2)
+park_effects = coefficients(park_lm)
 park_effects1 = tibble(stack(park_effects)) %>% 
+  filter(ind != "AWAY_TEAM_otq" & ind != "HOME_TEAM_dtq") %>%
   rename(park_effect = values, PARK = ind) %>%
+  mutate(PARK = str_remove(PARK, "factor\\(PARK\\)")) %>%
   ### de-mean the park effects, and get park-effects-per-9
-  mutate(park_effect = park_effect - mean(park_effect)) %>%
-  arrange(-park_effect) 
+  mutate(park_effect = park_effect - mean(park_effect),
+         park_effect = park_effect/9
+        ) %>%
+  arrange(park_effect) 
 data.frame(park_effects1)
 
 ### plot park effects
@@ -172,23 +156,6 @@ plot_park_effects = park_effects1 %>%
   labs(x="park effect")
 plot_park_effects
 ggsave("plots/plot_park_effects.png", plot_park_effects, width=8, height=8)
-
-### compare to previous park effects
-prev_park_effects = read_csv("park_effects_0.csv")
-prev_park_effects$model = "multiple linear models"
-park_effects1$model = "random effects"
-
-plot_compare_park_effects = bind_rows(prev_park_effects,park_effects1) %>%
-  ggplot(aes(x=park_effect, y=reorder(PARK, park_effect), fill=model)) +
-  geom_point(shape=21, size=3) +
-  # scale_x_continuous(breaks = seq(-1,1,by=0.05)) + 
-  ylab("park") +
-  labs(x="park effect")
-plot_compare_park_effects
-ggsave("plots/plot_compare_park_effects.png", plot_compare_park_effects, width=11, height=8)
-
-
-
 
 ### save park effects
 write_csv(park_effects1, "park_effects.csv")
