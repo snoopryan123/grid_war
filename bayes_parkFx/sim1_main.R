@@ -10,7 +10,6 @@ library(splines)
 theme_set(theme_bw())
 theme_update(text = element_text(size=18))
 theme_update(plot.title = element_text(hjust = 0.5))
-output_folder = "./plots/"
 if(!interactive()) pdf(NULL)
 rstan_options(auto_write = TRUE)
 ##### uncomment these if working on my computer #####
@@ -21,7 +20,7 @@ rstan_options(auto_write = TRUE)
 ####### uncomment these if working on HPCC ##########
 cores=strtoi(Sys.getenv('OMP_NUM_THREADS')) ### for HPCC
 options(mc.cores = cores) ### for HPCC
-NUM_ITS = 1000 #FIXME
+NUM_ITS = 5000 #FIXME
 
 ############
 ### data ###
