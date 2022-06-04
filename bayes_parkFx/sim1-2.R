@@ -1,6 +1,6 @@
 library(tidyverse)
 output_folder = './job_output/'
-idx = 22 #FIXME
+idx = 2 #FIXME
 OUTPUT_FILE = paste0("sim1-",idx)
 
 
