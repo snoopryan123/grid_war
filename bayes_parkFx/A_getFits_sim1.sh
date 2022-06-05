@@ -1,5 +1,5 @@
 #!/bin/bash
-for i in {22..22}
+for i in {2..2}
 do
    mv ./job_output/fit_sim1-$i.rds            ../../Dropbox/HPCC/fit_sim1-$i.rds  
    mv ./job_output/y_sim1-$i.rds              ../../Dropbox/HPCC/y_sim1-$i.rds  
