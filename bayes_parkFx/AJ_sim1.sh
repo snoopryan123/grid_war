@@ -4,7 +4,7 @@
 #$ -m e -M ryguy123@sas.upenn.edu 
 
 ## this command is to ask for multiple cores for running RStan files: 1,4,50,90
-#$ -pe openmp 15
+#$ -pe openmp 25
 
 ## ARRAY JOB
 #$ -t 2-2
