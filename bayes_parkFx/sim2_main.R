@@ -14,14 +14,14 @@ if(!interactive()) pdf(NULL)
 rstan_options(auto_write = TRUE)
 NUM_CHAINS = 1
 ##### uncomment these if working on my computer #####
-# cores = 1
-# NUM_ITS = 10
+cores = 1
+NUM_ITS = 10
 #### options(mc.cores = parallel::detectCores())
 #####################################################
 ####### uncomment these if working on HPCC ##########
-cores=strtoi(Sys.getenv('OMP_NUM_THREADS')) ### for HPCC
-options(mc.cores = cores) ### for HPCC
-NUM_ITS = 10000 #FIXME
+# cores=strtoi(Sys.getenv('OMP_NUM_THREADS')) ### for HPCC
+# options(mc.cores = cores) ### for HPCC
+# NUM_ITS = 10000 #FIXME
 
 ############
 ### data ###
@@ -101,10 +101,10 @@ n_dy = max(SIM_DF$DY)
 mu_p = 0
 mu_oy = 0
 mu_dy = 0
-sig_p = 2
-sig_o = 2
-sig_d = 1
-alpha = 7.5
+sig_p = 1/5
+sig_o = 1/5
+sig_d = 1/20
+alpha = 1.25
 
 # ### INNING-BY-INNING parameters
 # mu_p = 0
