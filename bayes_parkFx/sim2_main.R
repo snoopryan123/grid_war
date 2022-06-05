@@ -14,14 +14,14 @@ if(!interactive()) pdf(NULL)
 rstan_options(auto_write = TRUE)
 NUM_CHAINS = 1
 ##### uncomment these if working on my computer #####
-cores = 1
-NUM_ITS = 10
+# cores = 1
+# NUM_ITS = 10
 #### options(mc.cores = parallel::detectCores())
 #####################################################
 ####### uncomment these if working on HPCC ##########
-# cores=strtoi(Sys.getenv('OMP_NUM_THREADS')) ### for HPCC
-# options(mc.cores = cores) ### for HPCC
-# NUM_ITS = 10000 #FIXME
+cores=strtoi(Sys.getenv('OMP_NUM_THREADS')) ### for HPCC
+options(mc.cores = cores) ### for HPCC
+NUM_ITS = 6000 #FIXME
 
 ############
 ### data ###
