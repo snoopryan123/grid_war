@@ -21,7 +21,7 @@ NUM_CHAINS = 1
 ####### uncomment these if working on HPCC ##########
 cores=strtoi(Sys.getenv('OMP_NUM_THREADS')) ### for HPCC
 options(mc.cores = cores) ### for HPCC
-NUM_ITS = 6000 #FIXME
+NUM_ITS = 15000 #FIXME
 
 ############
 ### data ###
