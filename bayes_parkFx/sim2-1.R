@@ -1,6 +1,6 @@
 library(tidyverse)
 output_folder = './job_output/'
-idx = 1 #FIXME
+idx = 11 #FIXME
 OUTPUT_FILE = paste0("sim2-",idx)
 
 source("sim2_main.R")
@@ -12,8 +12,8 @@ saveRDS(params_true, file = paste0(output_folder, "params_true_", OUTPUT_FILE, "
 
 ############ examine fit ############ 
 
-fit = readRDS("job_output/6k_its_2/fit_sim2-1.rds")
-params_true = readRDS("job_output/6k_its_2/params_true_sim2-1.rds")
+fit = readRDS("job_output/sim2_15k_its/fit_sim2-1.rds")
+params_true = readRDS("job_output/sim2_15k_its/params_true_sim2-1.rds")
 
 draws = as.matrix(fit)
 beta_p_draws = draws[,str_detect(colnames(draws), "beta_p")]
