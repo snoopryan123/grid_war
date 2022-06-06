@@ -12,12 +12,12 @@ saveRDS(params_true, file = paste0(output_folder, "params_true_", OUTPUT_FILE, "
 
 ############ examine fit ############ 
 
-# fit = readRDS("job_output/10k_its/fit_sim1-2.rds")
-# params_true = readRDS("job_output/10k_its/params_true_sim1-2.rds")
-# 
-# draws = as.matrix(fit)
-# beta_p_draws = draws[,str_detect(colnames(draws), "beta_p")]
-# colMeans(beta_p_draws)
-# params_true$beta_p
+fit = readRDS("job_output/6k_its_2/fit_sim2-1.rds")
+params_true = readRDS("job_output/6k_its_2/params_true_sim2-1.rds")
+
+draws = as.matrix(fit)
+beta_p_draws = draws[,str_detect(colnames(draws), "beta_p")]
+colMeans(beta_p_draws)
+params_true$beta_p
 
 
