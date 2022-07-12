@@ -82,13 +82,15 @@ beta_dq_df = beta_dq_df %>%
   mutate(DT_YR = str_sub(rownames(beta.df)[str_detect(rownames(beta.df), "DT")], -7, -1)) %>%
   relocate(DT_YR, .before=sim1)
 
-eps = MASS::mvrnorm(n=dim(X)[1], mu=rep(0,NUM.SIMS), Sigma=diag(1,NUM.SIMS) )
 Xb = X %*% beta.df
+eps = matrix(nrow=nrow(Xb), ncol=ncol(Xb))
+for (i in 1:nrow(Xb)) {
+  for (j in 1:ncol(Xb)) {
+    eps[i,j] = truncnorm::rtruncnorm(n=1, a=0, mean = Xb[i,j], sd = 1)
+  }
+}
 y = Xb + eps
-
-# X_batAway_df$y1 = y[1:dim(X_batAway_df)[1]]
-# X_batHome_df$y2 = y[(dim(X_batAway_df)[1]+1):(dim(X_batAway_df)[1]+dim(X_batHome_df)[1]) ]
-# X_df$y = as.numeric(y)
+y = round(y) # integer-valued response
 
 #####################
 ### Method 1: OLS ###
@@ -186,7 +188,7 @@ mean(
 ### Plot 1 vs. 3 ###
 ####################
 
-j = 9
+j = 2 #2 #9
 PARK_df_1.1 = data.frame(
   PARK = str_sub(beta_pk_df$PARK, -5, -3),
   beta_hat_PARK = unname(coeffs_pk)[,j],
@@ -229,5 +231,18 @@ plot_12 = bind_rows(PARK_df_2.1, PARK_df_1.1) %>%
   labs(x="true park effect", y="fitted park effect")
 plot_12
 
-ggsave("plot_13.png", plot_13, width=8, height=6)
-ggsave("plot_12.png", plot_12, width=8, height=6)
+ggsave("plot_13tn_1719.png", plot_13, width=8, height=6)
+ggsave("plot_12tn_1719.png", plot_12, width=8, height=6)
+
+
+mean( 
+  apply( (coeffs_pk - beta_pk_df[2:ncol(beta_pk_df)])**2, 2, function(x) sqrt(mean(x)) ) 
+)
+
+mean( 
+  apply( (coeffs_pk2 - beta_pk_df[2:ncol(beta_pk_df)])**2, 2, function(x) sqrt(mean(x)) ) 
+)
+
+mean( 
+  apply( (coeffs_pk3 - beta_pk_df[2:ncol(beta_pk_df)])**2, 2, function(x) sqrt(mean(x)) ) 
+)
