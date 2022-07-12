@@ -14,14 +14,14 @@ if(!interactive()) pdf(NULL)
 rstan_options(auto_write = TRUE)
 NUM_CHAINS = 1
 ##### uncomment these if working on my computer #####
-# cores = 1
-# NUM_ITS = 10
+cores = 1
+NUM_ITS = 10
 #### options(mc.cores = parallel::detectCores())
 #####################################################
 ####### uncomment these if working on HPCC ##########
-cores=strtoi(Sys.getenv('OMP_NUM_THREADS')) ### for HPCC
-options(mc.cores = cores) ### for HPCC
-NUM_ITS = 5000 #FIXME
+# cores=strtoi(Sys.getenv('OMP_NUM_THREADS')) ### for HPCC
+# options(mc.cores = cores) ### for HPCC
+# NUM_ITS = 5000 #FIXME
 
 ############
 ### data ###
@@ -71,7 +71,10 @@ sim_df1
 
 # MAKE SMALLER DATASET!!!
 sim_df1 = sim_df1 %>%
-  filter(OY %in% c("ANA:2018","HOU:2018","SEA:2018") & DY %in% c("ANA:2018","HOU:2018","SEA:2018")) %>%
+  filter(OY %in% c("ANA:2018","HOU:2018","SEA:2018") &
+         DY %in% c("ANA:2018","HOU:2018","SEA:2018")) %>%
+  # filter(OY %in% c("ANA:2018","HOU:2018","SEA:2018","ANA:2019","HOU:2019","SEA:2019") & 
+  #        DY %in% c("ANA:2018","HOU:2018","SEA:2018","ANA:2019","HOU:2019","SEA:2019")) %>%
   mutate(P = factor(as.character(P)),
          OY = factor(as.character(OY)),
          DY = factor(as.character(DY)))
@@ -144,9 +147,13 @@ for (i in 1:n) {
 }
 # y
 
-# glm.fit = glm(y ~ factor(P)+factor(OY)+factor(DY), data=SIM_DF, family="poisson")
-# coefficients(glm.fit)
-# c(alpha, beta_p[2:length(beta_p)], beta_oy[2:length(beta_oy)], beta_dy[2:length(beta_dy)])
+XXX=model.matrix(y ~ factor(P)+factor(OY)+factor(DY), data=SIM_DF)
+matrixcalc::matrix.rank(t(XXX)%*%XXX)
+dim(XXX)
+
+glm.fit = glm(y ~ factor(P)+factor(OY)+factor(DY), data=SIM_DF, family="poisson")
+coefficients(glm.fit)
+c(alpha, beta_p[2:length(beta_p)], beta_oy[2:length(beta_oy)], beta_dy[2:length(beta_dy)])
 
 data_train <- list(
   n=n, n_p=n_p, n_oy=n_oy, n_dy=n_dy,
