@@ -309,25 +309,4 @@ plot_pk_fitted_sim5
 # ggsave("plot_sim1_pk_fitted_sim5.png", plot_pk_fitted_sim5, width=8, height=7)
 
 
-###############################################
-### Run best model (Ridge) on observed data ###
-###############################################
-
-ridge3_obs = glmnet(
-  x = model.matrix(~ factor(OT_YR) + factor(DT_YR) + factor(PARK), data=X_df),
-  y = X_df$INN_RUNS, alpha = 0, lambda = 0.25, family="gaussian"
-)
-coeffs_ridge3_obs = coef(ridge3_obs)[,1]
-coeffs_pk3_obs  = coeffs_ridge3_obs[str_detect(names(coeffs_ridge3_obs), "PARK")]
-
-
-
-plot_pk_fitted_obs = as_tibble(coeffs_pk3_obs) %>% 
-  mutate(PARK = str_sub(names(coeffs_pk3_obs), -5, -1) ) %>% ggplot() + 
-  geom_point(aes(x=value, y=fct_reorder(PARK, value, .desc=TRUE)), size=2) +
-  ylab("") + xlab(' fitted park effect')
-plot_pk_fitted_obs
-ggsave("plot_pk_fitted_obs.png", plot_pk_fitted_obs, width=8, height=7)
-
-
 
