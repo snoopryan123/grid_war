@@ -17,8 +17,7 @@ war2 <- read_csv("../war2.csv") ### dataset
 ### runs scored in an inning ~ park_effect + team_off_q + team_def_q + spline(time)
 ### time is a fixed effect, other parameters are random intercepts
 park_df0 = war2 %>% 
-  select(GAME_ID, YEAR, DAYS_SINCE_SZN_START, BAT_HOME_IND, INNING, HOME_TEAM_ID, 
-         AWAY_TEAM_ID, PARK, INN_RUNS, CUM_RUNS, HOME_DIV) %>%
+  select(GAME_ID, YEAR, DAYS_SINCE_SZN_START, BAT_HOME_IND, INNING, HOME_TEAM_ID, AWAY_TEAM_ID, PARK, INN_RUNS, CUM_RUNS) %>%
   filter(ifelse(BAT_HOME_IND == 1, INNING <= 8, INNING <= 9)) %>%
   group_by(GAME_ID, BAT_HOME_IND, INNING) %>%
   slice_tail() %>%
@@ -57,100 +56,34 @@ X = as.matrix(modelr::model_matrix(~ factor(PARK) + factor(OT_YR) + factor(DT_YR
 # sigma(m1)
 
 ### sim
-NUM.SIMS = 5#25
-
-beta.pk.df = tibble(
-  PARK = str_sub(colnames(X)[str_detect(colnames(X), "PARK")], -5, -1)
-)
-
-beta.oq.df0 = tibble(
-  OT_YR = str_sub(colnames(X)[str_detect(colnames(X), "OT")], -7, -1)
-) %>% mutate(
-  TEAM = str_sub(OT_YR,1,3),
-  YEAR = as.numeric(str_sub(OT_YR,4,8)),
-) 
-beta.oq.df = beta.oq.df0 %>% left_join(
-  X_df %>% select(PARK, HOME_TEAM_ID, YEAR, HOME_DIV) %>% distinct() %>%
-    rename(DIV=HOME_DIV, TEAM=HOME_TEAM_ID) %>%
-    filter(!(PARK == "STP01" | (TEAM == "MIA" & PARK != "MIL06"))) ## for 2017-2019 sim...
-)
-beta.oq.df
-
-beta.dq.df = beta.oq.df %>% rename(DT_YR = OT_YR)
-beta.dq.df
-
-beta.df = tibble()
-
+NUM.SIMS = 25
+beta.df = matrix(nrow=length(colnames(X)), ncol=NUM.SIMS)
+rownames(beta.df) = colnames(X)
+colnames(beta.df) = paste0("sim", 1:NUM.SIMS)
 for (i in 1:NUM.SIMS) {
-  alpha = 0.2 #0.4
-  
-  beta.pk.df = beta.pk.df %>% 
-    mutate(coeff_type = "PARK") %>%
-    mutate(!!paste0("beta.pk.sim",i) := ifelse(PARK=="DEN02", 0.32, rnorm(n(), 0.04, 0.065))  )
-  
-  beta.oq.df = beta.oq.df %>% 
-    distinct(DIV,YEAR) %>% 
-    mutate(coeff_oq_div = rnorm(n(), 0.02, 0.06)) %>% 
-    mutate(coeff_type = "OQ") %>%
-    right_join(beta.oq.df) %>%
-    mutate(!!paste0("beta.oq.sim",i)  := rnorm(coeff_oq_div, coeff_oq_div, 0.03) ) %>%
-    select(-coeff_oq_div) 
-  
-  beta.dq.df = beta.dq.df %>% 
-    distinct(DIV,YEAR) %>% 
-    mutate(coeff_dq_div = rnorm(n(), 0.03, 0.06)) %>% 
-    mutate(coeff_type = "DQ") %>%
-    right_join(beta.dq.df) %>%
-    mutate(!!paste0("beta.dq.sim",i)  := rnorm(coeff_dq_div, coeff_dq_div, 0.03) ) %>%
-    select(-coeff_dq_div) 
-
-  if (i==1) {
-    beta.df = tibble(X_name =  c("(Intercept)",
-                                paste0("factor(PARK)", beta.pk.df$PARK),
-                                paste0("factor(OT_YR)", beta.oq.df$OT_YR),
-                                paste0("factor(DT_YR)", beta.dq.df$DT_YR)),
-                     coeff_name =  c("intercept", beta.pk.df$PARK,beta.oq.df$OT_YR, beta.dq.df$DT_YR),
-                     coeff_type = c("intercept",
-                                    rep("PARK", length(beta.pk.df$PARK)),
-                                    rep("OQ", length(beta.oq.df$OT_YR)),
-                                    rep("DQ", length(beta.dq.df$DT_YR)) )
-                     ) %>% mutate(ordering = row_number())
-  }
-
-  beta.df[[paste0("beta.sim",i)]] = c(
-    alpha,
-    beta.pk.df[[paste0("beta.pk.sim",i)]],
-    beta.oq.df[[paste0("beta.oq.sim",i)]],
-    beta.dq.df[[paste0("beta.dq.sim",i)]]
-  )
-  
+  alpha = 0.4
+  beta.oq = rnorm(sum(str_detect(colnames(X), "OT")), 0.02, 0.045)
+  beta.dq = rnorm(sum(str_detect(colnames(X), "DT")), 0.03, 0.07)
+  beta.pk = rnorm(sum(str_detect(colnames(X), "PARK")), 0.04, 0.065)
+  beta.df[,i] = matrix(c(alpha, beta.oq, beta.dq, beta.pk))
 }
 
-### problem: cols of X and rows of beta.df have a different order
-### lets reorder the rows beta.df to match!
-beta.df1 = beta.df %>% slice(order(factor(X_name, levels = colnames(X))))
-dim(X); dim(beta.df1)
+beta_pk_df = as_tibble( beta.df[rownames(beta.df)[str_detect(rownames(beta.df), "PARK")], ] )
+beta_pk_df = beta_pk_df %>% 
+  mutate(PARK = str_sub(rownames(beta.df)[str_detect(rownames(beta.df), "PARK")], -5, -1)) %>%
+  relocate(PARK, .before=sim1)
 
-### plot the simmed betas and see if they look reasonable
-plot_oq18_sim5 = beta.oq.df %>% filter(endsWith(OT_YR, "2018")) %>% ggplot() + 
-  geom_point(aes(x=beta.oq.sim5, y=fct_reorder(OT_YR, beta.oq.sim5, .desc=TRUE)), size=2) +
-  ylab("") + xlab(' "true" team offense effect')
-plot_oq18_sim5
-plot_dq18_sim5 = beta.dq.df %>% filter(endsWith(DT_YR, "2018")) %>% ggplot() + 
-  geom_point(aes(x=beta.dq.sim5, y=fct_reorder(DT_YR, beta.dq.sim5, .desc=TRUE)), size=2) +
-  ylab("") + xlab(' "true" team defense effect')
-plot_dq18_sim5
-plot_pk_sim5 = beta.pk.df %>% ggplot() + 
-  geom_point(aes(x=beta.pk.sim5, y=fct_reorder(PARK, beta.pk.sim5, .desc=TRUE)), size=2) +
-  ylab("") + xlab(' "true" park effect')
-plot_pk_sim5
+beta_oq_df = as_tibble( beta.df[rownames(beta.df)[str_detect(rownames(beta.df), "OT")], ] )
+beta_oq_df = beta_oq_df %>% 
+  mutate(OT_YR = str_sub(rownames(beta.df)[str_detect(rownames(beta.df), "OT")], -7, -1)) %>%
+  relocate(OT_YR, .before=sim1)
 
-ggsave("plot_sim2_oq18_sim5.png", plot_oq18_sim5, width=8, height=7)
-ggsave("plot_sim2_dq18_sim5.png", plot_dq18_sim5, width=8, height=7)
-ggsave("plot_sim2_pk_sim5.png", plot_pk_sim5, width=8, height=7)
+beta_dq_df = as_tibble( beta.df[rownames(beta.df)[str_detect(rownames(beta.df), "DT")], ] )
+beta_dq_df = beta_dq_df %>% 
+  mutate(DT_YR = str_sub(rownames(beta.df)[str_detect(rownames(beta.df), "DT")], -7, -1)) %>%
+  relocate(DT_YR, .before=sim1)
 
-### generate the simulated y
-Xb = X %*% as.matrix(beta.df1[,5:ncol(beta.df1)])
+Xb = X %*% beta.df
 eps = matrix(nrow=nrow(Xb), ncol=ncol(Xb))
 for (i in 1:nrow(Xb)) {
   for (j in 1:ncol(Xb)) {
@@ -159,7 +92,6 @@ for (i in 1:nrow(Xb)) {
 }
 y = Xb + eps
 y = round(y) # integer-valued response
-y
 
 #####################
 ### Method 1: OLS ###
@@ -290,7 +222,7 @@ mean(
 ### Plot 1 vs. 3 ###
 ####################
 
-j = 5 #2 #9
+j = 5 
 PARK_df_1.1 = data.frame(
   PARK = str_sub(beta_pk_df$PARK, -5, -3),
   beta_hat_PARK = unname(coeffs_pk)[,j],
@@ -323,18 +255,18 @@ plot_13 = bind_rows(PARK_df_3.1, PARK_df_1.1) %>%
   scale_color_manual(values=c("dodgerblue2", "firebrick")) +
   labs(x="true park effect", y="fitted park effect")
 plot_13
+# ggsave("plot_13tn_1719.png", plot_13, width=8, height=6)
 
-plot_12 = bind_rows(PARK_df_2.1, PARK_df_1.1) %>%
-  ggplot(aes(x=beta.pk, y=beta_hat_PARK, color=method)) +
-  geom_point(size=2) +
-  # geom_errorbar(aes(ymin = beta_hat_PARK_L, ymax = beta_hat_PARK_U), width=0.01) +
-  geom_abline(intercept = 0, slope = 1) +
-  scale_color_manual(values=c("dodgerblue2", "firebrick")) +
-  labs(x="true park effect", y="fitted park effect")
+
+# plot_12 = bind_rows(PARK_df_2.1, PARK_df_1.1) %>%
+#   ggplot(aes(x=beta.pk, y=beta_hat_PARK, color=method)) +
+#   geom_point(size=2) +
+#   # geom_errorbar(aes(ymin = beta_hat_PARK_L, ymax = beta_hat_PARK_U), width=0.01) +
+#   geom_abline(intercept = 0, slope = 1) +
+#   scale_color_manual(values=c("dodgerblue2", "firebrick")) +
+#   labs(x="true park effect", y="fitted park effect")
 # plot_12
-
-ggsave("plot_13tn_1719.png", plot_13, width=8, height=6)
-ggsave("plot_12tn_1719.png", plot_12, width=8, height=6)
+# ggsave("plot_12tn_1719.png", plot_12, width=8, height=6)
 
 
 mean( 
@@ -348,3 +280,54 @@ mean(
 mean( 
   apply( (coeffs_pk3 - beta_pk_df[2:ncol(beta_pk_df)])**2, 2, function(x) sqrt(mean(x)) ) 
 )
+
+###############################################
+###  ###
+###############################################
+
+plot_oq18_sim5 = beta_oq_df %>% filter(endsWith(OT_YR, "2018")) %>% ggplot() + 
+  geom_point(aes(x=sim5, y=fct_reorder(OT_YR, sim5, .desc=TRUE)), size=2) +
+  ylab("") + xlab(' "true" team offense effect')
+plot_oq18_sim5
+plot_dq18_sim5 = beta_dq_df %>% filter(endsWith(DT_YR, "2018")) %>% ggplot() + 
+  geom_point(aes(x=sim5, y=fct_reorder(DT_YR, sim5, .desc=TRUE)), size=2) +
+  ylab("") + xlab(' "true" team defense effect')
+plot_dq18_sim5
+plot_pk_sim5 = beta_pk_df %>% ggplot() + 
+  geom_point(aes(x=sim5, y=fct_reorder(PARK, sim5, .desc=TRUE)), size=2) +
+  ylab("") + xlab(' "true" park effect')
+plot_pk_sim5
+plot_pk_fitted_sim5 = as_tibble(coeffs_pk3) %>% 
+  mutate(PARK = rownames(coeffs_pk3)) %>% ggplot() + 
+  geom_point(aes(x=sim5, y=fct_reorder(PARK, sim5, .desc=TRUE)), size=2) +
+  ylab("") + xlab(' fitted park effect')
+plot_pk_fitted_sim5
+
+# ggsave("plot_sim1_oq18_sim5.png", plot_oq18_sim5, width=8, height=7)
+# ggsave("plot_sim1_dq18_sim5.png", plot_dq18_sim5, width=8, height=7)
+# ggsave("plot_sim1_pk_sim5.png", plot_pk_sim5, width=8, height=7)
+# ggsave("plot_sim1_pk_fitted_sim5.png", plot_pk_fitted_sim5, width=8, height=7)
+
+
+###############################################
+### Run best model (Ridge) on observed data ###
+###############################################
+
+ridge3_obs = glmnet(
+  x = model.matrix(~ factor(OT_YR) + factor(DT_YR) + factor(PARK), data=X_df),
+  y = X_df$INN_RUNS, alpha = 0, lambda = 0.25, family="gaussian"
+)
+coeffs_ridge3_obs = coef(ridge3_obs)[,1]
+coeffs_pk3_obs  = coeffs_ridge3_obs[str_detect(names(coeffs_ridge3_obs), "PARK")]
+
+
+
+plot_pk_fitted_obs = as_tibble(coeffs_pk3_obs) %>% 
+  mutate(PARK = str_sub(names(coeffs_pk3_obs), -5, -1) ) %>% ggplot() + 
+  geom_point(aes(x=value, y=fct_reorder(PARK, value, .desc=TRUE)), size=2) +
+  ylab("") + xlab(' fitted park effect')
+plot_pk_fitted_obs
+ggsave("plot_pk_fitted_obs.png", plot_pk_fitted_obs, width=8, height=7)
+
+
+

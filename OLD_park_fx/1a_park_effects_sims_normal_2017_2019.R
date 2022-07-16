@@ -169,7 +169,7 @@ for (i in 1:NUM.SIMS) {
   X_i = X_df %>% mutate(y = y[,i])
   ridge3_i = glmnet(
     x = model.matrix(~ factor(OT_YR) + factor(DT_YR) + factor(PARK), data=X_i),
-    y = X_i$y, alpha = 0, lambda = 0.035, family="gaussian"
+    y = X_i$y, alpha = 0, lambda = 0.25, family="gaussian"
   )
   coeffs_ridge3_i = coef(ridge3_i)[,1]
   coeffs_pk3[,i]  = coeffs_ridge3_i[str_detect(names(coeffs_ridge3_i), "PARK")]
