@@ -173,7 +173,7 @@ for (i in 1:NUM.SIMS) {
 # )
 
 mean( 
-  apply( (coeffs_pk[rownames(coeffs_pk3) != "DEN02",] - 
+  apply( (coeffs_pk[rownames(coeffs_pk) != "DEN02",] - 
             beta.pk.df[beta.pk.df$PARK != "DEN02", 3:ncol(beta.pk.df)])**2, 2, function(x) sqrt(mean(x)) ) 
 )
 
@@ -264,23 +264,33 @@ mean(
   as.numeric(abs(coeffs_pk3["DEN02",] - (beta.pk.df %>% filter(PARK=="DEN02"))[3:ncol(beta.pk.df)]))
 )
 
-##############################################
-### Method 4: random effects for divisions ###
-##############################################
-# 
-# for (i in 1:NUM.SIMS) {
-#   print(paste0("sim ", i))
-#   
-#   X_i = X_df %>% mutate(y = y[,i]) %>%
-#     mutate(HOME_DIV_YR = paste0(HOME_DIV, ".", YEAR))
-#   
-#   re4_i <- lmer(y ~ factor(OT_YR) + factor(DT_YR) + 
-#                   (  factor(PARK) | HOME_DIV_YR ),
-#                 data = X_i)
-#   
-#   coeffs4_i = coef(re4_i)[,1]
-#   coeffs_pk4[,i]  = coeffs4_i[str_detect(names(coeffs4_i), "PARK")]
-# }
+#######################################################################
+### Method 4: Shane - OLS, ignoring offensive and defensive quality ###
+#######################################################################
+
+coeffs_pk4 = matrix(nrow=NUM.PARKS, ncol=NUM.SIMS )
+rownames(coeffs_pk4) = park_names
+colnames(coeffs_pk4) = paste0("sim", 1:NUM.SIMS)
+
+for (i in 1:NUM.SIMS) {
+  print(paste0("sim ", i))
+  
+  X_i = X_df %>% mutate(y = y[,i])
+  # OLS
+  lm_i = lm(y ~ factor(PARK), data=X_i)
+  
+  coeffs_pk4[,i] = coefficients(lm_i)[str_detect(names(coefficients(lm_i)), "PARK")]
+}
+
+mean( 
+  apply( (coeffs_pk4[rownames(coeffs_pk4) != "DEN02",] - 
+            beta.pk.df[beta.pk.df$PARK != "DEN02", 3:ncol(beta.pk.df)])**2, 2, function(x) sqrt(mean(x)) ) 
+)
+
+mean(
+  as.numeric(abs(coeffs_pk4["DEN02",] - (beta.pk.df %>% filter(PARK=="DEN02"))[3:ncol(beta.pk.df)]))
+)
+
 
 
 
@@ -325,6 +335,15 @@ plot_13 = bind_rows(PARK_df_3.1, PARK_df_1.1) %>%
 plot_13
 # ggsave(paste0("plot_sim2_compare13tn_", j,"_1719.png"), plot_13, width=8, height=6)
 
+plot_13a = bind_rows(PARK_df_3.1, PARK_df_1.1) %>%
+  filter(PARK != "DEN02") %>%
+  ggplot(aes(x=beta.pk, y=beta_hat_PARK, color=method)) +
+  geom_point(size=2) +
+  # geom_errorbar(aes(ymin = beta_hat_PARK_L, ymax = beta_hat_PARK_U), width=0.01) +
+  geom_abline(intercept = 0, slope = 1) +
+  scale_color_manual(values=c("dodgerblue2", "firebrick")) +
+  labs(x="true park effect", y="fitted park effect")
+plot_13a
 
 # plot_12 = bind_rows(PARK_df_2.1, PARK_df_1.1) %>%
 #   ggplot(aes(x=beta.pk, y=beta_hat_PARK, color=method)) +

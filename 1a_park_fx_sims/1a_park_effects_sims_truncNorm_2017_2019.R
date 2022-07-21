@@ -218,6 +218,29 @@ mean(
   apply( (coeffs_pk3 - beta_pk_df[2:ncol(beta_pk_df)])**2, 2, function(x) sqrt(mean(x)) ) 
 )
 
+#######################################################################
+### Method 4: Shane - OLS, ignoring offensive and defensive quality ###
+#######################################################################
+
+coeffs_pk4 = matrix(nrow=NUM.PARKS, ncol=NUM.SIMS )
+rownames(coeffs_pk4) = park_names
+colnames(coeffs_pk4) = paste0("sim", 1:NUM.SIMS)
+
+for (i in 1:NUM.SIMS) {
+  print(paste0("sim ", i))
+  
+  X_i = X_df %>% mutate(y = y[,i])
+  # OLS
+  lm_i = lm(y ~ factor(PARK), data=X_i)
+  
+  coeffs_pk4[,i] = coefficients(lm_i)[str_detect(names(coefficients(lm_i)), "PARK")]
+}
+
+mean( 
+  apply( (coeffs_pk4 - beta_pk_df[2:ncol(beta_pk_df)])**2, 2, function(x) sqrt(mean(x)) ) 
+)
+
+
 ####################
 ### Plot 1 vs. 3 ###
 ####################
@@ -280,6 +303,11 @@ mean(
 mean( 
   apply( (coeffs_pk3 - beta_pk_df[2:ncol(beta_pk_df)])**2, 2, function(x) sqrt(mean(x)) ) 
 )
+
+mean( 
+  apply( (coeffs_pk4 - beta_pk_df[2:ncol(beta_pk_df)])**2, 2, function(x) sqrt(mean(x)) ) 
+)
+
 
 ###############################################
 ###  ###
