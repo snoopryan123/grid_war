@@ -142,8 +142,8 @@ data.frame(Fangraphs_df)
 #   )) %>%
 #   bind_rows(tibble(PARK = "OAK01", park_factor=NA))
 # Espn_df$method = "ESPN"
-# write_csv(Espn_df, "Espn_df_2019.csv")
-# Espn_df_2019 = read_csv("Espn_df_2019.csv")
+# write_csv(Espn_df, "Espn_Pf_2019.csv")
+# Espn_df_2019 = read_csv("Espn_Pf_2019.csv")
 # data.frame(Espn_df_2019)
 
 ##### ESPN 2019 3-year park factors (computed here)
@@ -185,8 +185,8 @@ data.frame(Fangraphs_df)
 #               filter( !(TEAM == "MIA" & PARK == "MIL06") ) %>%
 #               filter( !(TEAM == "HOU" & PARK == "STP01") ) )
 # data.frame(espn_df5)
-# write_csv(espn_df5, "Espn_df_2019_3yr.csv")
-Espn_df_2019_3yr = read_csv("Espn_df_2019_3yr.csv")
+# write_csv(espn_df5, "Espn_Pf_2019_3yr.csv")
+Espn_df_2019_3yr = read_csv("Espn_Pf_2019_3yr.csv")
 data.frame(Espn_df_2019_3yr)
 
 

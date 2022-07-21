@@ -2,12 +2,12 @@ library(tidyverse)
 f_lrm <- readRDS("f_lrm.rds") 
 g_grid <- read.csv("g_grid.csv",row.names = 1, header= TRUE)
 war2_ogg = read_csv("war2.csv")
-park_fx_df = read_csv("park_effects.csv")
+park_fx_df = read_csv("1a_park_fx/Ridge_PF_2019_3yr.csv") %>% select(PARK, park_factor)
 war2_og <- war2_ogg %>% 
   filter(SP_IND | lag(SP_IND, default=FALSE)) %>%
   mutate(PIT_LEAGUE = ifelse(BAT_HOME_IND, AWAY_LEAGUE, HOME_LEAGUE)) %>%
   left_join(park_fx_df) %>%
-  mutate(park_effect = replace_na(park_effect, 0))
+  mutate(park_factor = replace_na(park_factor, 0))
 
 max_inning_runs=10 
 f <- function(i,r,alpha, home,lg,yr) {
@@ -99,11 +99,11 @@ get_yearly_gwar_data <- function(year) {
     mutate(exit_at_end_of_inning = if_else(final == 1 & max_row == 1, 1, 0)) %>%
     mutate(exit_in_middle = if_else(final == 0 & max_row == 1, 1, 0)) %>%
     mutate(GWAR_eoi = expected_gwar_eoi(INNING,CUM_RUNS,exit_at_end_of_inning,
-                                        alpha=park_effect,home=BAT_HOME_IND,lg=PIT_LEAGUE,yr=YEAR)) %>%
+                                        alpha=park_factor,home=BAT_HOME_IND,lg=PIT_LEAGUE,yr=YEAR)) %>%
     ungroup() %>%
     group_by(GAME_ID, BAT_HOME_IND) %>%
     mutate(GWAR_moi = expected_gwar(INNING, lead(INN_SITCH, default="0 000"), lead(CUM_RUNS, default=0), exit_in_middle,
-                                    alpha=park_effect,home=BAT_HOME_IND,lg=PIT_LEAGUE,yr=YEAR)) %>%
+                                    alpha=park_factor,home=BAT_HOME_IND,lg=PIT_LEAGUE,yr=YEAR)) %>%
     ungroup()
   
   war_all
