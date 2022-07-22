@@ -29,12 +29,14 @@ f <- function(i,r,alpha, home,lg,yr) {
   f_ir.plus.1 = predict(f_lrm, 
                  tibble(BAT_HOME_IND = home, PIT_LEAGUE = lg, YEAR = yr, INNING = i, CUM_RUNS = r.plus.1), 
                  type="response")[[1]]
-  h = abs( r*(alpha/(1+alpha)) ) ##################
-  
-  ifelse(r > 0, 
-         (1-h)*f_ir + h*f_ir.minus.1,
-         (1+h)*f_ir - h*f_ir.plus.1
-         )
+  h = abs( r*(alpha/(1+alpha)) ) ################## abs(alpha)*i
+  h = ifelse(h > 1, 1, h)
+  h = ifelse(h < 0, 0, h)
+  ifelse(alpha < 0 & r < max_inning_runs,   (1-h)*f_ir + h*f_ir.plus.1,
+  ifelse(alpha > 0 & r > 0,                 (1-h)*f_ir + h*f_ir.minus.1,
+  ifelse(alpha > 0,                         (1+h)*f_ir - h*f_ir.plus.1,
+                                            (1+h)*f_ir - h*f_ir.minus.1 # alpha < 0
+  )))
 }
 # f(1,3,0.05, 1,"AL",2019)
 # f(1,3,-0.05, 1,"AL",2019)
