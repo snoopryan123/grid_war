@@ -467,7 +467,7 @@ gwar_2019_rankings = WAR_df_2019 %>%
   scale_x_continuous(breaks=seq(0,20,by=1), name="Grid WAR") +
   ylab("pitcher")
 gwar_2019_rankings
-ggsave(paste0(output_folder,"plot_gwar_rankings_",year,".png"), width=10, height=13)
+ggsave(paste0(output_folder,"plot_gwar_rankings_",year,".png"), width=12, height=13)
 
 data.frame(WAR_df_2019 %>% select(PIT_NAME, GWAR_og) %>% arrange(-GWAR_og))
 
