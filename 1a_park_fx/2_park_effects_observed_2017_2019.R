@@ -257,6 +257,22 @@ espn_model = lm(
 espn_pk_preds = predict(espn_model, X_df_espn)
 rmse(espn_pk_preds, X_df$INN_RUNS)
 
+###
+Xoq5 = X_df %>% group_by(OT_YR) %>% 
+  summarise(toq = sum(INN_RUNS)) %>%
+  mutate(toq = (toq - toq[1]) / (2*sd(toq)) )
+Xdq5 = X_df %>% group_by(DT_YR) %>% 
+  summarise(tdq = sum(INN_RUNS)) %>%
+  mutate(tdq = (tdq - tdq[1]) / (2*sd(tdq)) )
+### get PARK
+X_pk = X_df %>% left_join(Xoq5) %>% left_join(Xdq5) 
+
+# lm_park_i = lm(y - toq - tdq ~ factor(PARK) , data=X_pk_i)
+lm_park_i = lm(INN_RUNS ~ toq + tdq + factor(PARK) , data=X_pk)
+coeffs_pk5 = coefficients(lm_park_i)[str_detect(names(coefficients(lm_park_i)), "PARK")]
+
+rmse(predict(lm_park_i, X_pk), X_df$INN_RUNS)
+
 ### overall mean
 ybar = mean(X_df$INN_RUNS)
 

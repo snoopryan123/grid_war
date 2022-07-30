@@ -153,7 +153,8 @@ for (i in 1:NUM.SIMS) {
   ) %>% bind_rows(tibble(DT_YR = "ANA2017", beta_hat_DQ = 0)) %>% arrange(DT_YR)
   X_pk_i = X_i %>% left_join(curr_oq_i) %>% left_join(curr_dq_i) 
   
-  lm_park_i = lm(y - beta_hat_OQ - beta_hat_DQ ~ factor(PARK) , data=X_pk_i)
+  # lm_park_i = lm(y - beta_hat_OQ - beta_hat_DQ ~ factor(PARK), data=X_pk_i)
+  lm_park_i = lm(y ~ beta_hat_OQ + beta_hat_DQ + factor(PARK), data=X_pk_i)
   coeffs_pk2[,i] = coefficients(lm_park_i)[str_detect(names(coefficients(lm_park_i)), "PARK")]
 }
 
@@ -265,7 +266,8 @@ for (i in 1:NUM.SIMS) {
   ### get PARK
   X_pk_i = X_i %>% left_join(oq_i) %>% left_join(dq_i) 
   
-  lm_park_i = lm(y - toq - tdq ~ factor(PARK) , data=X_pk_i)
+  # lm_park_i = lm(y - toq - tdq ~ factor(PARK) , data=X_pk_i)
+  lm_park_i = lm(y ~ toq + tdq + factor(PARK) , data=X_pk_i)
   coeffs_pk5[,i] = coefficients(lm_park_i)[str_detect(names(coefficients(lm_park_i)), "PARK")]
 }
 
