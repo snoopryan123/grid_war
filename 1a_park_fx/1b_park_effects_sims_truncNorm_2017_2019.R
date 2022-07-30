@@ -291,9 +291,42 @@ mean(
   as.numeric(abs(coeffs_pk4["DEN02",] - (beta.pk.df %>% filter(PARK=="DEN02"))[3:ncol(beta.pk.df)]))
 )
 
+#############################################################
+### Method 5: OLS with biased adjustments of team quality ###
+#############################################################
 
+coeffs_pk5 = matrix(nrow=NUM.PARKS, ncol=NUM.SIMS )
+rownames(coeffs_pk5) = park_names
+colnames(coeffs_pk5) = paste0("sim", 1:NUM.SIMS)
 
+for (i in 1:NUM.SIMS) {
+  print(paste0("sim ", i))
+  
+  X_i = X_df %>% mutate(y = y[,i])
+  oq_i =  X_i %>% group_by(OT_YR) %>% 
+    summarise(toq = sum(y)) %>%
+    # mutate(toq = (toq - mean(toq)) / (2*sd(toq)) )
+    mutate(toq = (toq - toq[1]) / (2*sd(toq)) )
+  dq_i = X_i %>% group_by(DT_YR) %>% 
+    summarise(tdq = sum(y)) %>%
+    # mutate(tdq = (tdq - mean(tdq)) / (2*sd(tdq)) )
+    mutate(tdq = (tdq - tdq[1]) / (2*sd(tdq)) )
+  
+  ### get PARK
+  X_pk_i = X_i %>% left_join(oq_i) %>% left_join(dq_i) 
+  
+  lm_park_i = lm(y - toq - tdq ~ factor(PARK) , data=X_pk_i)
+  coeffs_pk5[,i] = coefficients(lm_park_i)[str_detect(names(coefficients(lm_park_i)), "PARK")]
+}
 
+mean( 
+  apply( (coeffs_pk5[rownames(coeffs_pk5) != "DEN02",] - 
+            beta.pk.df[beta.pk.df$PARK != "DEN02", 3:ncol(beta.pk.df)])**2, 2, function(x) sqrt(mean(x)) ) 
+)
+
+mean(
+  as.numeric(abs(coeffs_pk5["DEN02",] - (beta.pk.df %>% filter(PARK=="DEN02"))[3:ncol(beta.pk.df)]))
+)
 
 
 ####################
@@ -326,24 +359,24 @@ PARK_df_3.1 = data.frame(
 ### rowMeans(as.matrix(beta_pk_df[,2:(NUM.SIMS+1)]))
 
 plot_13 = bind_rows(PARK_df_3.1, PARK_df_1.1) %>%
-  ggplot(aes(x=beta.pk, y=beta_hat_PARK, color=method)) +
-  geom_point(size=2) +
+  ggplot(aes(y=beta.pk, x=beta_hat_PARK, color=method, shape=method)) +
+  geom_point(size=3.5) +
   # geom_errorbar(aes(ymin = beta_hat_PARK_L, ymax = beta_hat_PARK_U), width=0.01) +
   geom_abline(intercept = 0, slope = 1) +
   scale_color_manual(values=c("dodgerblue2", "firebrick")) +
-  labs(x="true park effect", y="fitted park effect")
+  labs(y='"true" park effect', x="fitted park effect")
 plot_13
 # ggsave(paste0("plot_sim2_compare13tn_", j,"_1719.png"), plot_13, width=8, height=6)
 
-plot_13a = bind_rows(PARK_df_3.1, PARK_df_1.1) %>%
-  filter(PARK != "DEN02") %>%
-  ggplot(aes(x=beta.pk, y=beta_hat_PARK, color=method)) +
-  geom_point(size=2) +
-  # geom_errorbar(aes(ymin = beta_hat_PARK_L, ymax = beta_hat_PARK_U), width=0.01) +
-  geom_abline(intercept = 0, slope = 1) +
-  scale_color_manual(values=c("dodgerblue2", "firebrick")) +
-  labs(x="true park effect", y="fitted park effect")
-plot_13a
+# plot_13a = bind_rows(PARK_df_3.1, PARK_df_1.1) %>%
+#   filter(PARK != "DEN02") %>%
+#   ggplot(aes(x=beta.pk, y=beta_hat_PARK, color=method, shape=method)) +
+#   geom_point(size=3.5) +
+#   # geom_errorbar(aes(ymin = beta_hat_PARK_L, ymax = beta_hat_PARK_U), width=0.01) +
+#   geom_abline(intercept = 0, slope = 1) +
+#   scale_color_manual(values=c("dodgerblue2", "firebrick")) +
+#   labs(x='"true" park effect', y="fitted park effect")
+# plot_13a
 
 # plot_12 = bind_rows(PARK_df_2.1, PARK_df_1.1) %>%
 #   ggplot(aes(x=beta.pk, y=beta_hat_PARK, color=method)) +
@@ -351,7 +384,7 @@ plot_13a
 #   # geom_errorbar(aes(ymin = beta_hat_PARK_L, ymax = beta_hat_PARK_U), width=0.01) +
 #   geom_abline(intercept = 0, slope = 1) +
 #   scale_color_manual(values=c("dodgerblue2", "firebrick")) +
-#   labs(x="true park effect", y="fitted park effect")
+#   labs(x='"true" park effect', y="fitted park effect")
 # plot_12
 
 # ggsave("plot_sim2_12tn_1719.png", plot_12, width=8, height=6)

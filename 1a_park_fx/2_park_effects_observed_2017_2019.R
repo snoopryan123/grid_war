@@ -40,6 +40,10 @@ X_df = park_df %>% filter(YEAR >= 2017) %>%
 ### Run models on observed data ###
 ###################################
 
+# ols_obs = lm(INN_RUNS ~ factor(PARK) + factor(OT_YR) + factor(DT_YR), data=X_df)
+# saveRDS(ols_obs, "ols_obs.rds")
+ols_obs = readRDS("ols_obs.rds")
+
 # ridge3_obs = glmnet(
 #   x = model.matrix(~ factor(OT_YR) + factor(DT_YR) + factor(PARK), data=X_df),
 #   y = X_df$INN_RUNS, alpha = 0, lambda = 0.25, family="gaussian"
@@ -53,6 +57,8 @@ X_df = park_df %>% filter(YEAR >= 2017) %>%
 #   mutate(park_factor = fitted_coeff - mean(fitted_coeff))
 # coeffs_pk3_obs_df$method = "Ridge"
 # write_csv(coeffs_pk3_obs_df, "Ridge_PF_2019_3yr.csv")
+# saveRDS(ridge3_obs, "ridge3_obs.rds")
+ridge3_obs = readRDS("ridge3_obs.rds")
 Ridge_df = read_csv("Ridge_PF_2019_3yr.csv")
 data.frame(Ridge_df)
 
@@ -196,9 +202,9 @@ pf_df$PARK = factor(pf_df$PARK, levels = (Ridge_df %>% arrange(park_factor))$PAR
 plot_pf_comparison_obs = pf_df %>% 
   select(PARK, park_factor, method) %>%
   ggplot() + 
-  geom_point(aes(x=park_factor, y=PARK, color=method), 
-             size=3, alpha=0.7) +
-  ylab("Park") + xlab('2019 three-year park factor') +
+  geom_point(aes(x=park_factor, y=PARK, color=method, shape=method), 
+             size=4, alpha=0.85) +
+  ylab("park") + xlab('2019 three-year park effect') +
   scale_color_brewer(palette="Set1")
 plot_pf_comparison_obs
 ggsave("plot_pf_comparison_obs.png", plot_pf_comparison_obs, width=9, height=7)
@@ -209,11 +215,64 @@ plot_pf_obs = pf_df %>%
   filter(method == "Ridge") %>%
   ggplot() + 
   geom_point(aes(x=park_factor, y=PARK), 
-             size=3, alpha=1, fill="black") +
-  ylab("Park") + xlab('2019 three-year park factor')
+             size=4, alpha=1, color="dodgerblue2") +
+  ylab("park") + xlab('2019 three-year park effect')
 plot_pf_obs
 ggsave("plot_pf_obs.png", plot_pf_obs, width=8, height=7)
 
 
+#######################
+### RMSE comparison ###
+#######################
+
+rmse <- function(x,y) { sqrt(mean( (x-y)**2  )) }
+mae <- function(x,y) {   mean( abs(x-y) ) }
+
+###
+ridge3_preds = predict(
+  ridge3_obs, 
+  model.matrix(~ factor(OT_YR) + factor(DT_YR) + factor(PARK), data=X_df)
+)
+rmse(ridge3_preds, X_df$INN_RUNS)
+
+###
+ols_preds = predict(ols_obs, X_df)
+rmse(ols_preds, X_df$INN_RUNS)
+
+###
+X_df_Fangraphs = X_df %>% left_join(Fangraphs_df %>% select(PARK, park_factor))
+Fangraphs_model = lm(
+  INN_RUNS ~ park_factor + factor(OT_YR) + factor(DT_YR),
+  data = X_df_Fangraphs
+)
+Fangraphs_pk_preds = predict(Fangraphs_model, X_df_Fangraphs)
+rmse(Fangraphs_pk_preds, X_df$INN_RUNS)
+
+###
+X_df_espn = X_df %>% left_join(Espn_df_2019_3yr %>% select(PARK, park_factor))
+espn_model = lm(
+  INN_RUNS ~ park_factor + factor(OT_YR) + factor(DT_YR),
+  data = X_df_espn
+)
+espn_pk_preds = predict(espn_model, X_df_espn)
+rmse(espn_pk_preds, X_df$INN_RUNS)
+
+### overall mean
+ybar = mean(X_df$INN_RUNS)
 
 
+rmse(ybar, X_df$INN_RUNS)
+rmse(ridge3_preds, X_df$INN_RUNS)
+rmse(Fangraphs_pk_preds, X_df$INN_RUNS)
+rmse(espn_pk_preds, X_df$INN_RUNS)
+
+# mae(ridge3_preds, X_df$INN_RUNS)
+# mae(Fangraphs_pk_preds, X_df$INN_RUNS)
+# mae(espn_pk_preds, X_df$INN_RUNS)
+
+
+
+
+
+  
+  

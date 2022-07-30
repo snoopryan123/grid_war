@@ -241,11 +241,45 @@ mean(
 )
 
 
+#############################################################
+### Method 5: OLS with biased adjustments of team quality ###
+#############################################################
+
+coeffs_pk5 = matrix(nrow=NUM.PARKS, ncol=NUM.SIMS )
+rownames(coeffs_pk5) = park_names
+colnames(coeffs_pk5) = paste0("sim", 1:NUM.SIMS)
+
+for (i in 1:NUM.SIMS) {
+  print(paste0("sim ", i))
+  
+  X_i = X_df %>% mutate(y = y[,i])
+  oq_i =  X_i %>% group_by(OT_YR) %>% 
+    summarise(toq = sum(y)) %>%
+    # mutate(toq = (toq - mean(toq)) / (2*sd(toq)) )
+    mutate(toq = (toq - toq[1]) / (2*sd(toq)) )
+  dq_i = X_i %>% group_by(DT_YR) %>% 
+    summarise(tdq = sum(y)) %>%
+    # mutate(tdq = (tdq - mean(tdq)) / (2*sd(tdq)) )
+    mutate(tdq = (tdq - tdq[1]) / (2*sd(tdq)) )
+  
+  ### get PARK
+  X_pk_i = X_i %>% left_join(oq_i) %>% left_join(dq_i) 
+  
+  lm_park_i = lm(y - toq - tdq ~ factor(PARK) , data=X_pk_i)
+  coeffs_pk5[,i] = coefficients(lm_park_i)[str_detect(names(coefficients(lm_park_i)), "PARK")]
+}
+
+mean( 
+  apply( (coeffs_pk5 - beta_pk_df[2:ncol(beta_pk_df)])**2, 2, function(x) sqrt(mean(x)) ) 
+)
+
+
+
 ####################
 ### Plot 1 vs. 3 ###
 ####################
 
-j = 5 
+j = 6 #5 
 PARK_df_1.1 = data.frame(
   PARK = str_sub(beta_pk_df$PARK, -5, -3),
   beta_hat_PARK = unname(coeffs_pk)[,j],
@@ -271,19 +305,19 @@ PARK_df_3.1 = data.frame(
 ### rowMeans(as.matrix(beta_pk_df[,2:(NUM.SIMS+1)]))
 
 plot_13 = bind_rows(PARK_df_3.1, PARK_df_1.1) %>%
-  ggplot(aes(x=beta.pk, y=beta_hat_PARK, color=method)) +
-  geom_point(size=2) +
+  ggplot(aes(x=beta_hat_PARK, y=beta.pk, color=method, shape=method)) +
+  geom_point(size=3.5) +
   # geom_errorbar(aes(ymin = beta_hat_PARK_L, ymax = beta_hat_PARK_U), width=0.01) +
   geom_abline(intercept = 0, slope = 1) +
   scale_color_manual(values=c("dodgerblue2", "firebrick")) +
-  labs(x="true park effect", y="fitted park effect")
+  labs(y='"true" park effect', x="fitted park effect")
 plot_13
-# ggsave("plot_13tn_1719.png", plot_13, width=8, height=6)
+# ggsave("plot_sim1_compare13tn_1719.png", plot_13, width=8, height=6)
 
 
 # plot_12 = bind_rows(PARK_df_2.1, PARK_df_1.1) %>%
-#   ggplot(aes(x=beta.pk, y=beta_hat_PARK, color=method)) +
-#   geom_point(size=2) +
+#   ggplot(aes(x=beta.pk, y=beta_hat_PARK, color=method, shape=method)) +
+#   geom_point(size=3.5) +
 #   # geom_errorbar(aes(ymin = beta_hat_PARK_L, ymax = beta_hat_PARK_U), width=0.01) +
 #   geom_abline(intercept = 0, slope = 1) +
 #   scale_color_manual(values=c("dodgerblue2", "firebrick")) +
@@ -308,28 +342,32 @@ mean(
   apply( (coeffs_pk4 - beta_pk_df[2:ncol(beta_pk_df)])**2, 2, function(x) sqrt(mean(x)) ) 
 )
 
+mean( 
+  apply( (coeffs_pk5 - beta_pk_df[2:ncol(beta_pk_df)])**2, 2, function(x) sqrt(mean(x)) ) 
+)
+
 
 ###############################################
 ###  ###
 ###############################################
 
-plot_oq18_sim5 = beta_oq_df %>% filter(endsWith(OT_YR, "2018")) %>% ggplot() + 
-  geom_point(aes(x=sim5, y=fct_reorder(OT_YR, sim5, .desc=TRUE)), size=2) +
-  ylab("") + xlab(' "true" team offense effect')
-plot_oq18_sim5
-plot_dq18_sim5 = beta_dq_df %>% filter(endsWith(DT_YR, "2018")) %>% ggplot() + 
-  geom_point(aes(x=sim5, y=fct_reorder(DT_YR, sim5, .desc=TRUE)), size=2) +
-  ylab("") + xlab(' "true" team defense effect')
-plot_dq18_sim5
-plot_pk_sim5 = beta_pk_df %>% ggplot() + 
-  geom_point(aes(x=sim5, y=fct_reorder(PARK, sim5, .desc=TRUE)), size=2) +
-  ylab("") + xlab(' "true" park effect')
-plot_pk_sim5
-plot_pk_fitted_sim5 = as_tibble(coeffs_pk3) %>% 
-  mutate(PARK = rownames(coeffs_pk3)) %>% ggplot() + 
-  geom_point(aes(x=sim5, y=fct_reorder(PARK, sim5, .desc=TRUE)), size=2) +
-  ylab("") + xlab(' fitted park effect')
-plot_pk_fitted_sim5
+# plot_oq18_sim5 = beta_oq_df %>% filter(endsWith(OT_YR, "2018")) %>% ggplot() + 
+#   geom_point(aes(x=sim5, y=fct_reorder(OT_YR, sim5, .desc=TRUE)), size=2) +
+#   ylab("") + xlab(' "true" team offense effect')
+# plot_oq18_sim5
+# plot_dq18_sim5 = beta_dq_df %>% filter(endsWith(DT_YR, "2018")) %>% ggplot() + 
+#   geom_point(aes(x=sim5, y=fct_reorder(DT_YR, sim5, .desc=TRUE)), size=2) +
+#   ylab("") + xlab(' "true" team defense effect')
+# plot_dq18_sim5
+# plot_pk_sim5 = beta_pk_df %>% ggplot() + 
+#   geom_point(aes(x=sim5, y=fct_reorder(PARK, sim5, .desc=TRUE)), size=2) +
+#   ylab("") + xlab(' "true" park effect')
+# plot_pk_sim5
+# plot_pk_fitted_sim5 = as_tibble(coeffs_pk3) %>% 
+#   mutate(PARK = rownames(coeffs_pk3)) %>% ggplot() + 
+#   geom_point(aes(x=sim5, y=fct_reorder(PARK, sim5, .desc=TRUE)), size=2) +
+#   ylab("") + xlab(' fitted park effect')
+# plot_pk_fitted_sim5
 
 # ggsave("plot_sim1_oq18_sim5.png", plot_oq18_sim5, width=8, height=7)
 # ggsave("plot_sim1_dq18_sim5.png", plot_dq18_sim5, width=8, height=7)
