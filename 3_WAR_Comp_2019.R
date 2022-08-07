@@ -30,11 +30,11 @@ BWAR_2019 = read_csv("BR_war_daily_pitch.txt") %>% #https://www.baseball-referen
   group_by(name_common) %>% summarise(WAR = sum(WAR, na.rm=TRUE)) %>% ungroup() %>%
   rename(PIT_NAME = name_common, BWAR_og = WAR)
   
-GWAR_2019 <- read_csv("GWAR_2019.csv") %>% rename(GWAR_og = GWAR)
+GWAR_2019 <- read_csv("GWAR_2019_ridge_PF.csv") %>% rename(GWAR_og = GWAR)
 GWAR_2019_woParkFx <- read_csv("GWAR_2019_withoutParkFx.csv") %>% rename(GWAR_woParkFx_og = GWAR)
-GWAR_2019_espnParkFx <- read_csv("GWAR_2019_espnParkFx.csv") %>% rename(GWAR_espnParkFx_og = GWAR)
-GWAR_2019_fangraphsParkFx <- read_csv("GWAR_2019_fangraphsParkFx.csv") %>% rename(GWAR_fangraphsParkFx_og = GWAR)
-pitcher_exits = read_csv("pitcher_exits_2019.csv")
+GWAR_2019_espnParkFx <- read_csv("GWAR_2019_espn_PF.csv") %>% rename(GWAR_espnParkFx_og = GWAR)
+GWAR_2019_fangraphsParkFx <- read_csv("GWAR_2019_fangraphs_PF.csv") %>% rename(GWAR_fangraphsParkFx_og = GWAR)
+pitcher_exits = read_csv("pitcher_exits_2019_ridge_PF.csv")
 
 WAR_df_2019.0 <- GWAR_2019 %>% left_join(GWAR_2019_woParkFx) %>% left_join(GWAR_2019_espnParkFx) %>%
   left_join(GWAR_2019_fangraphsParkFx) %>% left_join(FWAR_2019) %>% left_join(BWAR_2019) 
@@ -109,10 +109,10 @@ print(c(sum(WAR_df_2019$FWAR), sum(WAR_df_2019$BWAR), sum(WAR_df_2019$GWAR)))
     # guides(color=guide_legend(title="New Legend Title"))
     scale_color_brewer(palette = "Set1",
                        name = "GWAR with",
-                       labels = c("no park effects", "ridge park effects", "ESPN park effects")
+                       labels = c("No park effects", "Ridge park effects", "ESPN park effects")
     ) +
     scale_shape_manual(name = "GWAR with",
-                       labels = c("no park effects", "ridge park effects", "ESPN park effects"),
+                       labels = c("No park effects", "Ridge park effects", "ESPN park effects"),
                        values = c(17,15,19))
   
   pfcomp
@@ -173,7 +173,7 @@ data.frame(
     scale_x_continuous(name="Fangraphs WAR", limits = c(0,8)) + 
     scale_y_continuous(name="Grid WAR", limits = c(1,8.5))  
   pgf
-  # ggsave(paste0(output_folder,"plot_GWAR_vs_FWAR_",year,".png"), pgf, width=8, height=8)
+  ggsave(paste0(output_folder,"plot_GWAR_vs_FWAR_",year,".png"), pgf, width=8, height=8)
 }
 
 ###########################################################
@@ -207,7 +207,7 @@ data.frame(
     scale_x_continuous(name="Baseball Reference WAR", limits = c(0,8)) + 
     scale_y_continuous(name="Grid WAR", limits = c(1,8.5))  
   pgb
-  # ggsave(paste0(output_folder,"plot_GWAR_vs_BWAR_",year,".png"), pgb, width=8, height=8)
+  ggsave(paste0(output_folder,"plot_GWAR_vs_BWAR_",year,".png"), pgb, width=8, height=8)
 }
 
 ### example histograms of GWAR vs. BWAR
@@ -406,53 +406,73 @@ ggsave(paste0(output_folder,"pb_agg_",year,".png"), pb_agg, width=8.6, height=3.
 #########################################
 
 pit1_vs_pit2_hists("Gerrit Cole", "Justin Verlander")
-
-cole19 = pitcher_exits %>%
-  left_join(WAR_df_2019) %>%
-  filter(PIT_NAME == "Gerrit Cole") %>%
-  select(DATE,HOME_TEAM_ID,AWAY_TEAM_ID,CUM_RUNS,INNING,exit_at_end_of_inning,
-         BASE_STATE,OUTS_CT, GWAR_game) %>%
-  mutate(
-    BASE_STATE = as.character(BASE_STATE),
-    OUTS_CT = as.character(OUTS_CT),
-    BASE_STATE = ifelse(exit_at_end_of_inning, "", BASE_STATE),
-    OUTS_CT = ifelse(exit_at_end_of_inning, "", OUTS_CT),
-  ) %>%
-  arrange(DATE) %>%
-  rename(GWAR = GWAR_game,
-         `HOME TEAM` = HOME_TEAM_ID,
-         `AWAY TEAM` = AWAY_TEAM_ID,
-         `RUNS ALLOWED` = CUM_RUNS,
-         `EXIT INNING` = INNING,
-         `EXIT BASE STATE` = BASE_STATE,
-         `EXIT OUTS` = OUTS_CT) %>%
-  mutate(GWAR = round(GWAR,3)) %>%
-  select(-exit_at_end_of_inning) 
-data.frame(cole19)
-WAR_df_2019 %>% filter(PIT_NAME == "Gerrit Cole") %>% select(GWAR_og)
+pit1_vs_pit2_hists("Lance Lynn", "Justin Verlander")
 
 
-plot_cole19 = cole19 %>% gt() %>%
-  data_color(
-    columns = GWAR,
-    colors = scales::col_numeric(
-      # palette = c("red", "green"),
-      # domain = NULL
-      # palette = c("#f8696b","#63be7b"), #"#ffeb84",
-      palette = c("#f8696b","#ffeb84", "#63be7b"), 
-      # palette = c("#b22222","#228B22"), #"#ffeb84",
-      domain = c(-0.5, 0.5)
-    )
-    # colors = scales::col_numeric(
-    #   palette = paletteer::paletteer_d(
-    #     palette = "ggsci::green_material"
-    #   ) %>% as.character(),
-    #   domain = NULL
-    # )
-  ) %>%
-  cols_align(align = "center")
-# plot_cole19
-gtsave(plot_cole19, paste0(output_folder,"plot_cole_",year,".png"))
+plot_pit_szn <- function(pitname = "Gerrit Cole") {
+  cole19 = pitcher_exits %>%
+    left_join(WAR_df_2019) %>%
+    filter(PIT_NAME == pitname) %>%
+    select(DATE,HOME_TEAM_ID,AWAY_TEAM_ID,CUM_RUNS,INNING,exit_at_end_of_inning,
+           BASE_STATE,OUTS_CT, GWAR_game) %>%
+    mutate(
+      BASE_STATE = as.character(BASE_STATE),
+      OUTS_CT = as.character(OUTS_CT),
+      BASE_STATE = ifelse(exit_at_end_of_inning, "", BASE_STATE),
+      OUTS_CT = ifelse(exit_at_end_of_inning, "", OUTS_CT),
+    ) %>%
+    arrange(DATE) %>%
+    rename(GWAR = GWAR_game,
+           `HOME TEAM` = HOME_TEAM_ID,
+           `AWAY TEAM` = AWAY_TEAM_ID,
+           `RUNS ALLOWED` = CUM_RUNS,
+           `EXIT INNING` = INNING,
+           `EXIT BASE STATE` = BASE_STATE,
+           `EXIT OUTS` = OUTS_CT) %>%
+    mutate(GWAR = round(GWAR,3)) %>%
+    select(-exit_at_end_of_inning) 
+  data.frame(cole19)
+  WAR_df_2019 %>% filter(PIT_NAME == "Gerrit Cole") %>% select(GWAR_og)
+  
+  
+  plot_cole19 = cole19 %>% gt() %>%
+    data_color(
+      columns = GWAR,
+      colors = scales::col_numeric(
+        # palette = c("red", "green"),
+        # domain = NULL
+        # palette = c("#f8696b","#63be7b"), #"#ffeb84",
+        palette = c("#f8696b","#ffeb84", "#63be7b"), 
+        # palette = c("#b22222","#228B22"), #"#ffeb84",
+        domain = c(min(cole19$GWAR), max(cole19$GWAR))
+        # domain = c(-0.5, 0.5)
+      )
+      # colors = scales::col_numeric(
+      #   palette = paletteer::paletteer_d(
+      #     palette = "ggsci::green_material"
+      #   ) %>% as.character(),
+      #   domain = NULL
+      # )
+    ) %>%
+    cols_align(align = "center")
+  plot_cole19
+}
+
+
+gtsave(plot_pit_szn("Gerrit Cole"), 
+       paste0(output_folder,"plot_pitszn_", "Cole", "_", year,".png"))
+gtsave(plot_pit_szn("Lance Lynn"), 
+       paste0(output_folder,"plot_pitszn_", "Lynn", "_", year,".png"))
+gtsave(plot_pit_szn("Zack Greinke"), 
+       paste0(output_folder,"plot_pitszn_", "Greinke", "_", year,".png"))
+gtsave(plot_pit_szn("Julio Teheran"), 
+       paste0(output_folder,"plot_pitszn_", "Teheran", "_", year,".png"))
+gtsave(plot_pit_szn("Jose Berrios"), 
+       paste0(output_folder,"plot_pitszn_", "Berrios", "_", year,".png"))
+gtsave(plot_pit_szn("Walker Buehler"), 
+       paste0(output_folder,"plot_pitszn_", "Buehler", "_", year,".png"))
+gtsave(plot_pit_szn("Miles Mikolas"), 
+       paste0(output_folder,"plot_pitszn_", "Mikolas", "_", year,".png"))
 
 ################################################
 ####### GERRIT COLE'S 2019 GWAR RANKINGS #######

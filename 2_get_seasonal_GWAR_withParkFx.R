@@ -2,7 +2,12 @@ library(tidyverse)
 f_lrm <- readRDS("f_lrm.rds") 
 g_grid <- read.csv("g_grid.csv",row.names = 1, header= TRUE)
 war2_ogg = read_csv("war2.csv")
-park_fx_df = read_csv("1a_park_fx/Ridge_PF_2019_3yr.csv") %>% select(PARK, park_factor)
+# park_fx_name = "ridge_PF" #FIXME
+# park_fx_df = read_csv("1a_park_fx/obs_ridge_PF.csv") %>% select(PARK, park_factor) #FIXME
+# park_fx_name = "fangraphs_PF" #FIXME
+# park_fx_df = read_csv("1a_park_fx/obs_fg_PF.csv") %>% select(PARK, park_factor) #FIXME
+park_fx_name = "espn_PF" #FIXME
+park_fx_df = read_csv("1a_park_fx/obs_espn_PF.csv") %>% select(PARK, park_factor) #FIXME
 war2_og <- war2_ogg %>% 
   filter(SP_IND | lag(SP_IND, default=FALSE)) %>%
   mutate(PIT_LEAGUE = ifelse(BAT_HOME_IND, AWAY_LEAGUE, HOME_LEAGUE)) %>%
@@ -131,15 +136,17 @@ war_all_2019 = get_yearly_gwar_data(2019)
 pitcher_exits_2019 = get_pitcher_exits(war_all_2019)
 GWAR_2019 = get_seasonal_war(pitcher_exits_2019)
 
-write_csv(pitcher_exits_2019, "pitcher_exits_2019.csv")
-write_csv(GWAR_2019, "GWAR_2019.csv")
+write_csv(pitcher_exits_2019, paste0("pitcher_exits_2019_", park_fx_name, ".csv"))
+write_csv(GWAR_2019, paste0("GWAR_2019_", park_fx_name, ".csv"))
+
 
 # war_all_2014 = get_yearly_gwar_data(2014)
 # pitcher_exits_2014 = get_pitcher_exits(war_all_2014)
 # GWAR_2014 = get_seasonal_war(pitcher_exits_2014)
 
-# write_csv(pitcher_exits_2014, "pitcher_exits_2014.csv")
-# write_csv(GWAR_2014, "GWAR_2014.csv")
+# write_csv(pitcher_exits_2014, paste0("pitcher_exits_2014_", park_fx_name, ".csv"))
+# write_csv(GWAR_2014, paste0("GWAR_2014_", park_fx_name, ".csv"))
+
 
 
 ########################## TESTS ########################## 
