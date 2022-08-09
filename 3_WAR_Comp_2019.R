@@ -158,9 +158,10 @@ pits = c(pit4a, pit4b, pit4c, pit4d, pit4e, pit4f)
 pits = setdiff(pits, 
                c("Jeff Samardzija", "Ivan Nova", "Mike Fiers"))
 WAR_df_2019$pit_examinef = WAR_df_2019$PIT_NAME %in% pits
+############
 data.frame(
-  WAR_df_2019 %>% mutate(diff = (GWAR - FWAR)) %>% select(PIT_NAME, GWAR, FWAR, diff) %>%
-    arrange(diff)
+  WAR_df_2019 %>% mutate(diff = (GWAR - FWAR)) %>% select(PIT_NAME, FWAR, GWAR, diff) %>%
+    arrange(-FWAR)
 )
 
 {
@@ -192,9 +193,10 @@ pits = c(pit5a, pit5b, pit5c, pit5d, pit5e, pit5f)
 pits = setdiff(pits,
                c("Eduardo Rodriguez", "Mike Leake"))
 WAR_df_2019$pit_examine1 = WAR_df_2019$PIT_NAME %in% pits
+############
 data.frame(
-  WAR_df_2019 %>% mutate(diff = (GWAR - BWAR)) %>% select(PIT_NAME, GWAR, BWAR, diff) %>%
-    arrange(diff)
+  WAR_df_2019 %>% mutate(diff = (GWAR - BWAR)) %>% select(PIT_NAME, BWAR, GWAR, diff) %>%
+    arrange(-BWAR)
 )
 
 {
