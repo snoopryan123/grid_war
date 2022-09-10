@@ -9,8 +9,8 @@ theme_update(plot.title = element_text(hjust = 0.5))
 # theme_set(theme_solarized())
 output_folder = "./plots/"
 
-##filename = "retro_final_PA_1990-2000d.csv" # from dropbox. see README.md
-filename = "../../TTO_/data/retro_final_PA_1990-2020d.csv"
+## filename = "retro_final_PA_1990-2000d.csv" # from dropbox. see README.md
+filename = "../TTO_/data/retro_final_PA_1990-2020d.csv"
 war2 <- read_csv(filename) 
 
 # PIT_WINS === 1{PIT's team wins this game}
@@ -88,10 +88,12 @@ WPii$runs = rep(0:(nrow(WPi)-1), 9)
     labs(
       # title=TeX("smoothed $f(I,R)$ as a function of $R$, for each $I$"),
       y="context-neutral win probability",
-      x="runs allowed through the end of the given inning")
+      x="runs allowed through the end of the given inning") +
+    scale_x_continuous(breaks=seq(0,30,by=2)) +
+    scale_y_continuous(breaks=seq(0,1,by=0.1))
   pWPiis
   # plotly::ggplotly(pWPiis)
-  # ggsave(paste0(output_folder,"plot_fIR_R_smoothed.png"), pWPiis)
+  ggsave(paste0(output_folder,"plot_fIR_R_smoothed.png"), pWPiis, width=9, height=8)
 }
 
 #######################
@@ -172,17 +174,17 @@ N_ER = matrix(nrow = 24, ncol = 1) # number of occurrences matrix
 FF <- E0 %>% select(GAME_ID, BAT_HOME_IND, INNING, REST_INN_RUNS, INN_RUNS, CUM_RUNS2, OUTS_CT, BASE_STATE, INN_SITCH)
 N_ER <- FF %>% group_by(INN_SITCH) %>% count()
 
-D <- Brill_starters %>% select(GAME_ID, BAT_HOME_IND, INNING, REST_INN_RUNS, sequence)
+D <- E1 %>% select(GAME_ID, BAT_HOME_IND, INNING, REST_INN_RUNS, inn_sitch_seq)
 N = matrix(nrow = 24, ncol = max(D$REST_INN_RUNS)) # number of occurrences matrix
 P = matrix(nrow = 24, ncol = max(D$REST_INN_RUNS))
 for (i in 1:nrow(N)) {
   for (j in 1:ncol(N)) {
-    E = D %>% filter(sequence == i, REST_INN_RUNS == j-1)
+    E = D %>% filter(inn_sitch_seq == i, REST_INN_RUNS == j-1)
     N[i,j] = nrow(E)
     P[i,j] = N[i,j]/N_ER$n[i]
   }
 }
-seq_toINN_SITCH = Brill_starters %>% group_by(sequence) %>% slice_head() %>% select(sequence, INN_SITCH) %>% arrange(sequence)
+seq_toINN_SITCH = E1 %>% group_by(inn_sitch_seq) %>% slice_head() %>% select(inn_sitch_seq, INN_SITCH) %>% arrange(inn_sitch_seq)
 rownames(P) <- seq_toINN_SITCH$INN_SITCH
 colnames(P) <- 0:(ncol(P)-1)#paste0("rest_of_inn_runs", 0:(ncol(P)-1))
 
@@ -205,7 +207,9 @@ plot_gRSO <- function(O_) {
     labs(
       # title=paste0("g(R|S,O=",O,") as a function of R, for different base states S"),
       x="runs allowed R from now until the end of this half inning",
-      y="context-neutral probability")
+      y="context-neutral probability") +
+    scale_x_continuous(breaks = seq(0,13,by=2)) +
+    scale_y_continuous(breaks=seq(0,1,by=0.1))
 }
 
 {
@@ -215,62 +219,10 @@ plot_gRSO <- function(O_) {
   pg1
   pg2 = plot_gRSO(2)
   pg2
-  ggsave(paste0(output_folder,"plot_gRSO_R0.png"), pg0)
-  ggsave(paste0(output_folder,"plot_gRSO_R1.png"), pg1)
-  ggsave(paste0(output_folder,"plot_gRSO_R2.png"), pg2)
+  ggsave(paste0(output_folder,"plot_gRSO_R0.png"), pg0, width = 9, height=8)
+  ggsave(paste0(output_folder,"plot_gRSO_R1.png"), pg1, width = 9, height=8)
+  ggsave(paste0(output_folder,"plot_gRSO_R2.png"), pg2, width = 9, height=8)
 }
 
 
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-# ######### POISSON REGRESSION ######### 
-# g_prm = glm(REST_INN_RUNS ~ BAT_HOME_IND + factor(PIT_LEAGUE) + factor(YEAR) + 
-#               factor(INN_SITCH),
-#             data=E1,family="poisson")
-# # saveRDS(g_prm, file = "g_prm.rds")
-# 
-# max_r = 13#max(E1$REST_INN_RUNS)
-# inn_sitch_0 = c("0 000","0 100","0 010","0 001","0 110","0 101","0 011","0 111") 
-# inn_sitch_1 = c("1 000","1 100","1 010","1 001","1 110","1 101","1 011","1 111") 
-# inn_sitch_2 = c("2 000","2 100","2 010","2 001","2 110","2 101","2 011","2 111") 
-# inn_sitches = c(inn_sitch_0,inn_sitch_1,inn_sitch_2)
-# P = matrix(nrow = length(inn_sitches), ncol = max_r+1) # number of wins matrix
-# rownames(P) = inn_sitches
-# colnames(P) = 0:max_r
-# for (i in 1:length(inn_sitches)) {
-#   is = inn_sitches[i]
-#   test_df_inn = tibble(BAT_HOME_IND = 1, PIT_LEAGUE = "AL", YEAR = 2019, INN_SITCH = is)
-#   lambda = predict(g_lrm, test_df_inn, type="response")
-#   P[i,] = dpois(0:max_r, lambda)
-# }
-# 
-# ### plot g(R|S,O) for O = 0
-# g_0_df = as_tibble(reshape2::melt(P)) %>%
-#   rename(SO = Var1, R = Var2, p = value) %>%
-#   mutate(O = str_sub(SO,end=1),
-#          S = str_sub(SO,start=3)) %>%
-#   filter(O == "0") 
-# g_0_df
-# g_0_df %>% ggplot(aes(color=S,x=R,y=p)) +
-#   geom_point() +
-#   geom_line(size=1) +
-#   labs(
-#     # title=paste0("g(R|S,O=",O,") as a function of R, for different base states S"),
-#     x="runs allowed R from now until the end of this half inning",
-#     y="context-neutral probability")
 
