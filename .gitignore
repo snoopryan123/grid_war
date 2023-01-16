@@ -4,3 +4,7 @@
 *.RData
 *.Rhistory
 
+!f_lrm_0.rds
+!f_lrm.rds
+!g_grid.csv
+!awar_model.rds

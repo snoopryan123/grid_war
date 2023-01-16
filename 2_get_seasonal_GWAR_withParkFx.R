@@ -2,12 +2,12 @@ library(tidyverse)
 f_lrm <- readRDS("f_lrm.rds") 
 g_grid <- read.csv("g_grid.csv",row.names = 1, header= TRUE)
 war2_ogg = read_csv("war2.csv")
-# park_fx_name = "ridge_PF" #FIXME
-# park_fx_df = read_csv("1a_park_fx/obs_ridge_PF.csv") %>% select(PARK, park_factor) #FIXME
+park_fx_name = "ridge_PF" #FIXME
+park_fx_df = read_csv("1a_park_fx/obs_ridge_PF.csv") %>% select(PARK, park_factor) #FIXME
 # park_fx_name = "fangraphs_PF" #FIXME
 # park_fx_df = read_csv("1a_park_fx/obs_fg_PF.csv") %>% select(PARK, park_factor) #FIXME
-park_fx_name = "espn_PF" #FIXME
-park_fx_df = read_csv("1a_park_fx/obs_espn_PF.csv") %>% select(PARK, park_factor) #FIXME
+# park_fx_name = "espn_PF" #FIXME
+# park_fx_df = read_csv("1a_park_fx/obs_espn_PF.csv") %>% select(PARK, park_factor) #FIXME
 war2_og <- war2_ogg %>% 
   filter(SP_IND | lag(SP_IND, default=FALSE)) %>%
   mutate(PIT_LEAGUE = ifelse(BAT_HOME_IND, AWAY_LEAGUE, HOME_LEAGUE)) %>%
