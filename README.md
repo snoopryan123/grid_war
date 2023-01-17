@@ -7,7 +7,7 @@
 * Run `1a_create_war2.R`
 	output: `war2.csv`
 * Run `1b_create_fg_grids.R`
-	output: `model_f.rds` and `model_f_0.rds` and `g_grid.csv`
+	output: `model_f.rds` and `model_f_0.rds` and `model_g.csv`
 * Run `1c_create_a_model.R`
 	output: `df_a_grid.csv` and `model_a.rds` and `expected_runs_SO.csv`
 * Run `2_get_seasonal_GWAR.R`

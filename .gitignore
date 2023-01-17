@@ -6,5 +6,6 @@
 
 !model_f.rds
 !model_f_0.rds
-!g_grid.csv
+!model_g.csv
 !model_a.rds
+!df_FWAR1.csv

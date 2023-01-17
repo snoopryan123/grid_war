@@ -7,7 +7,7 @@ war2 = read_csv("war2.csv")
 ##################################
 
 ### expected runs to the end of the inning as a function of base-state S and outs O
-G_GRID = read.csv("g_grid.csv", row.names = 1, header= TRUE)
+G_GRID = read.csv("model_g.csv", row.names = 1, header= TRUE)
 expected_runs_SO = matrix(nrow=nrow(G_GRID), ncol=1)
 rownames(expected_runs_SO) = rownames(G_GRID)
 colnames(expected_runs_SO) = "expected_runs"

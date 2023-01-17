@@ -77,25 +77,28 @@ df_g_grid <- war2 %>%
   select(GAME_ID, BAT_HOME_IND, PIT_LEAGUE, YEAR, INNING, REST_INN_RUNS, INN_SITCH, inn_sitch_seq) %>%
   filter(INNING < 6)
 
-N_ER = matrix(nrow = 24, ncol = 1) # number of occurrences matrix
-FF <- war2 %>% select(GAME_ID, BAT_HOME_IND, INNING, REST_INN_RUNS, INN_RUNS, CUM_RUNS2, OUTS_CT, BASE_STATE, INN_SITCH)
-N_ER <- FF %>% group_by(INN_SITCH) %>% count()
+df_g_grid_1 = df_g_grid %>%
+  group_by(INN_SITCH, REST_INN_RUNS) %>%
+  summarise(count=n()) %>%
+  group_by(INN_SITCH) %>%
+  mutate(p = count/sum(count)) %>%
+  ungroup()
 
-E2 <- df_g_grid %>% select(GAME_ID, BAT_HOME_IND, INNING, REST_INN_RUNS, inn_sitch_seq)
-N = matrix(nrow = 24, ncol = max(E2$REST_INN_RUNS)) # number of occurrences matrix
-G_GRID = matrix(nrow = 24, ncol = max(E2$REST_INN_RUNS))
-for (i in 1:nrow(N)) {
-  for (j in 1:ncol(N)) {
-    E = E2 %>% filter(inn_sitch_seq == i, REST_INN_RUNS == j-1)
-    N[i,j] = nrow(E)
-    G_GRID[i,j] = N[i,j]/N_ER$n[i]
-  }
-}
+G_GRID = matrix(nrow=24, ncol=max(df_g_grid_1$REST_INN_RUNS))
 seq_toINN_SITCH = df_g_grid %>% group_by(inn_sitch_seq) %>% slice_head() %>% select(inn_sitch_seq, INN_SITCH) %>% arrange(inn_sitch_seq)
 rownames(G_GRID) <- seq_toINN_SITCH$INN_SITCH
 colnames(G_GRID) <- 0:(ncol(G_GRID)-1)#paste0("rest_of_inn_runs", 0:(ncol(G_GRID)-1))
 
-write.csv(as.data.frame(G_GRID), "g_grid.csv")
+for (i in 1:nrow(G_GRID)) {
+  for (j in 1:ncol(G_GRID)) {
+    df_ij = df_g_grid_1 %>% filter(INN_SITCH == rownames(G_GRID)[i] & REST_INN_RUNS == j-1)
+    G_GRID[i,j] = if (nrow(df_ij)==0) 0 else df_ij$p
+  }
+}
+
+rowSums(G_GRID) ### should all be 1
+
+write.csv(as.data.frame(G_GRID), "model_g.csv")
 
 #############################
 ########## g PLOTS ##########
