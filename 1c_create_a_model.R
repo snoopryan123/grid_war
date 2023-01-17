@@ -53,7 +53,9 @@ df_endOfGame1
 ### save AWAR model and dataframe
 awar_model = lm(W ~ A + 0, data=df_endOfGame1)
 awar_model
-saveRDS(awar_model, file = "model_a.rds")
+# saveRDS(awar_model, file = "model_a.rds")
+save_lm(awar_model, "model_a.rds")
+
 
 df_endOfGame1$W_hat_A = predict(awar_model, df_endOfGame1)
 write_csv(df_endOfGame1, "df_a_grid.csv")

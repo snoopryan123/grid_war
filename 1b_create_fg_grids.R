@@ -26,13 +26,15 @@ df_f_grid <- last_play_every_inning %>%
 ## f(I,R) grid without adjustments
 model_f_0 = glm(PIT_WINS ~ factor(INNING) + factor(CUM_RUNS),
                 data=df_f_grid, family="binomial"(link="logit"))
-saveRDS(model_f_0, file = "model_f_0.rds")
+# saveRDS(model_f_0, file = "model_f_0.rds")
+save_lm(model_f_0, "model_f_0.rds")
 
 ### f(I,R) grid adjust for League, Home, and Year (fixed effects)
 model_f = glm(PIT_WINS ~ factor(INNING) + factor(CUM_RUNS) +
                 BAT_HOME_IND + factor(PIT_LEAGUE) + factor(YEAR),
            data=df_f_grid, family="binomial"(link="logit"))
-saveRDS(model_f, file = "model_f.rds")
+# saveRDS(model_f, file = "model_f.rds")
+save_lm(model_f, "model_f.rds")
 
 ### smoothed f(I,R) as a function of R, for each inning I
 {
