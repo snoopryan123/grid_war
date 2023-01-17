@@ -4,10 +4,12 @@
 * Get dataset from dropbox
 	`retro_final_PA_1990-2000d.csv`
 	https://upenn.box.com/v/retrosheet-pa-1990-2000
-* Run `1_create_grids.R` and then `1a_create_AW.R`
-	creates the f,g grids for grid war (`f_lrm.rds`, `g_grid.csv`)
-	creates the model `model_AWAR.rds` for AWAR and the dataframe `df_pre_AWAR.csv` for pitcher pre-AWAR stats
-	creates the dataset `war2.csv` of pitcher stats relevant to GWAR
+* Run `1a_create_war2.R`
+	output: `war2.csv`
+* Run `1b_create_fg_grids.R`
+	output: `model_f.rds` and `model_f_0.rds` and `g_grid.csv`
+* Run `1c_create_a_model.R`
+	output: `df_a_grid.csv` and `model_a.rds` and `expected_runs_SO.csv`
 * Run `2_get_seasonal_GWAR.R`
 	output: pitcher_exits_2019_withoutParkFx.csv, GWAR_2019_withoutParkFx.csv
 * From Fangraphs (link below), get FanGraphsLeaderboard_2019.csv

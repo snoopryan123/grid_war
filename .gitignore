@@ -4,7 +4,9 @@
 *.RData
 *.Rhistory
 
-!f_lrm_0.rds
-!f_lrm.rds
+!model_f.rds
+!model_f_0.rds
 !g_grid.csv
-!awar_model.rds
+!model_a.rds
+!df_a_grid.csv
+!expected_runs_SO.csv
