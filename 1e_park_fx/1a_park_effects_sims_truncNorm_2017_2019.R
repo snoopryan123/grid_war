@@ -90,7 +90,7 @@ for (i in 1:nrow(Xb)) {
     eps[i,j] = truncnorm::rtruncnorm(n=1, a=0, mean = Xb[i,j], sd = 1)
   }
 }
-y = Xb + eps
+y = Xb + eps ###????
 y = round(y) # integer-valued response
 
 #####################

@@ -1,6 +1,8 @@
 
 source("0_load_stuff.R")
 
+w_rep = 0.423769
+
 #######################################
 ### load f,g grids and other models ###
 #######################################
@@ -14,11 +16,11 @@ model_g = read.csv("model_g.csv", header=T, row.names=1)
 
 ### Park Effects
 park_fx_name = "ridge_PF" #FIXME
-park_fx_df = read_csv("1d_park_fx/obs_ridge_PF.csv") %>% select(PARK, park_factor) #FIXME
-# park_fx_name = "fangraphs_PF" #FIXME
-# park_fx_df = read_csv("1a_park_fx/obs_fg_PF.csv") %>% select(PARK, park_factor) #FIXME
-# park_fx_name = "espn_PF" #FIXME
-# park_fx_df = read_csv("1a_park_fx/obs_espn_PF.csv") %>% select(PARK, park_factor) #FIXME
+
+df_ridge_PF = read_csv("1e_park_fx/obs_ridge_PF.csv") %>% select(PARK, park_factor) %>% mutate(name = "ridge")
+df_fg_PF = read_csv("1e_park_fx/obs_fg_PF.csv") %>% select(PARK, park_factor) %>% mutate(name = "fg")
+df_espn_PF = read_csv("1e_park_fx/obs_espn_PF.csv") %>% select(PARK, park_factor) %>% mutate(name = "espn")
+df_park_fx = bind_rows(df_ridge_PF, df_fg_PF, df_espn_PF)
 
 #################
 ### load data ###
@@ -27,8 +29,8 @@ park_fx_df = read_csv("1d_park_fx/obs_ridge_PF.csv") %>% select(PARK, park_facto
 war2_ogg = read_csv("war2.csv")
 war2_og <- war2_ogg %>% 
   filter(SP_IND | lag(SP_IND, default=FALSE)) %>%
-  left_join(park_fx_df) %>%
-  mutate(park_factor = replace_na(park_factor, 0)) %>%
+  # left_join(park_fx_df) %>%
+  # mutate(park_factor = replace_na(park_factor, 0)) %>%
   group_by(INNING, BAT_HOME_IND) %>%
   mutate(
     INN_SITCH_after = lead(INN_SITCH, default="0 000")
@@ -114,8 +116,18 @@ get_grid_wins_moi <- function(i,r,alpha, home,lg,yr, parkFx=TRUE,adjustConfounde
 # get_grid_wins_moi(5,5,0, 1,"AL",2019, inn_sitch="2 000")
 
 
-get_grid_wins <- function(pbp_df, years, parkFx=TRUE, adjustConfounders=TRUE) {
+get_grid_wins <- function(pbp_df, years, parkFx=FALSE, adjustConfounders=TRUE) {
   df = pbp_df %>% filter(YEAR %in% years)
+  
+  if (!isFALSE(parkFx)) { ### use park factors with name `parkFx`
+    print(paste0("computing GWAR with ", parkFx, " park factors"))
+    df = df %>%
+      left_join(df_park_fx %>% filter(name == parkFx)) %>%
+      mutate(park_factor = replace_na(park_factor, 0)) 
+    parkFx = TRUE
+  } else {
+    print(paste0("computing GWAR without park factors"))
+  }
   
   result = df %>%
     rowwise() %>%
@@ -148,94 +160,36 @@ get_grid_wins <- function(pbp_df, years, parkFx=TRUE, adjustConfounders=TRUE) {
   result %>% ungroup()
 }
 
-get_pitcher_exits <- function(Grid_Wins_df) {
+get_pitcher_exits <- function(Grid_Wins_df, war=FALSE) {
   pitcher_exits <- Grid_Wins_df %>% 
     filter(exit_in_middle == 1 | exit_at_end_of_inning == 1) %>%
-    mutate(
-      GW = Grid_Wins_eoi + Grid_Wins_moi, ### Grid Wins in a game
-      # GWAR_game = CNWP_game - w_rep
-    ) 
+    mutate(GW = Grid_Wins_eoi + Grid_Wins_moi) ### Grid Wins in a game
+  if (war) {
+    pitcher_exits <- pitcher_exits %>%
+      mutate(GWAR = GW - w_rep)
+  }
+  # pitcher_exits %>% drop_na(GW)
   pitcher_exits
 }
 
-
-
-
-################################################################################
-
-
-
-
-
-
-
-
-
-
-################################################################################
-
-expected_gwar_eoi <- function(i,j,exit_at_end, alpha,home,lg,yr, parkFx=TRUE,adjustConfounders=TRUE) {
-  ### i == inning, j == runs
-  result <- numeric(length(exit_at_end))
-  for (aaa in 1:length(exit_at_end)) {
-    e = exit_at_end[aaa]
-    if (e==0) {
-      #nothing
-    } else {
-      result[aaa] <- f(i[aaa], j[aaa], alpha=alpha[aaa],home=home[aaa],lg=lg[aaa],yr=yr[aaa],
-                       parkFx=parkFx,adjustConfounders=adjustConfounders)
-    }
-  }
-  return(result)
+get_pitcher_exits_shortened <- function(pitcher_exits_df) {
+  pitcher_exits_df %>% select_if(names(.) %in% c(
+    "PIT_NAME", "GAME_ID", "YEAR", "GW", "GWAR", "INNING", "CUM_RUNS",
+     "exit_at_end_of_inning", "exit_in_middle", "BASE_STATE", "OUTS_CT",
+     "BAT_HOME_IND", "PIT_LEAGUE", "park_factor"
+  )) %>% arrange(PIT_NAME,GAME_ID)
 }
 
-expected_gwar <- function(i,j,k,exit_in_mid, alpha,home,lg,yr, parkFx=TRUE,adjustConfounders=TRUE) {
-  ### i == inning, k == runs prior to exiting, j == outs & base state
-  result <- numeric(length(exit_in_mid))
-  for (aaa in 1:length(exit_in_mid)) {
-    if (aaa %% 3 == 0) { print(aaa) }
-    e = exit_in_mid[aaa]
-    ss <- 0
-    if (e == 0) {
-      # ignore
-    } else { # e == 1
-      #browser()
-      for(w in 0:MAX_INNING_RUNS) {
-        ss <- ss + f(i[aaa], k[aaa] + w, alpha=alpha[aaa],home=home[aaa],lg=lg[aaa],yr=yr[aaa],
-                     parkFx=parkFx,adjustConfounders=adjustConfounders) * g(j[aaa], w) 
-      }
-    }
-    result[aaa] = ss
-  }
-  return(result)
+get_seasonal_war <- function(pitcher_exits_df) {
+  pitcher_exits_df %>%
+    group_by(PIT_NAME,YEAR) %>%
+    summarise(
+      GWAR = sum(GW - w_rep, na.rm=T),
+      N = n(),
+      GW = sum(GW, na.rm=T),
+      w_rep = w_rep[1],
+    ) %>%
+    ungroup() 
 }
 
-get_yearly_gwar_data <- function(year) {
-  war2 = war2_og %>% filter(YEAR == year)
-  
-  war_all <- war2 %>%
-    group_by(GAME_ID, PIT_NAME) %>%
-    mutate(GWAR_eoi = expected_gwar_eoi(INNING,CUM_RUNS,exit_at_end_of_inning,
-                                        alpha=park_factor,home=BAT_HOME_IND,lg=PIT_LEAGUE,yr=YEAR)) %>%
-    ungroup() %>%
-    group_by(GAME_ID, BAT_HOME_IND) %>%
-    mutate(GWAR_moi = expected_gwar(INNING, lead(INN_SITCH, default="0 000"), lead(CUM_RUNS, default=0), exit_in_middle,
-                                    alpha=park_factor,home=BAT_HOME_IND,lg=PIT_LEAGUE,yr=YEAR)) %>%
-    ungroup()
-  
-  war_all
-}
-
-########################## TESTS ########################## 
-# # "LAN201907190"
-# expected_gwar(c(6), c("1 110"), c(0), c(1), home=1,lg="NL",yr=2019)
-# expected_gwar(c(6), c("1 111"), c(1), c(1), home=1,lg="NL",yr=2019)
-# # "CIN201908180"
-# expected_gwar(c(6), c("0 100"), c(1), c(1), home=1,lg="NL",yr=2019)
-# # expected_gwar_eoi(c(5),c(1),c(1))
-# game_id_exs = c("HOU201904250", "OAK201904190", "CIN201908180", "CLE201909142", "LAN201907190")
-# t = 3
-# View(war_all_2019 %>% filter(GAME_ID == game_id_exs[t]) %>%
-#        select(GAME_ID,SP_IND,PIT_ID,BAT_HOME_IND,INNING,INN_SITCH,CUM_RUNS,
-#               exit_in_middle,exit_at_end_of_inning,GWAR_moi,GWAR_eoi))
 

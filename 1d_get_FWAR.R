@@ -12,10 +12,12 @@ for (t in 2010:2019) {
   df_t$YEAR = t
   df_FWAR = bind_rows(df_FWAR, df_t)
 }
-df_FWAR$Name2 = sapply(str_split(df_FWAR$Name, " "), function(x) paste0(str_sub(x,1,1)[1], ".", x[2]))
-df_FWAR = df_FWAR %>% relocate(Name2, .after=Name) %>% relocate(YEAR, .after=Name2) %>% arrange(-YEAR)
+# df_FWAR$Name2 = sapply(str_split(df_FWAR$Name, " "), function(x) paste0(str_sub(x,1,1)[1], ".", x[2]))
+# df_FWAR = df_FWAR %>% relocate(Name2, .after=Name) %>% relocate(YEAR, .after=Name2) %>% arrange(-YEAR)
+df_FWAR = df_FWAR %>% rename(PIT_NAME=Name) %>% relocate(YEAR, .after=PIT_NAME) %>% arrange(-YEAR)
 df_FWAR
-df_FWAR1 = df_FWAR %>% select(Name,Name2,YEAR,G,WAR) %>% rename(N=G, FWAR=WAR)
+# df_FWAR1 = df_FWAR %>% select(Name,Name2,YEAR,G,WAR) %>% rename(N=G, FWAR=WAR)
+df_FWAR1 = df_FWAR %>% select(PIT_NAME,YEAR,G,WAR) %>% rename(N=G, FWAR=WAR)
 df_FWAR1
 
 ### save FanGraphs WAR df_FWAR

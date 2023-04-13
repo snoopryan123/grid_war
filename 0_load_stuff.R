@@ -3,13 +3,21 @@ library(plotly)
 library(ggthemes)
 library(cowplot)
 library(latex2exp)
+library(gridExtra)
+library(gt)
 theme_set(theme_bw())
 theme_update(text = element_text(size=18))
 theme_update(plot.title = element_text(hjust = 0.5))
 # theme_set(theme_solarized())
 output_folder = "./plots/"
 
+rmse <- function(x,y) { sqrt(mean( (x-y)**2 ))}
 
+df_to_png <- function(df, filename) {
+  png(filename, height = 50*nrow(df), width = 200*ncol(df))
+  grid.table(df)
+  dev.off()
+}
 
 clean_lm <- function(cm) {
   cm$residuals = c()
