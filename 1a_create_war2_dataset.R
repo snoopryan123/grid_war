@@ -107,9 +107,6 @@ war2 <- war2 %>%
 # Check
 #View(war2 %>% group_by(INN_SITCH) %>% slice_head() %>% select(INN_SITCH, OUTS_CT, BASE_STATE) )
 
-# PIT_LEAGUE
-war2 = war2 %>% mutate(PIT_LEAGUE = ifelse(BAT_HOME_IND, AWAY_LEAGUE, HOME_LEAGUE))
-
 ### (exit_at_end_of_inning, exit_in_middle)
 war2 = war2 %>%
   group_by(GAME_ID, PIT_NAME) %>%
@@ -120,6 +117,10 @@ war2 = war2 %>%
   mutate(exit_at_end_of_inning = if_else(final == 1 & max_row == 1, 1, 0)) %>%
   mutate(exit_in_middle = if_else(final == 0 & max_row == 1, 1, 0)) %>%
   ungroup()
+
+# HOME_TM_LEAGUE
+# war2 = war2 %>% mutate(PIT_LEAGUE = ifelse(BAT_HOME_IND, AWAY_LEAGUE, HOME_LEAGUE)) ### old --- bad
+
 
 ### Save war_2
 write_csv(war2, "war2.csv")

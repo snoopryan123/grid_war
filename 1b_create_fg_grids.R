@@ -18,22 +18,20 @@ last_play_every_inning <- war2 %>%
 #               EVENT_TX, EVENT_RUNS, CUM_RUNS))
 
 df_f_grid <- last_play_every_inning %>% 
-  mutate(PIT_LEAGUE = ifelse(BAT_HOME_IND, AWAY_LEAGUE, HOME_LEAGUE)) %>%
-  select(GAME_ID, BAT_HOME_IND, PIT_LEAGUE, YEAR, INNING, CUM_RUNS, PIT_WINS) %>%
+  mutate(HOME_LEAGUE = ifelse(BAT_HOME_IND, AWAY_LEAGUE, HOME_LEAGUE)) %>%
+  select(GAME_ID, BAT_HOME_IND, HOME_LEAGUE, YEAR, INNING, CUM_RUNS, PIT_WINS) %>%
 # in the 9th inning only use away batters, to avoid the bias that home batters in the 9th usually lose
   filter(!(INNING == 9 & BAT_HOME_IND == 1))
 
-## f(I,R) grid without adjustments
-model_f_0 = glm(PIT_WINS ~ factor(INNING) + factor(CUM_RUNS),
-                data=df_f_grid, family="binomial"(link="logit"))
-# saveRDS(model_f_0, file = "model_f_0.rds")
-save_lm(model_f_0, "model_f_0.rds")
+# ## f(I,R) grid, adjusting for league (due to DH)
+# ## fixed effect adjustment is WRONG!
+# model_f = glm(PIT_WINS ~ factor(INNING) + factor(CUM_RUNS) + factor(HOME_LEAGUE),
+#               data=df_f_grid, family="binomial"(link="logit"))
+# save_lm(model_f, "model_f.rds")
 
-### f(I,R) grid adjust for League, Home, and Year (fixed effects)
-model_f = glm(PIT_WINS ~ factor(INNING) + factor(CUM_RUNS) +
-                BAT_HOME_IND + factor(PIT_LEAGUE) + factor(YEAR),
-           data=df_f_grid, family="binomial"(link="logit"))
-# saveRDS(model_f, file = "model_f.rds")
+## f(I,R) grid without adjusting for league (since after 2021 NL has DH)
+model_f = glm(PIT_WINS ~ factor(INNING) + factor(CUM_RUNS),
+              data=df_f_grid, family="binomial"(link="logit"))
 save_lm(model_f, "model_f.rds")
 
 ### smoothed f(I,R) as a function of R, for each inning I
@@ -42,7 +40,8 @@ save_lm(model_f, "model_f.rds")
   WP = matrix(nrow = 9, ncol = max_r) # number of wins matrix
   for (inn in 1:9) {
     test_df_inn = tibble(
-      INNING = inn, CUM_RUNS = 0:(max_r-1), BAT_HOME_IND = 1, PIT_LEAGUE = "AL", YEAR = 2019)
+      INNING = inn, CUM_RUNS = 0:(max_r-1), BAT_HOME_IND = 1, HOME_LEAGUE = "AL", YEAR = 2019
+    )
     predict(model_f, test_df_inn, type="response")
     WP[inn,] = predict(model_f, test_df_inn, type="response")
   }
@@ -57,7 +56,7 @@ save_lm(model_f, "model_f.rds")
     mutate(inning=str_sub(ind,start=4)) %>%
     ggplot(aes(x=runs,y=values,color=inning)) + 
     geom_point() + 
-    geom_line(size=1) +
+    geom_line(linewidth=1) +
     labs(
       # title=TeX("smoothed $f(I,R)$ as a function of $R$, for each $I$"),
       y="context-neutral win probability",
@@ -66,7 +65,7 @@ save_lm(model_f, "model_f.rds")
     scale_y_continuous(breaks=seq(0,1,by=0.1))
   pWPiis
   # plotly::ggplotly(pWPiis)
-  ggsave(paste0(output_folder,"plot_fIR_R_smoothed.png"), pWPiis, width=9, height=8)
+  ggsave(paste0(output_folder,"plot_fIR_R_smoothed.png"), pWPiis, width=6, height=5)
 }
 
 ####################################
@@ -74,7 +73,7 @@ save_lm(model_f, "model_f.rds")
 ####################################
 
 df_g_grid <- war2 %>% 
-  select(GAME_ID, BAT_HOME_IND, PIT_LEAGUE, YEAR, INNING, REST_INN_RUNS, INN_SITCH, inn_sitch_seq) %>%
+  select(GAME_ID, BAT_HOME_IND, HOME_LEAGUE, YEAR, INNING, REST_INN_RUNS, INN_SITCH, inn_sitch_seq) %>%
   filter(INNING < 6)
 
 df_g_grid_1 = df_g_grid %>%
@@ -131,9 +130,9 @@ write.csv(as.data.frame(G_GRID), "model_g.csv")
   pg1
   pg2 = plot_gRSO(2)
   pg2
-  ggsave(paste0(output_folder,"plot_gRSO_R0.png"), pg0, width = 9, height=8)
-  ggsave(paste0(output_folder,"plot_gRSO_R1.png"), pg1, width = 9, height=8)
-  ggsave(paste0(output_folder,"plot_gRSO_R2.png"), pg2, width = 9, height=8)
+  ggsave(paste0(output_folder,"plot_gRSO_R0.png"), pg0, width = 6, height=5)
+  ggsave(paste0(output_folder,"plot_gRSO_R1.png"), pg1, width = 6, height=5)
+  ggsave(paste0(output_folder,"plot_gRSO_R2.png"), pg2, width = 6, height=5)
 }
 
 

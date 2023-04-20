@@ -168,7 +168,7 @@ for (i in 1:length(sig_sq_hats)) {
   ) %>% drop_na()
   rmse_vals[i] = rmse(comp_i$X_over_N, comp_i$mu_hat_p_EB.FWAR)
 }
-plot(rmse_vals)
+# plot(rmse_vals)
 sig_sq_hat.FWAR = sig_sq_hats[which.min(rmse_vals)]
 print(sig_sq_hat.FWAR)
 
@@ -202,4 +202,24 @@ rmse(df_test$rank_FWAR_pg, df_test$rank_FWAR_pred) ### old way: predict FWAR fro
 rmse(df_test$rank_GWAR_pg, df_test$rank_FWAR_pred) ### value lost since we should be predicting GWAR
 rmse(df_test$rank_GWAR_pg, df_test$rank_GWAR_pred) ### what should happen: predict GWAR from GWAR (or, GWAR+FWAR)
 
+################################################
+### Look at specific people  ###
+################################################
+
+# undervalued_pitchers = read_csv("df_undervalued_pitchers.csv") %>% select(PIT_NAME) %>% mutate(uov = "undervalued")
+# overvalued_pitchers = read_csv("df_overvalued_pitchers.csv")  %>% select(PIT_NAME) %>% mutate(uov = "overvalued")
+# df_test_1 = df_test %>% left_join(undervalued_pitchers) %>% left_join(overvalued_pitchers)
+df_test_1 = df_test %>%
+  mutate(GW_pred_minus_FW_pred = mu_hat_p_EB.GWAR - mu_hat_p_EB.FWAR) %>%
+  arrange(-GW_pred_minus_FW_pred)
+
+### 
+df_test_uv = df_test_1 %>% head(n=5)
+rmse(df_test_uv$rank_GWAR_pg, df_test_uv$rank_FWAR_pred) 
+rmse(df_test_uv$rank_GWAR_pg, df_test_uv$rank_GWAR_pred)
+
+### 
+df_test_ov = df_test_1 %>% tail(n=5)
+rmse(df_test_ov$rank_GWAR_pg, df_test_ov$rank_FWAR_pred) 
+rmse(df_test_ov$rank_GWAR_pg, df_test_ov$rank_GWAR_pred)
 

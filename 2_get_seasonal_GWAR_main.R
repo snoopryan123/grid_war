@@ -1,25 +1,21 @@
 
 source("0_load_stuff.R")
 
-w_rep = 0.423769
+w_rep = 0.4232248 #FIXME
 
 #######################################
 ### load f,g grids and other models ###
 #######################################
 
-# f_lrm <- readRDS("f_lrm.rds") 
-# g_grid <- read.csv("g_grid.csv",row.names = 1, header= TRUE)
-
 model_f = load_lm("model_f.rds")
-model_f_0 = load_lm("model_f_0.rds")
 model_g = read.csv("model_g.csv", header=T, row.names=1)
 
 ### Park Effects
 park_fx_name = "ridge_PF" #FIXME
 
-df_ridge_PF = read_csv("1e_park_fx/obs_ridge_PF.csv") %>% select(PARK, park_factor) %>% mutate(name = "ridge")
-df_fg_PF = read_csv("1e_park_fx/obs_fg_PF.csv") %>% select(PARK, park_factor) %>% mutate(name = "fg")
-df_espn_PF = read_csv("1e_park_fx/obs_espn_PF.csv") %>% select(PARK, park_factor) %>% mutate(name = "espn")
+df_ridge_PF = read_csv("1d_park_fx/obs_ridge_PF.csv") %>% select(PARK, park_factor) %>% mutate(name = "ridge")
+df_fg_PF = read_csv("1d_park_fx/obs_fg_PF.csv") %>% select(PARK, park_factor) %>% mutate(name = "fg")
+df_espn_PF = read_csv("1d_park_fx/obs_espn_PF.csv") %>% select(PARK, park_factor) %>% mutate(name = "espn")
 df_park_fx = bind_rows(df_ridge_PF, df_fg_PF, df_espn_PF)
 
 #################
@@ -47,25 +43,25 @@ war2_og <- war2_ogg %>%
 # i = inning, j = base-out-state, k = accumulated runs so far, w = tracker (Rest of inning runs)
 
 MAX_INNING_RUNS = 10  
-f <- function(i,r,alpha, home,lg,yr, parkFx=TRUE,adjustConfounders=TRUE) {
+f <- function(i,r,alpha, home,lg,yr, parkFx=TRUE) {
   ### i == inning, r == runs, alpha == park effect
   ### confounders:  home, league, year
   
   r = ifelse(r+1 >= MAX_INNING_RUNS, MAX_INNING_RUNS, r)
-  f_lrm = if (adjustConfounders) model_f else model_f_0
+  f_lrm = model_f
   
   if (parkFx) {
     ### park adjustment...
     r.minus.1 = ifelse(r > 0, r-1, 0)
     r.plus.1 = ifelse(r < MAX_INNING_RUNS, r+1, MAX_INNING_RUNS)
     f_ir.minus.1 = predict(f_lrm, 
-                           tibble(BAT_HOME_IND = home, PIT_LEAGUE = lg, YEAR = yr, INNING = i, CUM_RUNS = r.minus.1), 
+                           tibble(BAT_HOME_IND = home, HOME_LEAGUE = lg, YEAR = yr, INNING = i, CUM_RUNS = r.minus.1), 
                            type="response")[[1]]
     f_ir = predict(f_lrm, 
-                   tibble(BAT_HOME_IND = home, PIT_LEAGUE = lg, YEAR = yr, INNING = i, CUM_RUNS = r), 
+                   tibble(BAT_HOME_IND = home, HOME_LEAGUE = lg, YEAR = yr, INNING = i, CUM_RUNS = r), 
                    type="response")[[1]]
     f_ir.plus.1 = predict(f_lrm, 
-                          tibble(BAT_HOME_IND = home, PIT_LEAGUE = lg, YEAR = yr, INNING = i, CUM_RUNS = r.plus.1), 
+                          tibble(BAT_HOME_IND = home, HOME_LEAGUE = lg, YEAR = yr, INNING = i, CUM_RUNS = r.plus.1), 
                           type="response")[[1]]
     h = abs(alpha)*i
     h = ifelse(h > 1, 1, h)
@@ -77,7 +73,7 @@ f <- function(i,r,alpha, home,lg,yr, parkFx=TRUE,adjustConfounders=TRUE) {
                   )))
   } else { ### no park effects
     f_ir = predict(f_lrm, 
-                   tibble(BAT_HOME_IND = home, PIT_LEAGUE = lg, YEAR = yr, INNING = i, CUM_RUNS = r), 
+                   tibble(BAT_HOME_IND = home, HOME_LEAGUE = lg, YEAR = yr, INNING = i, CUM_RUNS = r), 
                    type="response")[[1]]
     f_ir
   }
@@ -85,8 +81,6 @@ f <- function(i,r,alpha, home,lg,yr, parkFx=TRUE,adjustConfounders=TRUE) {
 # f(1,3,0.05, 1,"AL",2019)
 # f(1,3,-0.05, 1,"AL",2019)
 # f(1,3,0, 1,"AL",2019)
-# f(1,3,-0.05, 1,"AL",2019,parkFx=F)
-# f(1,3,-0.05, 1,"AL",2019,parkFx=F,adjustConfounders=F)
 
 g <- function(outs_base_state, r) {
   ### g(r|S,O) is the probability of allowing R runs through the rest of the inning if
@@ -101,11 +95,11 @@ g <- function(outs_base_state, r) {
 ### compute Grid Wins (GW) and Grid WAR (GWAR) ###
 ##################################################
 
-get_grid_wins_moi <- function(i,r,alpha, home,lg,yr, parkFx=TRUE,adjustConfounders=TRUE, inn_sitch) {
+get_grid_wins_moi <- function(i,r,alpha, home,lg,yr, parkFx=TRUE, inn_sitch) {
   getgw <- function(w) {
     fw = f(i=i, r=r+w, alpha=alpha, 
            home=home, lg=lg, yr=yr, 
-           parkFx=parkFx, adjustConfounders=adjustConfounders) 
+           parkFx=parkFx) 
     gw = g(inn_sitch, r=w)
     fw*gw
   }
@@ -116,7 +110,7 @@ get_grid_wins_moi <- function(i,r,alpha, home,lg,yr, parkFx=TRUE,adjustConfounde
 # get_grid_wins_moi(5,5,0, 1,"AL",2019, inn_sitch="2 000")
 
 
-get_grid_wins <- function(pbp_df, years, parkFx=FALSE, adjustConfounders=TRUE) {
+get_grid_wins <- function(pbp_df, years, parkFx=FALSE) {
   df = pbp_df %>% filter(YEAR %in% years)
   
   if (!isFALSE(parkFx)) { ### use park factors with name `parkFx`
@@ -136,8 +130,8 @@ get_grid_wins <- function(pbp_df, years, parkFx=FALSE, adjustConfounders=TRUE) {
         exit_at_end_of_inning == 0,
         0,
         f(i=INNING, r=CUM_RUNS, alpha=park_factor, 
-          home=BAT_HOME_IND, lg=PIT_LEAGUE, yr=YEAR, 
-          parkFx=parkFx, adjustConfounders=adjustConfounders) 
+          home=BAT_HOME_IND, lg=HOME_LEAGUE, yr=YEAR, 
+          parkFx=parkFx) 
       )
     )
   result
@@ -150,8 +144,8 @@ get_grid_wins <- function(pbp_df, years, parkFx=FALSE, adjustConfounders=TRUE) {
         0,
         get_grid_wins_moi(
           i=INNING, r=CUM_RUNS, alpha=park_factor,  ##r=lead(CUM_RUNS, default=0)
-          home=BAT_HOME_IND, lg=PIT_LEAGUE, yr=YEAR, 
-          parkFx=parkFx, adjustConfounders=adjustConfounders, 
+          home=BAT_HOME_IND, lg=HOME_LEAGUE, yr=YEAR, 
+          parkFx=parkFx, 
           inn_sitch=INN_SITCH_after
         )
       )
@@ -176,7 +170,7 @@ get_pitcher_exits_shortened <- function(pitcher_exits_df) {
   pitcher_exits_df %>% select_if(names(.) %in% c(
     "PIT_NAME", "GAME_ID", "YEAR", "GW", "GWAR", "INNING", "CUM_RUNS",
      "exit_at_end_of_inning", "exit_in_middle", "BASE_STATE", "OUTS_CT",
-     "BAT_HOME_IND", "PIT_LEAGUE", "park_factor"
+     "BAT_HOME_IND", "HOME_LEAGUE", "park_factor"
   )) %>% arrange(PIT_NAME,GAME_ID)
 }
 
