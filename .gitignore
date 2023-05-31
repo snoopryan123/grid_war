@@ -4,6 +4,8 @@
 *.RData
 *.Rhistory
 
+*.png
+
 !model_f.rds
 !model_f_0.rds
 !model_g.csv

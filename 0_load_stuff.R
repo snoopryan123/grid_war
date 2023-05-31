@@ -5,6 +5,8 @@ library(cowplot)
 library(latex2exp)
 library(gridExtra)
 library(gt)
+library(rlist)
+library(xgboost)
 theme_set(theme_bw())
 theme_update(text = element_text(size=18))
 theme_update(plot.title = element_text(hjust = 0.5))
@@ -12,6 +14,11 @@ theme_update(plot.title = element_text(hjust = 0.5))
 output_folder = "./plots/"
 
 rmse <- function(x,y) { sqrt(mean( (x-y)**2 ))}
+
+logloss <- function(y,p) { 
+  p = ifelse(p == 0, 1e-15, p)
+  -mean( y*log(p) + (1-y)*log(1-p) ) 
+}
 
 df_to_png <- function(df, filename) {
   png(filename, height = 50*nrow(df), width = 200*ncol(df))
@@ -54,3 +61,5 @@ load_lm <- function(filename) {
   }
   return(cm)
 }
+
+

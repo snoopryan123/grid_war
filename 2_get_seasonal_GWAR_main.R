@@ -1,17 +1,20 @@
 
 source("0_load_stuff.R")
 
-w_rep = 0.4232248 #FIXME
+w_rep = 0.4165952 #FIXME
 
 #######################################
 ### load f,g grids and other models ###
 #######################################
 
-model_f = load_lm("model_f.rds")
+# model_f = load_lm("model_f.rds")
+# model_f = read.csv("model_f.csv", header=T, row.names=1)
+# model_f = readRDS("model_f.rds")
+model_f = readRDS("model_f_disperesedSkellam.rds")
 model_g = read.csv("model_g.csv", header=T, row.names=1)
 
 ### Park Effects
-park_fx_name = "ridge_PF" #FIXME
+# park_fx_name = "ridge_PF" #FIXME
 
 df_ridge_PF = read_csv("1d_park_fx/obs_ridge_PF.csv") %>% select(PARK, park_factor) %>% mutate(name = "ridge")
 df_fg_PF = read_csv("1d_park_fx/obs_fg_PF.csv") %>% select(PARK, park_factor) %>% mutate(name = "fg")
@@ -31,6 +34,7 @@ war2_og <- war2_ogg %>%
   mutate(
     INN_SITCH_after = lead(INN_SITCH, default="0 000")
   ) %>%
+  mutate(INNING = ifelse(INNING > 9, 9, INNING)) %>% ### we dont account for extra innings 
   ungroup()
 
 ##################################
@@ -46,23 +50,21 @@ MAX_INNING_RUNS = 10
 f <- function(i,r,alpha, home,lg,yr, parkFx=TRUE) {
   ### i == inning, r == runs, alpha == park effect
   ### confounders:  home, league, year
-  
+  # browser()
   r = ifelse(r+1 >= MAX_INNING_RUNS, MAX_INNING_RUNS, r)
-  f_lrm = model_f
+  # f_lrm = model_f
+  
+  model_f_ = model_f
+  model_f_ = model_f[[paste0("f_grid_",yr,"_",lg)]]
   
   if (parkFx) {
     ### park adjustment...
     r.minus.1 = ifelse(r > 0, r-1, 0)
     r.plus.1 = ifelse(r < MAX_INNING_RUNS, r+1, MAX_INNING_RUNS)
-    f_ir.minus.1 = predict(f_lrm, 
-                           tibble(BAT_HOME_IND = home, HOME_LEAGUE = lg, YEAR = yr, INNING = i, CUM_RUNS = r.minus.1), 
-                           type="response")[[1]]
-    f_ir = predict(f_lrm, 
-                   tibble(BAT_HOME_IND = home, HOME_LEAGUE = lg, YEAR = yr, INNING = i, CUM_RUNS = r), 
-                   type="response")[[1]]
-    f_ir.plus.1 = predict(f_lrm, 
-                          tibble(BAT_HOME_IND = home, HOME_LEAGUE = lg, YEAR = yr, INNING = i, CUM_RUNS = r.plus.1), 
-                          type="response")[[1]]
+    f_ir.minus.1 = model_f_[cbind(i,r.minus.1+1)]
+    f_ir = model_f_[cbind(i,r+1)]
+    f_ir.plus.1 = model_f_[cbind(i,r.plus.1+1)]
+
     h = abs(alpha)*i
     h = ifelse(h > 1, 1, h)
     h = ifelse(h < 0, 0, h)
@@ -72,9 +74,7 @@ f <- function(i,r,alpha, home,lg,yr, parkFx=TRUE) {
                          (1+h)*f_ir - h*f_ir.minus.1 # alpha < 0
                   )))
   } else { ### no park effects
-    f_ir = predict(f_lrm, 
-                   tibble(BAT_HOME_IND = home, HOME_LEAGUE = lg, YEAR = yr, INNING = i, CUM_RUNS = r), 
-                   type="response")[[1]]
+    f_ir = model_f_[cbind(i,r+1)]
     f_ir
   }
 }
@@ -87,6 +87,7 @@ g <- function(outs_base_state, r) {
   ### pitcher exits the inning with O outs and base-state S, where outs_base_state == (S,O)
   r = ifelse(r+1 >= MAX_INNING_RUNS, MAX_INNING_RUNS, r)
   model_g[outs_base_state, r+1]
+  # model_g[cbind(outs_base_state, r+1)]
 }
 # g(1,0)
 # g(24,5)
@@ -122,7 +123,7 @@ get_grid_wins <- function(pbp_df, years, parkFx=FALSE) {
   } else {
     print(paste0("computing GWAR without park factors"))
   }
-  
+
   result = df %>%
     rowwise() %>%
     mutate(

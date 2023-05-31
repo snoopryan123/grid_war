@@ -11,6 +11,8 @@ year = 2019
 WAR_df_2019 = read_csv("df_FWAR_GWAR_2019_pf_ridge.csv") %>% drop_na()
 pitcher_exits = read_csv("df_pitcher_exits_2019_pf_ridge.csv")
 
+# WAR_df_2019 = WAR_df_2019 %>% mutate(GWAR_og = GWAR)
+### Rescale GWAR in 2019
 sum_fw = sum(WAR_df_2019$FWAR_RA9)
 sum_gw = sum(WAR_df_2019$GWAR)
 WAR_df_2019 = WAR_df_2019 %>% mutate(GWAR_og = GWAR, GWAR = GWAR_og * sum_fw/sum_gw )
@@ -43,12 +45,12 @@ pgf = WAR_df_2019 %>%
   ggplot(aes(x=FWAR_RA9, y=GWAR, label = label)) + ##label = PIT_NAME
   geom_abline(slope=1, intercept=0) +
   geom_point() +
-  geom_text(hjust=-.05, vjust=-0.05, size=2) +
-  scale_x_continuous(name="Fangraphs RA/9 WAR", limits = c(0,8)) + 
-  scale_y_continuous(name="rescaled Grid WAR", limits = c(1,8.5))  
+  geom_text(hjust=-.05, vjust=-0.05, size=3) +
+  scale_x_continuous(name="Fangraphs RA/9 WAR", breaks=seq(-10,20,by=2), limits = c(0,10.5)) + 
+  scale_y_continuous(name="Grid WAR (rescaled)", breaks=seq(-10,20,by=2))  
   # scale_y_continuous(name="Grid WAR", limits = c(1,8.5))  
 # pgf
-ggsave(paste0(output_folder,"plot_GWAR_vs_FWAR_",year,".png"), pgf, width=6, height=5)
+ggsave(paste0(output_folder,"plot_GWAR_vs_FWAR_",year,".png"), pgf, width=8, height=5)
 
 
 ##################################################

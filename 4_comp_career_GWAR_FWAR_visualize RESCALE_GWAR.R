@@ -9,28 +9,28 @@ source("4_comp_2019_main.R")
 
 df_war_comp = read_csv("df_FWAR_GWAR_2010_2019_pf_ridge.csv")
 df_war_comp = df_war_comp %>% 
-  # ### re-scale GWAR within each year for fair comparison,
-  # ### because FWAR sums to a constant amount per year
-  # group_by(YEAR) %>%
-  # drop_na() %>%
-  # mutate(
-  #   sum_fw = sum(FWAR_RA9),
-  #   sum_gw = sum(GWAR),
-  #   GWAR_og = GWAR,
-  #   GWAR = GWAR_og * sum_fw/sum_gw
-  # ) %>%
+  ### re-scale GWAR within each year for fair comparison,
+  ### because FWAR sums to a constant amount per year
+  group_by(YEAR) %>%
+  drop_na() %>%
+  mutate(
+    sum_fw = sum(FWAR_RA9),
+    sum_gw = sum(GWAR),
+    GWAR_og = GWAR,
+    GWAR = GWAR_og * sum_fw/sum_gw
+  ) %>%
   ungroup() %>%
   mutate(GWAR_FWAR_diff = GWAR-FWAR_RA9, GWAR_FWAR_diff_mag = abs(GWAR_FWAR_diff)) 
 df_war_comp %>% arrange(-GWAR_FWAR_diff_mag)
 
 pit_exits = read_csv("df_pitcher_exits_2010_2019_pf_ridge.csv")
-# pit_exits = pit_exits %>%
-#   ### get rescaled GWAR
-#   left_join( df_war_comp %>% select(YEAR,sum_fw,sum_gw) ) %>%
-#   mutate(
-#     GWAR_og = GWAR,
-#     GWAR = GWAR_og * sum_fw/sum_gw
-#   )
+pit_exits = pit_exits %>%
+  ### get rescaled GWAR
+  left_join( df_war_comp %>% select(YEAR,sum_fw,sum_gw) ) %>%
+  mutate(
+    GWAR_og = GWAR,
+    GWAR = GWAR_og * sum_fw/sum_gw
+  )
 
 # ### check that sum is same
 # sum(df_war_comp$GWAR)
@@ -39,23 +39,6 @@ pit_exits = read_csv("df_pitcher_exits_2010_2019_pf_ridge.csv")
 ###############################################################################################################
 ### EDA: Find pitchers who are undervalued according to GWAR, relative to FWAR_RA9, over their whole career ###
 ###############################################################################################################
-
-# df_war_comp_undervalued = df_war_comp %>%
-#   mutate(
-#     undervalue = GWAR - FWAR_RA9
-#   ) %>%
-#   # mutate(
-#   #   undervalued = GWAR - FWAR_RA9 >= 1,
-#   #   overvalued =  FWAR_RA9 - GWAR >= 1
-#   # ) %>%
-#   group_by(PIT_NAME) %>%
-#   # mutate(
-#   #   num_szns_undervalued = sum(undervalued),
-#   #   num_szns_overvalued = sum(overvalued)
-#   # ) %>%
-#   ungroup() %>%
-#   arrange(-undervalue,PIT_NAME,YEAR)
-#   # arrange(-num_szns_undervalued,PIT_NAME,YEAR)
 
 df_war_comp_1 = df_war_comp %>%
   group_by(PIT_NAME) %>%
@@ -84,20 +67,18 @@ overvalued_pitchers = df_war_comp_1 %>%
 print(overvalued_pitchers)
  # gt::gtsave(gt::gt(overvalued_pitchers), paste0(output_folder, "plot_career_overvalued_pitchers.png"))
 
+lm1 = lm(GWAR~FWAR_RA9, data=df_war_comp)
 plot_fwar_v_gwar = df_war_comp %>% 
-  # mutate(pit_label = ifelse(
-  #   PIT_NAME %in% c(undervalued_pitchers$PIT_NAME[1:2],overvalued_pitchers$PIT_NAME[1:2]),
-  #   PIT_NAME, "")) %>%
   ggplot(aes(x=FWAR_RA9, y = GWAR)) + 
   geom_point() + 
-  # geom_text(aes(label=pit_label), size=3, color="dodgerblue2") +
-  # ylab("GWAR (rescaled each season)") +
-  ylab("GWAR") +
+  ylab("GWAR (rescaled each season)") +
+  # ylab("GWAR") +
   xlab("FWAR (RA9)") +
-  # geom_text(aes(label=paste0(PIT_NAME, ":", YEAR)), size=2) +
-  geom_abline()
-plot_fwar_v_gwar
-ggsave("plots/plot_comp_career/plot_career_fwar_v_gwar.png", 
+  geom_abline(intercept = coef(lm1)[1], slope = coef(lm1)[2], color="dodgerblue2", linewidth=1) +
+  geom_abline(linewidth=1)
+  # geom_abline(linetype="dashed", color="gray60", linewidth=1)
+# plot_fwar_v_gwar
+ggsave("plots/plot_comp_career/plot_career_fwar_v_gwar.png",
        plot_fwar_v_gwar, width=6, height=5)
 
 
@@ -108,14 +89,14 @@ plot_undervalued_pitchers = gt(undervalued_pitchers) %>%
   cols_label(
     PIT_NAME = "Pitcher",
     # num_szns_undervalued = "Num Seasons Undervalued",
-    # sum_gwar_rescaled_minus_fwar = "Career GWAR (Rescaled) Minus FWAR (RA9)"
-    sum_gwar_rescaled_minus_fwar = "Career GWAR Minus FWAR (RA9)"
+    sum_gwar_rescaled_minus_fwar = "Career GWAR (Rescaled) Minus FWAR (RA9)"
+    # sum_gwar_rescaled_minus_fwar = "Career GWAR Minus FWAR (RA9)"
   ) %>%
   fmt_number( 
     columns = sum_gwar_rescaled_minus_fwar,
     decimals = 2 
   )
-plot_undervalued_pitchers
+# plot_undervalued_pitchers
 gtsave(plot_undervalued_pitchers, "plots/plot_comp_career/plot_undervalued_pitchers.png")
 
 # pit_v_pit_hists(undervalued_pitchers$PIT_NAME[1:6],
@@ -183,14 +164,14 @@ plot_overvalued_pitchers = gt(overvalued_pitchers) %>%
   cols_label(
     PIT_NAME = "Pitcher",
     # num_szns_overvalued = "Num Seasons Overvalued",
-    # sum_gwar_rescaled_minus_fwar = "Career GWAR (Rescaled) Minus FWAR (RA9)"
-    sum_gwar_rescaled_minus_fwar = "Career GWAR Minus FWAR (RA9)"
+    sum_gwar_rescaled_minus_fwar = "Career GWAR (Rescaled) Minus FWAR (RA9)"
+    # sum_gwar_rescaled_minus_fwar = "Career GWAR Minus FWAR (RA9)"
   ) %>%
   fmt_number( 
     columns = sum_gwar_rescaled_minus_fwar,
     decimals = 2 
   )
-plot_overvalued_pitchers
+# plot_overvalued_pitchers
 gtsave(plot_overvalued_pitchers, "plots/plot_comp_career/plot_overvalued_pitchers.png")
 
 
