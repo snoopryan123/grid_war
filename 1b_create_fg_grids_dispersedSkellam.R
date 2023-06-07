@@ -113,6 +113,7 @@ df_lambda_yr_lg
 lambdaF = mean(df_f_grid$INN_RUNS)
 sigmaF = sd(df_f_grid$INN_RUNS)
 
+set.seed(22) #Kershaw
 # ks = seq(0.1,1,by=0.05)
 ks = seq(0.2,0.3,by=0.01)
 logLosses = numeric(length(ks))

@@ -33,6 +33,22 @@ df_train_byGame = df_byGame %>% filter(YEAR <= final_train_year)
 
 #################### Empirical Bayes for GWAR, game-by-game ####################
 
+### histograms of a pitcher's game-level GWAR
+unique(df_train_byGame$PIT_NAME)
+pitnames = c("Clayton Kershaw", "Yovani Gallardo", 
+             "Jake Arrieta", "Ervin Santana")
+plot_Xpg_GWAR = df_train_byGame %>%
+  # filter(PIT_NAME == "Clayton Kershaw") %>%
+  filter(PIT_NAME %in% pitnames) %>%
+  ggplot(aes(x=GWAR)) +
+  facet_wrap(~PIT_NAME, nrow=1) +
+  xlab("game GWAR") +
+  geom_histogram(fill="black")
+# plot_Xpg_GWAR
+ggsave(paste0(output_folder,"plot_Xpg_GWAR.png"),plot_Xpg_GWAR,width=12,height=4)
+
+
+
 fit_params.EB.mle_GWAR <- function(epsilon=1e-5, df0=df_train_byGame) {
   ### first, fit the MLE hyperparams mu.hat, tau.sq.hat, sig.sq.p.hat
   ### initialize
@@ -174,6 +190,25 @@ plot_EBGWAR = df.EB.GWAR.1 %>%
 ggsave(paste0(output_folder,"plot_EB_GWAR.png"), plot_EBGWAR, width=7, height=5)
 
 #################### Empirical Bayes for FWAR ####################
+
+### the following is irrelevant because we dont observe game-level FWAR:
+# ### histograms of a pitcher's game-level FWAR
+# unique(df_train_byGame$PIT_NAME)
+# pitnames = c("Clayton Kershaw", "Yovani Gallardo")#, 
+#              #"Jake Arrieta", "Ervin Santana")
+# plot_Xpg_FWAR = df_train_byGame %>%
+#   select(PIT_NAME, FWAR_FIP, FWAR_RA9) %>%
+#   pivot_longer(cols = c(FWAR_FIP, FWAR_RA9)) %>%
+#   rename(FWAR = value) %>% rename(FWAR_type = name) %>%
+#   # filter(PIT_NAME == "Clayton Kershaw") %>%
+#   filter(PIT_NAME %in% pitnames) %>%
+#   ggplot(aes(x=FWAR)) +
+#   facet_wrap(~PIT_NAME + FWAR_type, nrow=1) +
+#   xlab("game FWAR") +
+#   geom_histogram(fill="black")
+# plot_Xpg_FWAR
+# ggsave(paste0(output_folder,"plot_Xpg_FWAR.png"),plot_Xpg_GWAR,width=12,height=4)
+
 
 fit_params.EB.mle_FWAR <- function(metric, epsilon=1e-5, df0=df_train_byGame, sig.sq=NULL) {
   ##### metric in {"FWAR_FIP", "FWAR_RA9"} #####
@@ -417,6 +452,7 @@ df_test
 
 df_test_A = df_test %>% select(c("PIT_NAME",starts_with("rank")))
 df_test_A
+nrow(df_test_A) # N
 
 ### compute RMSE
 df_test_rmses = df_test_A %>%
@@ -441,6 +477,55 @@ gt::gtsave(gt::gt(df_test_rmses), paste0(output_folder,"plot_test_EB_rmse.png"))
 #   rename(rank = value) %>%
 #   ggplot(aes(y = PIT_NAME)) +
 #   geom_point(aes(x=rank, color=name))
+
+### plot pitcher rankings
+cbp1 <- c("#E69F00", "#56B4E9", "#CC79A7",  "#999999", "#009E73",
+          "#0072B2", "#D55E00",  "#F0E442")
+
+plot_EB_pitRankingsMu = df_test %>%
+  mutate(PIT_NAME = fct_reorder(PIT_NAME, mu.hat.p.GWAR)) %>%
+  select(c("PIT_NAME",starts_with("mu"))) %>%
+  pivot_longer(-PIT_NAME, values_to = "mu.hat.p", names_to="metric") %>%
+  mutate(metric = str_remove(metric, "mu.hat.p.")) %>%
+  ggplot(aes(y = PIT_NAME)) +
+  geom_point(aes(x=mu.hat.p, color=metric), size=5) +
+  scale_colour_manual(values=cbp1) +
+  xlab(TeX("$\\hat{\\mu}_p$")) + 
+  ylab("pitcher") 
+# plot_EB_pitRankingsMu
+ggsave(paste0(output_folder,"plot_EB_pitRankingsMu.png"), 
+       plot_EB_pitRankingsMu, width=8, height=10)
+
+plot_EB_pitRankingsRank = df_test %>%
+  select(-rank.GWAR_obs) %>%
+  mutate(PIT_NAME = fct_reorder(PIT_NAME, -rank.GWAR_pred)) %>%
+  select(c("PIT_NAME",starts_with("rank"))) %>%
+  pivot_longer(-PIT_NAME, values_to = "rank", names_to="metric") %>%
+  mutate(metric = str_remove(metric, "rank.")) %>%
+  mutate(metric = str_remove(metric, "_pred")) %>%
+  ggplot(aes(y = PIT_NAME)) +
+  geom_point(aes(x=rank, color=metric), size=5) +
+  # xlab(TeX("$\\hat{\\mu}_p$")) + 
+  scale_colour_manual(values=cbp1) +
+  ylab("pitcher") 
+# plot_EB_pitRankingsRank
+ggsave(paste0(output_folder,"plot_EB_pitRankingsRank.png"), 
+       plot_EB_pitRankingsRank, width=8, height=10)
+
+plot_EB_pitRankingsRank1 = df_test %>%
+  mutate(PIT_NAME = fct_reorder(PIT_NAME, -rank.GWAR_obs)) %>%
+  select(c("PIT_NAME",starts_with("rank"))) %>%
+  pivot_longer(-PIT_NAME, values_to = "rank", names_to="metric") %>%
+  mutate(metric = str_remove(metric, "rank.")) %>%
+  mutate(metric = str_remove(metric, "_pred")) %>%
+  ggplot(aes(y = PIT_NAME)) +
+  geom_point(aes(x=rank, color=metric), size=5) +
+  # xlab(TeX("$\\hat{\\mu}_p$")) + 
+  scale_colour_manual(values=cbp1) +
+  ylab("pitcher") 
+# plot_EB_pitRankingsRank1
+ggsave(paste0(output_folder,"plot_EB_pitRankingsRank1.png"), 
+       plot_EB_pitRankingsRank1, width=8, height=10)
 
 ################################
 ### Look at specific people  ###
