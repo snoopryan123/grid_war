@@ -75,6 +75,7 @@ get_f_grid_Skellam <- function(lambda_X, lambda_Y, max_r = 10) {
 ###
 monte_carlo_f_grid <- function(lambda_hat, sigma_hat, B=100) {
   f_grid = NULL
+  set.seed(32) # Koufax!
   for (b in 1:B) {
     ### sample lambda_X and lambda_Y
     lambda_X_b = truncnorm::rtruncnorm(n=1, a=0, mean=lambda_hat, sd=sigma_hat)
@@ -133,12 +134,12 @@ for (i in 1:length(ks)) {
     summarise(logloss_ = logloss(PIT_WINS, wp_hat)))$logloss_
   logLosses[i] = eval_df_k
 }
-plot(logLosses)
+# plot(logLosses)
 ks[which(logLosses == min(logLosses))]
 
-######################################################
-#### fit dispersed Skellam f(I,R) grid and plot!  ####
-######################################################
+#####################
+#### plot f(I,R) ####
+#####################
 
 plot_WP_matrixIR <- function(WP) {
   ### WP is a matrix with 9 rows (innings) and Rmax+1 columns (runs allowed)
@@ -162,36 +163,198 @@ plot_WP_matrixIR <- function(WP) {
   pWPiis
 }
 
-set.seed(5437154)
-f_grids_Skellam = list()
-# yr = 2019; lg = "NL"; {
-for (yr in unique(df_f_grid$YEAR)) {
-  for (lg in unique(df_f_grid$HOME_LEAGUE)) {
-    print(paste0("computing f(I,R) grid for lg ", lg, " and szn ", yr))
-    lambda_yr_lg = (df_lambda_yr_lg %>% filter(YEAR == yr & HOME_LEAGUE == lg))$lambda
-    sigma_yr_lg = (df_lambda_yr_lg %>% filter(YEAR == yr & HOME_LEAGUE == lg))$sigma
-    # f_grid_yr_lg = monte_carlo_f_grid(lambda_yr_lg, sigma_yr_lg)
-    k = 0.28 # tuned above
-    f_grid_yr_lg = monte_carlo_f_grid(lambda_yr_lg, sigma_yr_lg*k)
-    ### save Skellam grid
-    f_grids_Skellam[[paste0("f_grid_",yr,"_",lg)]] = f_grid_yr_lg
-    ### plot Skellam grid
-    plot_f_grid_yr_lg = plot_WP_matrixIR(f_grid_yr_lg)
-    ggsave(paste0(output_folder,"plot_fIR_R_disperesedSkellam_",paste0(yr,"_",lg),".png"), plot_f_grid_yr_lg, width=7, height=5)
-  }
+plot_fIR <- function(f_grid_matrix, title="", annotation="") {
+  ### WP is a matrix with 9 rows (innings) and Rmax+1 columns (runs allowed)
+  WPi = as_tibble(t(f_grid_matrix))
+  colnames(WPi) = paste0("inn",1:9)
+  WPii = stack(WPi) 
+  WPii$runs = rep(0:(nrow(WPi)-1), 9)
+  
+  pWPiis = WPii %>% filter(runs <= 13) %>%
+    mutate(inning=str_sub(ind,start=4)) %>%
+    ggplot(aes(x=runs,y=values,color=inning)) + 
+    geom_point() + 
+    geom_line(linewidth=1) +
+    labs(
+      title = title,
+      y="context-neutral win probability",
+      x="runs allowed through the end of the given inning"
+    ) +
+    annotate("text", x = 8, y = 0.95, label = annotation) +
+    # theme(plot.margin = unit(c(1, 1, 3, 1), "lines")) +
+    scale_x_continuous(breaks=seq(0,30,by=2)) +
+    scale_y_continuous(breaks=seq(0,1,by=0.1))
+  pWPiis
 }
-### save Skellam f grids
-saveRDS(f_grids_Skellam, "model_f_disperesedSkellam.rds")
-# saveRDS(f_grids_Skellam, "model_f.rds")
+# ### test
+# plot_fIR(get_f_grid_Skellam(lambda_X = 0.54, lambda_Y = 0.54))
 
-# ### plot empirical grids
+############################################
+#### fit dispersed Skellam f(I,R) grid  ####
+############################################
+
+# set.seed(5437154)
+# f_grids_Skellam = list()
+# # yr = 2019; lg = "NL"; {
 # for (yr in unique(df_f_grid$YEAR)) {
 #   for (lg in unique(df_f_grid$HOME_LEAGUE)) {
-#     f_grid_emp = train_empirical_f_grid(df_f_grid %>% filter(YEAR == yr & HOME_LEAGUE == lg))
-#     plot_f_grid_yr_lg = plot_WP_matrixIR(f_grid_emp)
-#     ggsave(paste0(output_folder,"plot_fIR_empiricalGrid_",paste0(yr,"_",lg),".png"), plot_f_grid_yr_lg, width=7, height=5)
+#     print(paste0("computing f(I,R) grid for lg ", lg, " and szn ", yr))
+#     lambda_yr_lg = (df_lambda_yr_lg %>% filter(YEAR == yr & HOME_LEAGUE == lg))$lambda
+#     sigma_yr_lg = (df_lambda_yr_lg %>% filter(YEAR == yr & HOME_LEAGUE == lg))$sigma
+#     # f_grid_yr_lg = monte_carlo_f_grid(lambda_yr_lg, sigma_yr_lg)
+#     k = 0.28 # tuned above
+#     f_grid_yr_lg = monte_carlo_f_grid(lambda_yr_lg, sigma_yr_lg*k)
+#     ### save Skellam grid
+#     f_grids_Skellam[[paste0("f_grid_",yr,"_",lg)]] = f_grid_yr_lg
+#     ### plot Skellam grid
+#     plot_f_grid_yr_lg = plot_WP_matrixIR(f_grid_yr_lg)
+#     ggsave(paste0(output_folder,"plot_fIR_R_disperesedSkellam_",paste0(yr,"_",lg),".png"), plot_f_grid_yr_lg, width=7, height=5)
 #   }
 # }
+# ### save Skellam f grids
+# saveRDS(f_grids_Skellam, "model_f_disperesedSkellam.rds")
+# # saveRDS(f_grids_Skellam, "model_f.rds")
+# 
+# # ### plot empirical grids
+# # for (yr in unique(df_f_grid$YEAR)) {
+# #   for (lg in unique(df_f_grid$HOME_LEAGUE)) {
+# #     f_grid_emp = train_empirical_f_grid(df_f_grid %>% filter(YEAR == yr & HOME_LEAGUE == lg))
+# #     plot_f_grid_yr_lg = plot_WP_matrixIR(f_grid_emp)
+# #     ggsave(paste0(output_folder,"plot_fIR_empiricalGrid_",paste0(yr,"_",lg),".png"), plot_f_grid_yr_lg, width=7, height=5)
+# #   }
+# # }
+
+###########################################
+### compute and write the grids f and g ###
+###########################################
+
+### get park factors
+DF_PFS_ALL = read_csv("1d_park_fx/df_ALL_park_fx_2017-2019.csv") ### created in file `1d_park_fx/2b_park_effects_observed_1719.R`
+# View(DF_PFS_ALL %>% arrange(PARK,method) %>% mutate_if(is.numeric, round, 5))
+
+### check park factor plot
+{
+  ##### plot 2017-2019 park factor comparison
+  plot_pf_comparison_1719 =
+    DF_PFS_ALL %>%
+    mutate(PARK = factor(PARK, levels = (DF_PFS_ALL %>% filter(method=="Ridge") %>% arrange(park_factor))$PARK )) %>%
+    select(PARK, park_factor, method) %>%
+    ggplot() +
+    geom_point(aes(x=park_factor,y=PARK,color=method, shape=method),
+               size=4, alpha=0.75) + # alpha=0.85
+    ylab("park") + xlab('2019 three-year park effect') +
+    scale_shape_manual(values=c(16, 17, 18, 15, 19)) +
+    scale_x_continuous(
+      # limits = c(-0.1,0.2),
+      breaks = seq(-1,1,by=0.05)
+    ) +
+    scale_color_brewer(palette="Set1")
+  plot_pf_comparison_1719
+}
+
+calculate_and_write_f_grids <- function(szns, park_method) {
+  ### park_method in {"Ridge","OLS","ESPN","FanGraphs","None"}
+  # browser()
+  f_grids = list()
+  for (szn in szns) {
+    f_hyperparams = df_lambda_yr_lg
+    hp_szn_AL = f_hyperparams %>% filter(YEAR == szn & HOME_LEAGUE == "AL")
+    hp_szn_NL = f_hyperparams %>% filter(YEAR == szn & HOME_LEAGUE == "NL")
+    # pf_df = read_park_factors(szn)
+    if (nrow(hp_szn_AL) == 1 & nrow(hp_szn_NL) == 1) {
+      for (lg in unique(f_hyperparams$HOME_LEAGUE)) {
+        if (!is.na(lg)) {
+          ### get relevant park factors
+          if (park_method %in% c("Ridge","OLS","ESPN","FanGraphs")) {
+            pf_df_lg = DF_PFS_ALL %>% filter(method == park_method & HOME_LEAGUE == lg)
+          } else if (park_method == "no_park_factor") {
+            pf_df_lg = tibble() # do nothing
+          } else {
+            stop(paste0("park_method=",park_method, " is not implemented."))
+          }
+          hp_szn_lg = get(paste0("hp_szn_",lg))
+          lambda = hp_szn_lg$lambda
+          sigma  = hp_szn_lg$sigma
+          k = 0.28 ### overdispersion tuning parameter
+          f_grids_szn_lg = list()
+          # browser()
+          for (j in 0:nrow(pf_df_lg)) {
+            ### get the park factor info for this park
+            if (j == 0) {
+              ### park_factor = 0
+              alpha_j = 0
+              park_id_j = "no_park_factor"
+              park_j = "no park factor"
+            } else {
+              # browser()
+              alpha_j = pf_df_lg$park_factor[j]
+              park_id_j = pf_df_lg$PARK[j]
+              park_j = pf_df_lg$PARK[j]
+            }
+            ### fit the f(I,R) grid
+            lambda_j = lambda + alpha_j
+            f_grid = monte_carlo_f_grid(lambda_j, sigma*k)
+            ### plot just the no park factor version
+            if (j == 0) {
+              if (park_method == "Ridge") { #FIXME
+                # plot_f_title = TeX(paste0(szn," ",lg," ",park_j," f grid"))
+                plot_f_title = TeX(paste0("f grid: ", szn," ",lg," ",park_j))
+                hyperparam_str = TeX(paste0("$\\lambda$=",round(lambda_j,2),", ","$\\sigma$=", round(sigma,2)))
+                plot_f_grid = plot_fIR(f_grid, title=plot_f_title, annotation = hyperparam_str)
+                suppressWarnings( ggsave(paste0(output_folder,"plot_f_grid_",szn,"_",lg,"_",park_method,".png"),
+                                         plot_f_grid, width=7, height=5) )
+              }
+            }
+            ### record the fitted f grid
+            f_grids_szn_lg[[park_id_j]] = f_grid
+          }
+          # browser()
+          ### record the grid for this lg-szn
+          f_grids[[paste0("f_grid_",szn,"_",lg)]] = f_grids_szn_lg
+          print(paste0("got ", szn, " ", lg, " f grids."))
+        }
+      }
+    } else {
+      print(paste0(szn, " hyperparams are not available."))
+    }
+  }
+  ### write the f_grids and hyperparams for these lg-szns
+  saveRDS(f_grids, paste0("model_f_dispersedSkellam_park",park_method,".rds"))
+  print("done.")
+}
+
+### write the f grids
+calculate_and_write_f_grids(2019, "no_park_factor")
+calculate_and_write_f_grids(2019, "OLS")
+calculate_and_write_f_grids(2019, "FanGraphs")
+calculate_and_write_f_grids(2019, "ESPN")
+calculate_and_write_f_grids(2010:2019, "Ridge")
+
+### CHECKS::
+  ### get f grids
+model_f_no_park_factor = readRDS("model_f_dispersedSkellam_parkno_park_factor.rds")
+model_f_ridge = readRDS("model_f_dispersedSkellam_parkRidge.rds")
+model_f_ols = readRDS("model_f_dispersedSkellam_parkOLS.rds")
+model_f_espn = readRDS("model_f_dispersedSkellam_parkESPN.rds")
+model_f_fg = readRDS("model_f_dispersedSkellam_parkFanGraphs.rds")
+  ### sanity check
+f_grid_MAE <- function(PARK_,lg) {
+  diff_tib = tibble(
+    Ridge = mean(abs(model_f_ridge[[paste0("f_grid_2019_",lg)]][[PARK_]] - model_f_no_park_factor[[paste0("f_grid_2019_",lg)]]$no_park_factor)),
+    FanGraphs = mean(abs(model_f_fg[[paste0("f_grid_2019_",lg)]][[PARK_]] - model_f_no_park_factor[[paste0("f_grid_2019_",lg)]]$no_park_factor)),
+    ESPN = mean(abs(model_f_espn[[paste0("f_grid_2019_",lg)]][[PARK_]] - model_f_no_park_factor[[paste0("f_grid_2019_",lg)]]$no_park_factor)),
+    OLS = mean(abs(model_f_ols[[paste0("f_grid_2019_",lg)]][[PARK_]] - model_f_no_park_factor[[paste0("f_grid_2019_",lg)]]$no_park_factor))
+  ) %>%
+    pivot_longer(everything(), names_to="method", values_to="MAE") %>%
+    arrange(MAE)
+  pf_tib = DF_PFS_ALL %>% arrange(PARK,abs(park_factor)) %>% mutate_if(is.numeric, round, 5) %>% filter(PARK == PARK_)
+  list(pf_tib, diff_tib)
+}
+f_grid_MAE("ANA01", "AL")
+f_grid_MAE("ATL03", "NL")
+f_grid_MAE("WAS11", "NL")
+f_grid_MAE("NYC20", "NL")
+f_grid_MAE("DEN02", "NL")
 
 ####################################
 #### Create GWAR grid: g(R|S,O) ####

@@ -1,14 +1,12 @@
 
 source("2_get_seasonal_GWAR_main.R")
 
-PARK_FX = "ridge" #FIXME
-
 ##################
 ### Find w_rep ###
 ##################
 
 ### grid wins GW and (grid war GWAR) at the row (play) where the pitcher exits the game
-grid_wins_2010_2019_ridge = get_grid_wins(pbp_df=war2_og, 2010:2019, parkFx=PARK_FX) ### takes 15 mins
+grid_wins_2010_2019_ridge = get_grid_wins(pbp_df=war2_og, 2010:2019, parkFx="Ridge") ### takes 30 sec
 df_pitcher_exits_2010_2019_ridge = get_pitcher_exits(grid_wins_2010_2019_ridge, war=FALSE)
 
 ### get Grid Wins 
@@ -63,7 +61,9 @@ write_csv(df_FWAR_GWAR_comp, paste0("df_FWAR_GWAR_2019_pf_ridge.csv"))
 ###################################################
 
 ### Grid Wins and GWAR for each game, for various park effects
-park_fx_names = list(FALSE, "fg", "espn", "ridge")   ### list(FALSE, "fg", "espn", "ridge")   ### list(FALSE, "fg", "espn")
+park_fx_names = c(FALSE, "OLS", "ESPN", "FanGraphs")
+# park_fx_names = c("Ridge", "OLS", "ESPN", "FanGraphs")
+# park_fx_names = list(FALSE, "fg", "espn", "ridge")  
 
 compute_GWAR_fullSuite <- function(years, parkFx=FALSE, war=TRUE) {
   # browser()
@@ -92,7 +92,7 @@ for (park_fx_name in park_fx_names) {
 ### compute 2010-2019 GWAR with ridge park effects ###
 ######################################################
 
-compute_GWAR_fullSuite(2010:2019, parkFx=PARK_FX, war=TRUE) ### takes 2 mins
+compute_GWAR_fullSuite(2010:2019, parkFx="Ridge", war=TRUE) ### takes 2 mins
 
 ### dataframe for comparing GWAR, FWAR, AWAR 
 df_FWAR = read_csv("df_FWAR.csv")

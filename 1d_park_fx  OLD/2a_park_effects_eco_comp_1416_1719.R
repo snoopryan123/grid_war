@@ -50,19 +50,11 @@ ybar = mean(X_1719$INN_RUNS)
 ybar
 
 # ### Ridge (ecological)
-# # ridge with CV-tuned lambda:
-# lambdas = seq(0.1,1.3,by=0.1) ### DO NOT change this vector of LAMBDAS 
-# cv_ridge_eco = glmnet::cv.glmnet(
+# ridge_eco = glmnet(
 #   x = model.matrix(~ factor(OT_YR) + factor(DT_YR) + factor(PARK), data=X_1416),
-#   y = X_1416$INN_RUNS, alpha = 0, family="gaussian", lambda = lambdas
+#   y = X_1416$INN_RUNS, alpha = 0, family="gaussian", lambda = 0.25,
 # )
-# coeffs_ridge_eco = coef(cv_ridge_eco)[,1]
-# # ### ridge with pre-tuned lambda:
-# # ridge_eco = glmnet(
-# #   x = model.matrix(~ factor(OT_YR) + factor(DT_YR) + factor(PARK), data=X_1416),
-# #   y = X_1416$INN_RUNS, alpha = 0, family="gaussian", lambda = 0.25,
-# # )
-# # coeffs_ridge_eco = coef(ridge_eco)[,1]
+# coeffs_ridge_eco = coef(ridge_eco)[,1]
 # coeffs_ridge_eco  = coeffs_ridge_eco[str_detect(names(coeffs_ridge_eco), "PARK")]
 # coeffs_ridge_eco_df = as_tibble(coeffs_ridge_eco) %>%
 #   rename(fitted_coeff = value) %>%
@@ -233,11 +225,10 @@ rmse_df = X_test_df %>%
     espn_rmse = rmse(INN_RUNS, espn_preds),
     ybar_rmse = rmse(INN_RUNS, ybar),
   ) %>% 
-  mutate_if(is.numeric, round, 5) %>%
-  pivot_longer(everything(), values_to="rmse", names_to="method") %>%
-  arrange(rmse)
-rmse_df
-gt::gtsave(gt::gt(rmse_df), "plot_ecoComp0_rmse.png")
+  mutate_if(is.numeric, round, 5)
+rmse_df1 = rmse_df[,order(as.numeric(rmse_df[1,]), decreasing = T)]
+rmse_df1
+write_csv(rmse_df1, "ecoComp_rmse_compare_0.csv")
 
 ### out-of-sample ECOLOGICAL rmse
 rmse_eco_df = X_test_df %>%
@@ -259,13 +250,10 @@ rmse_eco_df = X_test_df %>%
     eco_espn_rmse = rmse(mean_inn_runs, mean_espn_pred),
     eco_ybar_rmse = rmse(mean_inn_runs, ybar)
   ) %>%
-  mutate_if(is.numeric, round, 5) %>%
-  pivot_longer(everything(), values_to="rmse", names_to="method") %>%
-  arrange(rmse)
-rmse_eco_df
-gt::gtsave(gt::gt(rmse_eco_df), "plot_ecoComp1_rmse.png")
-
-
+  mutate_if(is.numeric, round, 5)
+rmse_eco_df1 = rmse_eco_df[,order(as.numeric(rmse_eco_df[1,]), decreasing = T)]
+rmse_eco_df1
+write_csv(rmse_eco_df1, "ecoComp_rmse_compare_eco.csv")
 
 
 

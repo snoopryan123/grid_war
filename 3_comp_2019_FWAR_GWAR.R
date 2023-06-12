@@ -31,6 +31,7 @@ pit4e = (WAR_df_2019 %>% arrange(GWAR) %>% slice_tail(n=2))$PIT_NAME
 pit4f = c("Lance Lynn", "Sonny Gray", "Sandy Alcantara")
 pit4f = ""
 pits = c(pit4a, pit4b, pit4c, pit4d, pit4e, pit4f)
+pits = setdiff(pits, c("Rick Porcello", "Masahiro Tanaka")) #FIXME
 # pits = setdiff(pits, c("Jeff Samardzija", "Ivan Nova", "Mike Fiers"))
 WAR_df_2019$pit_examinef = WAR_df_2019$PIT_NAME %in% pits
 ############
@@ -45,11 +46,11 @@ pgf = WAR_df_2019 %>%
   ggplot(aes(x=FWAR_RA9, y=GWAR, label = label)) + ##label = PIT_NAME
   geom_abline(slope=1, intercept=0) +
   geom_point() +
-  geom_text(hjust=-.05, vjust=-0.05, size=3) +
+  geom_text(hjust=-.05, vjust=-0.05, size=3.5) +
   scale_x_continuous(name="Fangraphs RA/9 WAR", breaks=seq(-10,20,by=2), limits = c(0,10.5)) + 
   scale_y_continuous(name="Grid WAR (rescaled)", breaks=seq(-10,20,by=2))  
   # scale_y_continuous(name="Grid WAR", limits = c(1,8.5))  
-# pgf
+pgf
 ggsave(paste0(output_folder,"plot_GWAR_vs_FWAR_",year,".png"), pgf, width=8, height=5)
 
 

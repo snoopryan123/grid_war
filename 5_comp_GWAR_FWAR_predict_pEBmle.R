@@ -527,6 +527,77 @@ plot_EB_pitRankingsRank1 = df_test %>%
 ggsave(paste0(output_folder,"plot_EB_pitRankingsRank1.png"), 
        plot_EB_pitRankingsRank1, width=8, height=10)
 
+####################################################
+### dist of game-GWAR conditional on true talent ###
+####################################################
+
+hist(df.EB$mu.hat.p.GWAR)
+
+df_games_mu = df_train_byGame %>% left_join(df.EB)
+df_games_mu
+
+plot_gwar_talent_dist = df.EB %>%
+  ggplot() +
+  geom_histogram(aes(x = mu.hat.p.GWAR ), fill="black", bins=40) +
+  xlab(TeX("$\\hat{\\mu}_p^{GWAR}$")) +
+  geom_vline(aes(xintercept = mean(mu.hat.p.GWAR)), linewidth=2, color="dodgerblue2") 
+plot_gwar_talent_dist
+ggsave(paste0(output_folder,"plot_EB_gwarTalentDist.png"), 
+       plot_gwar_talent_dist, width=6, height=5)
+
+appender <- function(x) TeX(paste("$\\hat{\\mu}_p^{GWAR} \\in $", unique(x))) 
+
+plot_gameGwarDist_givenTalent = df_games_mu %>%
+  drop_na(mu.hat.p.GWAR) %>%
+  mutate(muhat_bin = cut(mu.hat.p.GWAR, 3)) %>%
+  ggplot() + 
+  # facet_wrap(~muhat_bin) +
+  facet_wrap(~muhat_bin, nrow=1,
+             labeller = as_labeller(appender, default = label_parsed)) +
+  theme(
+    axis.text.y=element_blank(),
+    axis.ticks.y=element_blank() 
+  ) +
+  xlab("game GWAR") +
+  geom_histogram(aes(x = GWAR, 
+                     after_stat(density)
+                 ), fill="black")
+plot_gameGwarDist_givenTalent
+ggsave(paste0(output_folder,"plot_EB_gameGwarDist_givenTalent.png"), 
+       plot_gameGwarDist_givenTalent, width=10, height=3)
+
+
+plot_gwar_game_dist = df_games_mu %>%
+  ggplot() +
+  geom_histogram(aes(x = GWAR ), fill="black", bins=40) +
+  xlab("game GWAR") +
+  geom_vline(aes(xintercept = mean(GWAR)), linewidth=2, color="dodgerblue2") 
+plot_gwar_game_dist
+ggsave(paste0(output_folder,"plot_EB_gwarGameDist.png"), 
+       plot_gwar_game_dist, width=6, height=5)
+
+appender1 <- function(x) TeX(paste0("game GWAR $\\in$ ", unique(x)))
+
+plot_gwarTalentDist_givenGameGwar = df_games_mu %>%
+  drop_na(mu.hat.p.GWAR) %>%
+  mutate(gwar_game_bin = cut(GWAR, 3)) %>%
+  ggplot() + 
+  # facet_wrap(~muhat_bin) +
+  facet_wrap(~gwar_game_bin, nrow=1,
+             labeller = as_labeller(appender1, default = label_parsed)) +
+  theme(
+    axis.text.y=element_blank(),
+    axis.ticks.y=element_blank()
+  ) +
+  xlab(TeX("$\\hat{\\mu}_p^{GWAR}$")) +
+  geom_histogram(aes(x = mu.hat.p.GWAR, 
+                     after_stat(density)
+  ),bins=30, fill="black") +
+  geom_vline(aes(xintercept = mean(mu.hat.p.GWAR)), linewidth=1, color="dodgerblue2")
+plot_gwarTalentDist_givenGameGwar
+ggsave(paste0(output_folder,"plot_EB_plot_gwarTalentDist_givenGameGwar.png"), 
+       plot_gwarTalentDist_givenGameGwar, width=10, height=3)
+
 ################################
 ### Look at specific people  ###
 ################################

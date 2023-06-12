@@ -60,15 +60,12 @@ NUM.SIMS = 25
 beta.df = matrix(nrow=length(colnames(X)), ncol=NUM.SIMS)
 rownames(beta.df) = colnames(X)
 colnames(beta.df) = paste0("sim", 1:NUM.SIMS)
-set.seed(22) # Kershaw!
 for (i in 1:NUM.SIMS) {
   alpha = 0.4
   beta.oq = rnorm(sum(str_detect(colnames(X), "OT")), 0.02, 0.045)
   beta.dq = rnorm(sum(str_detect(colnames(X), "DT")), 0.03, 0.07)
   beta.pk = rnorm(sum(str_detect(colnames(X), "PARK")), 0.04, 0.065)
   beta.df[,i] = matrix(c(alpha, beta.oq, beta.dq, beta.pk))
-  # ### make same BETA across each sim; y will differ
-  # if (i > 1) { beta.df[,i] = beta.df[,1] }
 }
 
 beta_pk_df = as_tibble( beta.df[rownames(beta.df)[str_detect(rownames(beta.df), "PARK")], ] )
@@ -88,7 +85,6 @@ beta_dq_df = beta_dq_df %>%
 
 Xb = X %*% beta.df
 eps = matrix(nrow=nrow(Xb), ncol=ncol(Xb))
-set.seed(22) # Kershaw!
 for (i in 1:nrow(Xb)) {
   for (j in 1:ncol(Xb)) {
     eps[i,j] = truncnorm::rtruncnorm(n=1, a=0, mean = Xb[i,j], sd = 1)
@@ -207,25 +203,15 @@ coeffs_pk3 = matrix(nrow=NUM.PARKS, ncol=NUM.SIMS )
 rownames(coeffs_pk3) = park_names
 colnames(coeffs_pk3) = paste0("sim", 1:NUM.SIMS)
 
-set.seed(22) # Kershaw!
 for (i in 1:NUM.SIMS) {
   print(paste0("sim ", i))
   
   X_i = X_df %>% mutate(y = y[,i])
-  # ridge with CV-tuned lambda:
-  lambdas = seq(0.1,1.3,by=0.1) ### DO NOT change this vector of LAMBDAS 
-  cv_ridge_model = glmnet::cv.glmnet(
+  ridge3_i = glmnet(
     x = model.matrix(~ factor(OT_YR) + factor(DT_YR) + factor(PARK), data=X_i),
-    y = X_i$y, alpha = 0, family="gaussian", lambda = lambdas
+    y = X_i$y, alpha = 0, lambda = 0.25, family="gaussian"
   )
-  coeffs_ridge3_i = coef(cv_ridge_model)[,1]
-  # ### ridge with pre-tuned lambda:
-  # ridge3_i = glmnet(
-  #   x = model.matrix(~ factor(OT_YR) + factor(DT_YR) + factor(PARK), data=X_i),
-  #   y = X_i$y, alpha = 0, lambda = 0.25, family="gaussian"
-  # )
-  # coeffs_ridge3_i = coef(ridge3_i)[,1]
-  
+  coeffs_ridge3_i = coef(ridge3_i)[,1]
   coeffs_pk3[,i]  = coeffs_ridge3_i[str_detect(names(coeffs_ridge3_i), "PARK")]
 }
 
@@ -254,6 +240,7 @@ for (i in 1:NUM.SIMS) {
 mean( 
   apply( (coeffs_pk4 - beta_pk_df[2:ncol(beta_pk_df)])**2, 2, function(x) sqrt(mean(x)) ) 
 )
+
 
 #############################################################
 ### Method 5: OLS with biased adjustments of team quality ###
@@ -288,61 +275,36 @@ mean(
   apply( (coeffs_pk5 - beta_pk_df[2:ncol(beta_pk_df)])**2, 2, function(x) sqrt(mean(x)) ) 
 )
 
-##############
-### LOSSES ###
-##############
 
-df_rmse = tibble(
-    OLS = mean( apply( (coeffs_pk - beta_pk_df[2:ncol(beta_pk_df)])**2, 2, function(x) sqrt(mean(x)) ) ),
-    three_partOLS = mean( apply( (coeffs_pk2 - beta_pk_df[2:ncol(beta_pk_df)])**2, 2, function(x) sqrt(mean(x)) ) ),
-    ridge = mean( apply( (coeffs_pk3 - beta_pk_df[2:ncol(beta_pk_df)])**2, 2, function(x) sqrt(mean(x)) ) ),
-    shane = mean( apply( (coeffs_pk4 - beta_pk_df[2:ncol(beta_pk_df)])**2, 2, function(x) sqrt(mean(x)) ) ),
-    biasedTQ = mean( apply( (coeffs_pk5 - beta_pk_df[2:ncol(beta_pk_df)])**2, 2, function(x) sqrt(mean(x)) ) )
-  ) %>% 
-  pivot_longer(everything(), values_to="rmse") %>%
-  arrange(rmse)
-df_rmse
-gt::gtsave(gt::gt(df_rmse %>% mutate(rmse = round(rmse,4))), "plot_parkFx_sim1_rmse.png")
 
-# ###############################
-# ### Visualize OLS vs. Ridge ###
-# ###############################
-# 
-# # PARK_df_A = 
-# tibble(
-#   PARK = str_sub(beta_pk_df$PARK, -5, -3),
-#   mean_beta_OLS = unname(rowMeans(coeffs_pk)),
-#   mean_beta_Ridge = unname(rowMeans(coeffs_pk3)),
-#   beta_true = beta_pk_df[,1+1][[1]]
-# ) %>%
-#   pivot_longer(c(mean_beta_OLS, mean_beta_Ridge), values_to="beta", names_to="method") %>%
-#   ggplot(aes(x=beta, y=beta_true, color=method, shape=method)) +
-#   geom_abline(intercept = 0, slope = 1) +
-#   geom_point(size=3.5) +
-#   # geom_errorbar(aes(ymin = beta_hat_PARK_L, ymax = beta_hat_PARK_U), width=0.01) +
-#   scale_color_manual(values=c("dodgerblue2", "firebrick")) +
-#   labs(y='"true" park effect', x="fitted park effect")
+####################
+### Plot 1 vs. 3 ###
+####################
 
-###############################
-### Visualize OLS vs. Ridge ###
-###############################
-
-j = 2 #2,11,13,19,22
-# {
-for (j in 1:25) {
-  
+j = 6 #5 
 PARK_df_1.1 = data.frame(
   PARK = str_sub(beta_pk_df$PARK, -5, -3),
   beta_hat_PARK = unname(coeffs_pk)[,j],
   beta.pk = beta_pk_df[,j+1][[1]],
   method="OLS"
 )
+
+PARK_df_2.1 = data.frame(
+  PARK = str_sub(beta_pk_df$PARK, -5, -3),
+  beta_hat_PARK = unname(coeffs_pk2)[,j],
+  beta.pk = beta_pk_df[,j+1][[1]],
+  method="3 Part OLS"
+)
+
 PARK_df_3.1 = data.frame(
   PARK = str_sub(beta_pk_df$PARK, -5, -3),
   beta_hat_PARK = unname(coeffs_pk3)[,j],
   beta.pk = beta_pk_df[,j+1][[1]],
   method="Ridge"
 )
+
+### rowMeans(coeffs_pk)
+### rowMeans(as.matrix(beta_pk_df[,2:(NUM.SIMS+1)]))
 
 plot_13 = bind_rows(PARK_df_3.1, PARK_df_1.1) %>%
   ggplot(aes(x=beta_hat_PARK, y=beta.pk, color=method, shape=method)) +
@@ -352,13 +314,44 @@ plot_13 = bind_rows(PARK_df_3.1, PARK_df_1.1) %>%
   scale_color_manual(values=c("dodgerblue2", "firebrick")) +
   labs(y='"true" park effect', x="fitted park effect")
 plot_13
-ggsave(paste0("plot_sim1_compare13tn_1719_j",j,".png"), plot_13, width=8, height=6)
+# ggsave("plot_sim1_compare13tn_1719.png", plot_13, width=8, height=6)
 
-}
 
-#############################################################
-### plot the simmed betas and see if they look reasonable ###
-#############################################################
+# plot_12 = bind_rows(PARK_df_2.1, PARK_df_1.1) %>%
+#   ggplot(aes(x=beta.pk, y=beta_hat_PARK, color=method, shape=method)) +
+#   geom_point(size=3.5) +
+#   # geom_errorbar(aes(ymin = beta_hat_PARK_L, ymax = beta_hat_PARK_U), width=0.01) +
+#   geom_abline(intercept = 0, slope = 1) +
+#   scale_color_manual(values=c("dodgerblue2", "firebrick")) +
+#   labs(x="true park effect", y="fitted park effect")
+# plot_12
+# ggsave("plot_12tn_1719.png", plot_12, width=8, height=6)
+
+
+mean( 
+  apply( (coeffs_pk - beta_pk_df[2:ncol(beta_pk_df)])**2, 2, function(x) sqrt(mean(x)) ) 
+)
+
+mean( 
+  apply( (coeffs_pk2 - beta_pk_df[2:ncol(beta_pk_df)])**2, 2, function(x) sqrt(mean(x)) ) 
+)
+
+mean( 
+  apply( (coeffs_pk3 - beta_pk_df[2:ncol(beta_pk_df)])**2, 2, function(x) sqrt(mean(x)) ) 
+)
+
+mean( 
+  apply( (coeffs_pk4 - beta_pk_df[2:ncol(beta_pk_df)])**2, 2, function(x) sqrt(mean(x)) ) 
+)
+
+mean( 
+  apply( (coeffs_pk5 - beta_pk_df[2:ncol(beta_pk_df)])**2, 2, function(x) sqrt(mean(x)) ) 
+)
+
+
+###############################################
+###  ###
+###############################################
 
 # plot_oq18_sim5 = beta_oq_df %>% filter(endsWith(OT_YR, "2018")) %>% ggplot() + 
 #   geom_point(aes(x=sim5, y=fct_reorder(OT_YR, sim5, .desc=TRUE)), size=2) +

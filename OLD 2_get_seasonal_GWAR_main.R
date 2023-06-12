@@ -1,23 +1,25 @@
 
 source("0_load_stuff.R")
 
-# w_rep = 0.4165952 #FIXME
-w_rep = 0.4285763 #FIXME
+w_rep = 0.4165952 #FIXME
 
 #######################################
 ### load f,g grids and other models ###
 #######################################
 
-### get park factors
-DF_PFS_ALL = read_csv("1d_park_fx/df_ALL_park_fx_2017-2019.csv") ### created in file `1d_park_fx/2b_park_effects_observed_1719.R`
-
-### get f grids
-model_f_no_park_factor = readRDS("model_f_dispersedSkellam_parkno_park_factor.rds")
-model_f_ridge = readRDS("model_f_dispersedSkellam_parkRidge.rds")
-model_f_ols = readRDS("model_f_dispersedSkellam_parkOLS.rds")
-model_f_espn = readRDS("model_f_dispersedSkellam_parkESPN.rds")
-model_f_fg = readRDS("model_f_dispersedSkellam_parkFanGraphs.rds")
+# model_f = load_lm("model_f.rds")
+# model_f = read.csv("model_f.csv", header=T, row.names=1)
+# model_f = readRDS("model_f.rds")
+model_f = readRDS("model_f_disperesedSkellam.rds")
 model_g = read.csv("model_g.csv", header=T, row.names=1)
+
+### Park Effects
+# park_fx_name = "ridge_PF" #FIXME
+
+df_ridge_PF = read_csv("1d_park_fx/obs_ridge_PF.csv") %>% select(PARK, park_factor) %>% mutate(name = "ridge")
+df_fg_PF = read_csv("1d_park_fx/obs_fg_PF.csv") %>% select(PARK, park_factor) %>% mutate(name = "fg")
+df_espn_PF = read_csv("1d_park_fx/obs_espn_PF.csv") %>% select(PARK, park_factor) %>% mutate(name = "espn")
+df_park_fx = bind_rows(df_ridge_PF, df_fg_PF, df_espn_PF)
 
 #################
 ### load data ###
@@ -45,81 +47,40 @@ war2_og <- war2_ogg %>%
 # i = inning, j = base-out-state, k = accumulated runs so far, w = tracker (Rest of inning runs)
 
 MAX_INNING_RUNS = 10  
-f <- function(i,r,parkid, home,lg,yr, parkFx) {
-  ### i == inning, r == runs, parkid = park id,    ###alpha == park effect
+f <- function(i,r,alpha, home,lg,yr, parkFx=TRUE) {
+  ### i == inning, r == runs, alpha == park effect
   ### confounders:  home, league, year
   # browser()
-  if (parkFx == "Ridge") {
-    model_f = model_f_ridge
-  } else if (parkFx == "OLS") {
-    model_f = model_f_ols
-  } else if (parkFx == "ESPN") {
-    model_f = model_f_espn
-  } else if (parkFx == "FanGraphs") {
-    model_f = model_f_fg
-  } else if (parkFx == FALSE) {
-    model_f = model_f_ridge
-  } else {
-    stop(paste0("parkFx=",parkFx," is not yet implemented."))
-  }
-  model_f_yrs = sort(unique(as.numeric(str_sub(names(model_f),8,11))))
-  
   r = ifelse(r+1 >= MAX_INNING_RUNS, MAX_INNING_RUNS, r)
-  i = ifelse(i >= 10, 9, i) #FIXME
-  yr = ifelse(yr > max(model_f_yrs), max(model_f_yrs), yr)
-  yr = ifelse(yr < min(model_f_yrs), min(model_f_yrs), yr)
-  # browser()
+  # f_lrm = model_f
   
-  lg = if (is.na(lg)) "NL" else lg #FIXME # a few rows have lg=NA...
+  model_f_ = model_f
   model_f_ = model_f[[paste0("f_grid_",yr,"_",lg)]]
-  default_park_id_str = "no_park_factor"
-  parkid = if (parkFx == FALSE) default_park_id_str else as.character(parkid)
-  park_id_str = if (parkFx!=FALSE & parkid %in% names(model_f_)) parkid else default_park_id_str
-  model_f_lg_szn_park = model_f_[[park_id_str]]
-  f_ir = model_f_lg_szn_park[cbind(i,r+1)]
-  f_ir
-  return(f_ir)
-}
-# f(1,3,"WAS11",1,"NL",2019,parkFx="Ridge")
-# f(1,3,3434,1,"NL",2021,parkFx=F)
-# f(1,3,4705,1,"NL",2021)
-# f(1,3,3,1,"AL",2021)
+  
+  if (parkFx) {
+    ### park adjustment...
+    r.minus.1 = ifelse(r > 0, r-1, 0)
+    r.plus.1 = ifelse(r < MAX_INNING_RUNS, r+1, MAX_INNING_RUNS)
+    f_ir.minus.1 = model_f_[cbind(i,r.minus.1+1)]
+    f_ir = model_f_[cbind(i,r+1)]
+    f_ir.plus.1 = model_f_[cbind(i,r.plus.1+1)]
 
-# MAX_INNING_RUNS = 10  
-# f <- function(i,r,alpha, home,lg,yr, parkFx=TRUE) {
-#   ### i == inning, r == runs, alpha == park effect
-#   ### confounders:  home, league, year
-#   # browser()
-#   r = ifelse(r+1 >= MAX_INNING_RUNS, MAX_INNING_RUNS, r)
-#   # f_lrm = model_f
-#   
-#   model_f_ = model_f
-#   model_f_ = model_f[[paste0("f_grid_",yr,"_",lg)]]
-#   
-#   if (parkFx) {
-#     ### park adjustment...
-#     r.minus.1 = ifelse(r > 0, r-1, 0)
-#     r.plus.1 = ifelse(r < MAX_INNING_RUNS, r+1, MAX_INNING_RUNS)
-#     f_ir.minus.1 = model_f_[cbind(i,r.minus.1+1)]
-#     f_ir = model_f_[cbind(i,r+1)]
-#     f_ir.plus.1 = model_f_[cbind(i,r.plus.1+1)]
-# 
-#     h = abs(alpha)*i
-#     h = ifelse(h > 1, 1, h)
-#     h = ifelse(h < 0, 0, h)
-#     ifelse(alpha < 0 & r < MAX_INNING_RUNS,   (1-h)*f_ir + h*f_ir.plus.1,
-#            ifelse(alpha > 0 & r > 0,                 (1-h)*f_ir + h*f_ir.minus.1,
-#                   ifelse(alpha > 0,                         (1+h)*f_ir - h*f_ir.plus.1,
-#                          (1+h)*f_ir - h*f_ir.minus.1 # alpha < 0
-#                   )))
-#   } else { ### no park effects
-#     f_ir = model_f_[cbind(i,r+1)]
-#     f_ir
-#   }
-# }
-# # f(1,3,0.05, 1,"AL",2019)
-# # f(1,3,-0.05, 1,"AL",2019)
-# # f(1,3,0, 1,"AL",2019)
+    h = abs(alpha)*i
+    h = ifelse(h > 1, 1, h)
+    h = ifelse(h < 0, 0, h)
+    ifelse(alpha < 0 & r < MAX_INNING_RUNS,   (1-h)*f_ir + h*f_ir.plus.1,
+           ifelse(alpha > 0 & r > 0,                 (1-h)*f_ir + h*f_ir.minus.1,
+                  ifelse(alpha > 0,                         (1+h)*f_ir - h*f_ir.plus.1,
+                         (1+h)*f_ir - h*f_ir.minus.1 # alpha < 0
+                  )))
+  } else { ### no park effects
+    f_ir = model_f_[cbind(i,r+1)]
+    f_ir
+  }
+}
+# f(1,3,0.05, 1,"AL",2019)
+# f(1,3,-0.05, 1,"AL",2019)
+# f(1,3,0, 1,"AL",2019)
 
 g <- function(outs_base_state, r) {
   ### g(r|S,O) is the probability of allowing R runs through the rest of the inning if
@@ -135,9 +96,9 @@ g <- function(outs_base_state, r) {
 ### compute Grid Wins (GW) and Grid WAR (GWAR) ###
 ##################################################
 
-get_grid_wins_moi <- function(i,r,parkid, home,lg,yr, parkFx, inn_sitch) {
+get_grid_wins_moi <- function(i,r,alpha, home,lg,yr, parkFx=TRUE, inn_sitch) {
   getgw <- function(w) {
-    fw = f(i=i, r=r+w, parkid=parkid, #alpha=alpha,
+    fw = f(i=i, r=r+w, alpha=alpha, 
            home=home, lg=lg, yr=yr, 
            parkFx=parkFx) 
     gw = g(inn_sitch, r=w)
@@ -150,35 +111,26 @@ get_grid_wins_moi <- function(i,r,parkid, home,lg,yr, parkFx, inn_sitch) {
 # get_grid_wins_moi(5,5,0, 1,"AL",2019, inn_sitch="2 000")
 
 
-get_grid_wins <- function(pbp_df, years, parkFx) {
+get_grid_wins <- function(pbp_df, years, parkFx=FALSE) {
   df = pbp_df %>% filter(YEAR %in% years)
-  
-  if (parkFx %in% c("Ridge", "OLS", "ESPN", "FanGraphs")) {
-    df_park_fx_ = DF_PFS_ALL %>% filter(method == parkFx)
-  } else if (parkFx == FALSE) {
-    df_park_fx_ = DF_PFS_ALL %>% filter(method == "Ridge") %>% mutate(fitted_coeff = 0, park_factor = 0, method=FALSE)
-  } else {
-    stop(paste0("parkFx=",parkFx," is not yet implemented."))
-  }
   
   if (!isFALSE(parkFx)) { ### use park factors with name `parkFx`
     print(paste0("computing GWAR with ", parkFx, " park factors"))
-    # browser()
     df = df %>%
-      left_join(df_park_fx_ %>% filter(method == parkFx)) %>%
+      left_join(df_park_fx %>% filter(name == parkFx)) %>%
       mutate(park_factor = replace_na(park_factor, 0)) 
+    parkFx = TRUE
   } else {
     print(paste0("computing GWAR without park factors"))
   }
 
-  # browser()
   result = df %>%
     rowwise() %>%
     mutate(
       Grid_Wins_eoi = ifelse(
         exit_at_end_of_inning == 0,
         0,
-        f(i=INNING, r=CUM_RUNS, parkid=PARK, #alpha=park_factor,
+        f(i=INNING, r=CUM_RUNS, alpha=park_factor, 
           home=BAT_HOME_IND, lg=HOME_LEAGUE, yr=YEAR, 
           parkFx=parkFx) 
       )
@@ -192,7 +144,7 @@ get_grid_wins <- function(pbp_df, years, parkFx) {
         exit_in_middle == 0,
         0,
         get_grid_wins_moi(
-          i=INNING, r=CUM_RUNS, parkid=PARK, #alpha=park_factor,
+          i=INNING, r=CUM_RUNS, alpha=park_factor,  ##r=lead(CUM_RUNS, default=0)
           home=BAT_HOME_IND, lg=HOME_LEAGUE, yr=YEAR, 
           parkFx=parkFx, 
           inn_sitch=INN_SITCH_after
