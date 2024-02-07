@@ -14,14 +14,9 @@ df_war_pitExits =
   select(GAME_ID,YEAR,PIT_NAME,GWAR,INNING) %>%
   arrange(PIT_NAME, YEAR, GAME_ID) %>%
   left_join(df_war_pitSzn %>% select(PIT_NAME,YEAR,FWAR_FIP,FWAR_RA9,N_fg,N)) %>%
+  mutate(PIT_SZN = paste(YEAR, PIT_NAME)) %>%
   drop_na()
 df_war_pitExits
-
-###############################################################################
-###  ###
-###############################################################################
-
-
 
 ###############################################################################
 ### R2 Comment 19a: the variability of GWAR and FWAR from season to season? ###
@@ -83,5 +78,36 @@ plot_szn_by_szn_variability =
 ggsave(paste0(output_folder, "plot_szn_by_szn_WAR_variability.png"), 
        plot_szn_by_szn_variability, width=12, height=4)
 
+################################################################################
+# R1 Comment 3: justification about the variance that exists in some players versus others. 
+# Maybe a plot where a player’s game-to-game variance is shown against 
+# the difference between their gWAR and that of the other vendors.
+################################################################################
 
+min_num_games = 30
+df_plot_var = 
+  df_war_pitExits %>%
+  filter( N >= min_num_games) %>%
+  group_by(YEAR, PIT_NAME) %>%
+  mutate(
+    GWAR_szn = sum(GWAR),
+    diff_GWAR_FWARr = GWAR_szn - FWAR_RA9,
+    gameByGame_sd_GWAR = sd(GWAR),
+  ) %>%
+  ungroup() %>%
+  distinct(YEAR, PIT_NAME, GWAR_szn, diff_GWAR_FWARr, gameByGame_sd_GWAR) 
+df_plot_var
 
+plot_var_vs_diff = 
+  df_plot_var %>%
+  ggplot(aes(x = gameByGame_sd_GWAR, y = diff_GWAR_FWARr)) +
+  geom_point(shape=21, size=1.5) +
+  ylab("Seasonal GWAR - FWAR (RA9)") +
+  xlab(paste0("game-by-game s.d. in pitcher GWAR")) +
+  # xlab(paste0("game-by-game s.d. in pitcher GWAR \n(for pitcher-seasons with at least ", min_num_games, " games)")) +
+  annotate("text",x=0.18,y=1.5, size=7, color="dodgerblue2",  label=(
+    paste0("slope==",round(coef(lm(df_plot_var$diff_GWAR_FWARr~df_plot_var$gameByGame_sd_GWAR))[2],2)) ),
+  parse=TRUE) +
+  stat_smooth(method="lm",se=F,color="dodgerblue2", linewidth=2) 
+plot_var_vs_diff
+ggsave(paste0(output_folder,"plot_var_vs_diff.png"), plot_var_vs_diff, width=6, height=5)
