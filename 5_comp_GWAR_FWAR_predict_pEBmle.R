@@ -35,17 +35,28 @@ df_train_byGame = df_byGame %>% filter(YEAR <= final_train_year)
 
 ### histograms of a pitcher's game-level GWAR
 unique(df_train_byGame$PIT_NAME)
-pitnames = c("Clayton Kershaw", "Yovani Gallardo", 
-             "Jake Arrieta", "Ervin Santana")
+pitnames = c(
+  "Clayton Kershaw", "Ervin Santana", "Tanner Roark", "Rick Porcello"
+)
+# pitnames = c("Clayton Kershaw", "Yovani Gallardo", 
+#              "Jake Arrieta", "Ervin Santana")
+# plot_Xpg_GWAR = df_train_byGame %>%
+#   # filter(PIT_NAME == "Clayton Kershaw") %>%
+#   filter(PIT_NAME %in% pitnames) %>%
+#   ggplot(aes(x=GWAR)) +
+#   facet_wrap(~PIT_NAME, nrow=1) +
+#   xlab("game GWAR") +
+#   geom_histogram(fill="black")
 plot_Xpg_GWAR = df_train_byGame %>%
   # filter(PIT_NAME == "Clayton Kershaw") %>%
   filter(PIT_NAME %in% pitnames) %>%
-  ggplot(aes(x=GWAR)) +
-  facet_wrap(~PIT_NAME, nrow=1) +
+  ggplot(aes(x=GWAR, fill=PIT_NAME)) +
   xlab("game GWAR") +
-  geom_histogram(fill="black")
-# plot_Xpg_GWAR
-ggsave(paste0(output_folder,"plot_Xpg_GWAR.png"),plot_Xpg_GWAR,width=12,height=4)
+  guides(fill=guide_legend(title=TeX(paste("pitcher")) )) +
+  geom_density(alpha=0.5)
+plot_Xpg_GWAR
+ggsave(paste0(output_folder,"plot_Xpg_GWAR.png"),
+       plot_Xpg_GWAR,width=8,height=5)
 
 
 
@@ -318,7 +329,6 @@ fit_params.EB.mle_FWAR("FWAR_FIP", sig.sq=0.0013)
 fit_params.EB.mle_FWAR("FWAR_FIP", sig.sq=0.0015)
 fit_params.EB.mle_FWAR("FWAR_FIP", sig.sq=0.00163)
 fit_params.EB.mle_FWAR("FWAR_FIP", sig.sq=0.00165)
-fit_params.EB.mle_FWAR("FWAR_FIP", sig.sq=0.05)
 
 ### tune sig.sq
 df0_tune = df_train_byGame %>% filter(YEAR %in% tuning_train_years)
@@ -488,13 +498,13 @@ plot_EB_pitRankingsMu = df_test %>%
   pivot_longer(-PIT_NAME, values_to = "mu.hat.p", names_to="metric") %>%
   mutate(metric = str_remove(metric, "mu.hat.p.")) %>%
   ggplot(aes(y = PIT_NAME)) +
-  geom_point(aes(x=mu.hat.p, color=metric), size=5) +
+  geom_point(aes(x=mu.hat.p, color=metric, shape=metric), size=5) +
   scale_colour_manual(values=cbp1) +
   xlab(TeX("$\\hat{\\mu}_p$")) + 
   ylab("pitcher") 
-# plot_EB_pitRankingsMu
+plot_EB_pitRankingsMu
 ggsave(paste0(output_folder,"plot_EB_pitRankingsMu.png"), 
-       plot_EB_pitRankingsMu, width=8, height=10)
+       plot_EB_pitRankingsMu, width=11, height=10)
 
 plot_EB_pitRankingsRank = df_test %>%
   select(-rank.GWAR_obs) %>%
@@ -504,13 +514,13 @@ plot_EB_pitRankingsRank = df_test %>%
   mutate(metric = str_remove(metric, "rank.")) %>%
   mutate(metric = str_remove(metric, "_pred")) %>%
   ggplot(aes(y = PIT_NAME)) +
-  geom_point(aes(x=rank, color=metric), size=5) +
+  geom_point(aes(x=rank, color=metric, shape=metric), size=5) +
   # xlab(TeX("$\\hat{\\mu}_p$")) + 
   scale_colour_manual(values=cbp1) +
   ylab("pitcher") 
-# plot_EB_pitRankingsRank
+plot_EB_pitRankingsRank
 ggsave(paste0(output_folder,"plot_EB_pitRankingsRank.png"), 
-       plot_EB_pitRankingsRank, width=8, height=10)
+       plot_EB_pitRankingsRank, width=11, height=10)
 
 plot_EB_pitRankingsRank1 = df_test %>%
   mutate(PIT_NAME = fct_reorder(PIT_NAME, -rank.GWAR_obs)) %>%
@@ -519,30 +529,31 @@ plot_EB_pitRankingsRank1 = df_test %>%
   mutate(metric = str_remove(metric, "rank.")) %>%
   mutate(metric = str_remove(metric, "_pred")) %>%
   ggplot(aes(y = PIT_NAME)) +
-  geom_point(aes(x=rank, color=metric), size=5) +
+  geom_point(aes(x=rank, color=metric, shape=metric), size=5) +
   # xlab(TeX("$\\hat{\\mu}_p$")) + 
   scale_colour_manual(values=cbp1) +
   ylab("pitcher") 
-# plot_EB_pitRankingsRank1
+plot_EB_pitRankingsRank1
 ggsave(paste0(output_folder,"plot_EB_pitRankingsRank1.png"), 
-       plot_EB_pitRankingsRank1, width=8, height=10)
+       plot_EB_pitRankingsRank1, width=11, height=10)
 
 ####################################################
 ### dist of game-GWAR conditional on true talent ###
 ####################################################
 
-hist(df.EB$mu.hat.p.GWAR)
+# hist(df.EB$mu.hat.p.GWAR)
 
 df_games_mu = df_train_byGame %>% left_join(df.EB)
 df_games_mu
 
 plot_gwar_talent_dist = df.EB %>%
   ggplot() +
-  geom_histogram(aes(x = mu.hat.p.GWAR ), fill="black", bins=40) +
+  # geom_histogram(aes(x = mu.hat.p.GWAR ), fill="black", bins=40) +
+  geom_density(aes(x = mu.hat.p.GWAR ), fill="black") +
   xlab(TeX("$\\hat{\\mu}_p^{GWAR}$")) +
-  geom_vline(aes(xintercept = mean(mu.hat.p.GWAR)), linewidth=2, color="dodgerblue2") 
+  geom_vline(aes(xintercept = mean(mu.hat.p.GWAR)), linewidth=2, color="dodgerblue2")
 plot_gwar_talent_dist
-ggsave(paste0(output_folder,"plot_EB_gwarTalentDist.png"), 
+ggsave(paste0(output_folder,"plot_EB_gwarTalentDist.png"),
        plot_gwar_talent_dist, width=6, height=5)
 
 appender <- function(x) TeX(paste("$\\hat{\\mu}_p^{GWAR} \\in $", unique(x))) 
@@ -551,25 +562,45 @@ plot_gameGwarDist_givenTalent = df_games_mu %>%
   drop_na(mu.hat.p.GWAR) %>%
   mutate(muhat_bin = cut(mu.hat.p.GWAR, 3)) %>%
   ggplot() + 
-  # facet_wrap(~muhat_bin) +
-  facet_wrap(~muhat_bin, nrow=1,
-             labeller = as_labeller(appender, default = label_parsed)) +
   theme(
     axis.text.y=element_blank(),
     axis.ticks.y=element_blank() 
   ) +
   xlab("game GWAR") +
-  geom_histogram(aes(x = GWAR, 
-                     after_stat(density)
-                 ), fill="black")
+  guides(fill=guide_legend(title=TeX(paste("$\\hat{\\mu}_p^{GWAR}$")) )) +
+  geom_density(aes(x = GWAR, fill=muhat_bin, #after_stat(density)
+  ),  alpha=0.5, #fill="black",
+  )
 plot_gameGwarDist_givenTalent
 ggsave(paste0(output_folder,"plot_EB_gameGwarDist_givenTalent.png"), 
-       plot_gameGwarDist_givenTalent, width=10, height=3)
+       plot_gameGwarDist_givenTalent, width=7, height=5)
+
+# plot_gameGwarDist_givenTalent = df_games_mu %>%
+#   drop_na(mu.hat.p.GWAR) %>%
+#   mutate(muhat_bin = cut(mu.hat.p.GWAR, 3)) %>%
+#   ggplot() + 
+#   # facet_wrap(~muhat_bin) +
+#   facet_wrap(~muhat_bin, nrow=1,
+#              labeller = as_labeller(appender, default = label_parsed)) +
+#   theme(
+#     axis.text.y=element_blank(),
+#     axis.ticks.y=element_blank() 
+#   ) +
+#   xlab("game GWAR") +
+#   geom_histogram(aes(x = GWAR, 
+#                      after_stat(density)
+#                  ), fill="black")
+# plot_gameGwarDist_givenTalent
+# ggsave(paste0(output_folder,"plot_EB_gameGwarDist_givenTalent.png"), 
+#        plot_gameGwarDist_givenTalent, width=10, height=3)
+
+
 
 
 plot_gwar_game_dist = df_games_mu %>%
   ggplot() +
-  geom_histogram(aes(x = GWAR ), fill="black", bins=40) +
+  # geom_histogram(aes(x = GWAR ), fill="black", bins=40) +
+  geom_density(aes(x = GWAR ), fill="black") +
   xlab("game GWAR") +
   geom_vline(aes(xintercept = mean(GWAR)), linewidth=2, color="dodgerblue2") 
 plot_gwar_game_dist
@@ -582,21 +613,37 @@ plot_gwarTalentDist_givenGameGwar = df_games_mu %>%
   drop_na(mu.hat.p.GWAR) %>%
   mutate(gwar_game_bin = cut(GWAR, 3)) %>%
   ggplot() + 
-  # facet_wrap(~muhat_bin) +
-  facet_wrap(~gwar_game_bin, nrow=1,
-             labeller = as_labeller(appender1, default = label_parsed)) +
   theme(
     axis.text.y=element_blank(),
     axis.ticks.y=element_blank()
   ) +
-  xlab(TeX("$\\hat{\\mu}_p^{GWAR}$")) +
-  geom_histogram(aes(x = mu.hat.p.GWAR, 
-                     after_stat(density)
-  ),bins=30, fill="black") +
-  geom_vline(aes(xintercept = mean(mu.hat.p.GWAR)), linewidth=1, color="dodgerblue2")
+  guides(fill=guide_legend(title=TeX(paste("game GWAR")) )) +
+  geom_density(aes(x = mu.hat.p.GWAR, fill = gwar_game_bin), alpha=0.5) +
+  # geom_vline(aes(xintercept = mean(mu.hat.p.GWAR)), linewidth=1, color="black") +
+  xlab(TeX("$\\hat{\\mu}_p^{GWAR}$")) 
 plot_gwarTalentDist_givenGameGwar
 ggsave(paste0(output_folder,"plot_EB_plot_gwarTalentDist_givenGameGwar.png"), 
-       plot_gwarTalentDist_givenGameGwar, width=10, height=3)
+       plot_gwarTalentDist_givenGameGwar, width=7, height=5)
+
+# plot_gwarTalentDist_givenGameGwar = df_games_mu %>%
+#   drop_na(mu.hat.p.GWAR) %>%
+#   mutate(gwar_game_bin = cut(GWAR, 3)) %>%
+#   ggplot() + 
+#   # facet_wrap(~muhat_bin) +
+#   facet_wrap(~gwar_game_bin, nrow=1,
+#              labeller = as_labeller(appender1, default = label_parsed)) +
+#   theme(
+#     axis.text.y=element_blank(),
+#     axis.ticks.y=element_blank()
+#   ) +
+#   xlab(TeX("$\\hat{\\mu}_p^{GWAR}$")) +
+#   geom_histogram(aes(x = mu.hat.p.GWAR, 
+#                      after_stat(density)
+#   ),bins=30, fill="black") +
+#   geom_vline(aes(xintercept = mean(mu.hat.p.GWAR)), linewidth=1, color="dodgerblue2")
+# plot_gwarTalentDist_givenGameGwar
+# ggsave(paste0(output_folder,"plot_EB_plot_gwarTalentDist_givenGameGwar.png"), 
+#        plot_gwarTalentDist_givenGameGwar, width=10, height=3)
 
 ################################
 ### Look at specific people  ###
@@ -626,10 +673,12 @@ df_test_uv_RA9 =
 df_test_uv_RA9
 
 ###
-plot_uv5_ra9 = df_test_1 %>%
+plot_uv5_ra9 = 
+  df_test_1 %>%
+  mutate(PIT_NAME = str_replace_all(PIT_NAME, " ", "\n")) %>%
   arrange(-GW_pred_minus_FW_RA9_pred) %>% 
-  # mutate(PIT_NAME = fct_reorder(PIT_NAME,-rank.GWAR_obs)) %>%
-  mutate(PIT_NAME = fct_reorder(PIT_NAME,GW_pred_minus_FW_RA9_pred)) %>%
+  mutate(PIT_NAME = fct_reorder(PIT_NAME,-rank.GWAR_obs)) %>%
+  # mutate(PIT_NAME = fct_reorder(PIT_NAME,GW_pred_minus_FW_RA9_pred)) %>%
   head(n=5) %>%
   select(PIT_NAME, rank.GWAR_obs, rank.GWAR_pred, rank.FWAR_RA9_pred) %>%
   pivot_longer(cols=c(rank.GWAR_obs, rank.GWAR_pred, rank.FWAR_RA9_pred)) %>%
@@ -637,27 +686,23 @@ plot_uv5_ra9 = df_test_1 %>%
     size_ = name == "rank.GWAR_obs",
     name0 = name,
     name = case_when(
-      name == "rank.GWAR_obs" ~ "observed 2019\nGWAR rank\n",
-      name == "rank.GWAR_pred" ~ "predicted 2019\nrank from GWAR\n",
-      name == "rank.FWAR_RA9_pred" ~ "predicted 2019\nrank from FWAR (RA/9)\n",
+      name == "rank.GWAR_obs" ~ "observed\n2019\nGWAR\nrank\n",
+      name == "rank.GWAR_pred" ~ "predicted\n2019\nrank\nfrom\nGWAR\n",
+      name == "rank.FWAR_RA9_pred" ~ "predicted\n2019\nrank\nfrom\nFWAR (RA/9)\n",
     ),
   ) %>%
   rename(metric="name") %>%
   rename(rank=value) %>%
   ggplot() + 
-  geom_point(aes(y=PIT_NAME, x=rank, color = metric, size=name0), alpha=0.8) +
-  # scale_size_manual(values = c(4,7)) + 
-  scale_size_manual(values = c(4,6,8)) + 
+  geom_point(aes(y=PIT_NAME, x=rank, color = metric, shape=metric), size=6, alpha=0.8) +
   guides(size = "none") +
-  # geom_point(aes(x=rank.GWAR_obs), size=5) +
-  # geom_point(aes(x=rank.GWAR_pred), color="red", size=3) +
-  # geom_point(aes(x=rank.FWAR_RA9_pred), color="blue", size=3) +
   scale_color_manual(name="", values=c("black", "firebrick", "dodgerblue2")) +
+  scale_shape_manual(name="", values=c(15,16,17)) +
   labs(title = "5 most undervalued starting pitchers\naccording to GWAR relative to FWAR (RA/9)") + 
   xlab("starting pitcher rank") +
   ylab("starting pitcher")
-# plot_uv5_ra9
-ggsave("plots/plot_test_EB_comp_uv5_ra9.png", plot_uv5_ra9, width=9, height=5)
+plot_uv5_ra9
+ggsave("plots/plot_test_EB_comp_uv5_ra9.png", plot_uv5_ra9, width=9, height=6)
 
 ### 
 df_test_ov_RA9 = 
@@ -673,41 +718,36 @@ df_test_ov_RA9 =
 df_test_ov_RA9
 
 ###
-plot_ov5_ra9 = df_test_1 %>%
-  arrange(-GW_pred_minus_FW_RA9_pred) %>% 
-  # mutate(PIT_NAME = fct_reorder(PIT_NAME,-rank.GWAR_obs)) %>%
-  mutate(PIT_NAME = fct_reorder(PIT_NAME,-GW_pred_minus_FW_RA9_pred)) %>%
-  tail(n=5) %>%
+plot_ov5_ra9 = 
+  df_test_1 %>%
+  mutate(PIT_NAME = str_replace_all(PIT_NAME, " ", "\n")) %>%
+  arrange(GW_pred_minus_FW_RA9_pred) %>% 
+  mutate(PIT_NAME = fct_reorder(PIT_NAME,-rank.GWAR_obs)) %>%
+  # mutate(PIT_NAME = fct_reorder(PIT_NAME,GW_pred_minus_FW_RA9_pred)) %>%
+  head(n=5) %>%
   select(PIT_NAME, rank.GWAR_obs, rank.GWAR_pred, rank.FWAR_RA9_pred) %>%
   pivot_longer(cols=c(rank.GWAR_obs, rank.GWAR_pred, rank.FWAR_RA9_pred)) %>%
   mutate(
-    # size = case_when(
-    #   name == "rank.GWAR_obs" ~ 5,
-    #   name == "rank.GWAR_pred" ~ 4.5,
-    #   name == "rank.FWAR_RA9_pred" ~ 4.5,
-    # ),
     size_ = name == "rank.GWAR_obs",
+    name0 = name,
     name = case_when(
-      name == "rank.GWAR_obs" ~ "observed 2019\nGWAR rank\n",
-      name == "rank.GWAR_pred" ~ "predicted 2019\nrank from GWAR\n",
-      name == "rank.FWAR_RA9_pred" ~ "predicted 2019\nrank from FWAR (RA/9)\n",
+      name == "rank.GWAR_obs" ~ "observed\n2019\nGWAR\nrank\n",
+      name == "rank.GWAR_pred" ~ "predicted\n2019\nrank\nfrom\nGWAR\n",
+      name == "rank.FWAR_RA9_pred" ~ "predicted\n2019\nrank\nfrom\nFWAR (RA/9)\n",
     ),
   ) %>%
   rename(metric="name") %>%
   rename(rank=value) %>%
   ggplot() + 
-  geom_point(aes(y=PIT_NAME, x=rank, color = metric, size=size_)) +
-  scale_size_manual(values = c(4,7)) + guides(size = "none") +
-  # geom_point(aes(x=rank.GWAR_obs), size=5) +
-  # geom_point(aes(x=rank.GWAR_pred), color="red", size=3) +
-  # geom_point(aes(x=rank.FWAR_RA9_pred), color="blue", size=3) +
-  # scale_size_manual(values = c(4,7)) + guides(size = "none") +
+  geom_point(aes(y=PIT_NAME, x=rank, color = metric, shape=metric), size=6, alpha=0.8) +
+  guides(size = "none") +
   scale_color_manual(name="", values=c("black", "firebrick", "dodgerblue2")) +
+  scale_shape_manual(name="", values=c(15,16,17)) +
   labs(title = "5 most overvalued starting pitchers\naccording to GWAR relative to FWAR (RA/9)") + 
   xlab("starting pitcher rank") +
   ylab("starting pitcher")
-# plot_ov5_ra9
-ggsave("plots/plot_test_EB_comp_ov5_ra9.png", plot_ov5_ra9, width=9, height=5)
+plot_ov5_ra9
+ggsave("plots/plot_test_EB_comp_ov5_ra9.png", plot_ov5_ra9, width=9, height=6)
 
 ### 
 df_test_uv_FIP = 
@@ -723,43 +763,36 @@ df_test_uv_FIP =
 df_test_uv_FIP
 
 ###
-plot_uv5_fip = df_test_1 %>%
+plot_uv5_fip = 
+  df_test_1 %>%
+  mutate(PIT_NAME = str_replace_all(PIT_NAME, " ", "\n")) %>%
   arrange(-GW_pred_minus_FW_FIP_pred) %>% 
-  # mutate(PIT_NAME = fct_reorder(PIT_NAME,-rank.GWAR_obs)) %>%
-  mutate(PIT_NAME = fct_reorder(PIT_NAME,GW_pred_minus_FW_FIP_pred)) %>%
+  mutate(PIT_NAME = fct_reorder(PIT_NAME,-rank.GWAR_obs)) %>%
+  # mutate(PIT_NAME = fct_reorder(PIT_NAME,GW_pred_minus_FW_FIP_pred)) %>%
   head(n=5) %>%
   select(PIT_NAME, rank.GWAR_obs, rank.GWAR_pred, rank.FWAR_FIP_pred) %>%
   pivot_longer(cols=c(rank.GWAR_obs, rank.GWAR_pred, rank.FWAR_FIP_pred)) %>%
   mutate(
-    # size = case_when(
-    #   name == "rank.GWAR_obs" ~ 5,
-    #   name == "rank.GWAR_pred" ~ 4.5,
-    #   name == "rank.FWAR_RA9_pred" ~ 4.5,
-    # ),
     size_ = name == "rank.GWAR_obs",
     name0 = name,
     name = case_when(
-      name == "rank.GWAR_obs" ~ "observed 2019\nGWAR rank\n",
-      name == "rank.GWAR_pred" ~ "predicted 2019\nrank from GWAR\n",
-      name == "rank.FWAR_FIP_pred" ~ "predicted 2019\nrank from FWAR (FIP)\n",
+      name == "rank.GWAR_obs" ~ "observed\n2019\nGWAR\nrank\n",
+      name == "rank.GWAR_pred" ~ "predicted\n2019\nrank\nfrom\nGWAR\n",
+      name == "rank.FWAR_FIP_pred" ~ "predicted\n2019\nrank\nfrom\nFWAR (FIP)\n",
     ),
   ) %>%
   rename(metric="name") %>%
   rename(rank=value) %>%
   ggplot() + 
-  geom_point(aes(y=PIT_NAME, x=rank, color = metric, size=name0), alpha=0.8) +
-  scale_size_manual(values = c(4,6,8)) + 
+  geom_point(aes(y=PIT_NAME, x=rank, color = metric, shape=metric), size=6, alpha=0.8) +
   guides(size = "none") +
-  # geom_point(aes(x=rank.GWAR_obs), size=5) +
-  # geom_point(aes(x=rank.GWAR_pred), color="red", size=3) +
-  # geom_point(aes(x=rank.FWAR_RA9_pred), color="blue", size=3) +
-  # scale_size_manual(values = c(4,7)) + guides(size = "none") +
   scale_color_manual(name="", values=c("black", "firebrick", "dodgerblue2")) +
+  scale_shape_manual(name="", values=c(15,16,17)) +
   labs(title = "5 most undervalued starting pitchers\naccording to GWAR relative to FWAR (FIP)") + 
   xlab("starting pitcher rank") +
   ylab("starting pitcher")
-# plot_uv5_fip
-ggsave("plots/plot_test_EB_comp_uv5_fip.png", plot_uv5_fip, width=9, height=5)
+plot_uv5_fip
+ggsave("plots/plot_test_EB_comp_uv5_fip.png", plot_uv5_fip, width=9, height=6)
 
 ### 
 df_test_ov_FIP = 
@@ -775,46 +808,64 @@ df_test_ov_FIP =
 df_test_ov_FIP
 
 ###
-plot_ov5_fip = df_test_1 %>%
-  arrange(-GW_pred_minus_FW_FIP_pred) %>% 
-  # mutate(PIT_NAME = fct_reorder(PIT_NAME,-rank.GWAR_obs)) %>%
-  mutate(PIT_NAME = fct_reorder(PIT_NAME,-GW_pred_minus_FW_FIP_pred)) %>%
-  tail(n=5) %>%
+plot_ov5_fip = 
+  df_test_1 %>%
+  mutate(PIT_NAME = str_replace_all(PIT_NAME, " ", "\n")) %>%
+  arrange(GW_pred_minus_FW_FIP_pred) %>% 
+  mutate(PIT_NAME = fct_reorder(PIT_NAME,-rank.GWAR_obs)) %>%
+  # mutate(PIT_NAME = fct_reorder(PIT_NAME,GW_pred_minus_FW_FIP_pred)) %>%
+  head(n=5) %>%
   select(PIT_NAME, rank.GWAR_obs, rank.GWAR_pred, rank.FWAR_FIP_pred) %>%
   pivot_longer(cols=c(rank.GWAR_obs, rank.GWAR_pred, rank.FWAR_FIP_pred)) %>%
   mutate(
-    # size = case_when(
-    #   name == "rank.GWAR_obs" ~ 5,
-    #   name == "rank.GWAR_pred" ~ 4.5,
-    #   name == "rank.FWAR_RA9_pred" ~ 4.5,
-    # ),
     size_ = name == "rank.GWAR_obs",
+    name0 = name,
     name = case_when(
-      name == "rank.GWAR_obs" ~ "observed 2019\nGWAR rank\n",
-      name == "rank.GWAR_pred" ~ "predicted 2019\nrank from GWAR\n",
-      name == "rank.FWAR_FIP_pred" ~ "predicted 2019\nrank from FWAR (FIP)\n",
+      name == "rank.GWAR_obs" ~ "observed\n2019\nGWAR\nrank\n",
+      name == "rank.GWAR_pred" ~ "predicted\n2019\nrank\nfrom\nGWAR\n",
+      name == "rank.FWAR_FIP_pred" ~ "predicted\n2019\nrank\nfrom\nFWAR (FIP)\n",
     ),
   ) %>%
   rename(metric="name") %>%
   rename(rank=value) %>%
   ggplot() + 
-  geom_point(aes(y=PIT_NAME, x=rank, color = metric, size=size_)) +
-  # geom_point(aes(x=rank.GWAR_obs), size=5) +
-  # geom_point(aes(x=rank.GWAR_pred), color="red", size=3) +
-  # geom_point(aes(x=rank.FWAR_RA9_pred), color="blue", size=3) +
-  scale_size_manual(values = c(4,7)) + guides(size = "none") +
+  geom_point(aes(y=PIT_NAME, x=rank, color = metric, shape=metric), size=6, alpha=0.8) +
+  guides(size = "none") +
   scale_color_manual(name="", values=c("black", "firebrick", "dodgerblue2")) +
+  scale_shape_manual(name="", values=c(15,16,17)) +
   labs(title = "5 most overvalued starting pitchers\naccording to GWAR relative to FWAR (FIP)") + 
   xlab("starting pitcher rank") +
   ylab("starting pitcher")
-# plot_ov5_fip
-ggsave("plots/plot_test_EB_comp_ov5_fip.png", plot_ov5_fip, width=9, height=5)
+plot_ov5_fip
+ggsave("plots/plot_test_EB_comp_ov5_fip.png", plot_ov5_fip, width=9, height=6)
 
 ###
 df_test_rmses_uvov = bind_rows(df_test_uv_RA9,df_test_ov_RA9,df_test_uv_FIP,df_test_ov_FIP)
 df_test_rmses_uvov
 gt::gtsave(gt::gt(df_test_rmses_uvov), paste0(output_folder,"plot_test_EB_rmse_uvov.png"))
 
+###
+library(cowplot)
+plot_ovuv5_fip = plot_grid(plot_uv5_fip + guides(color="none"), 
+                           # get_legend(plot_ov5_fip),
+                           plot_ov5_fip + guides(color="none"),
+                           get_legend(plot_ov5_fip),
+                           nrow=1)
 
+plot_ovuv5_fip = plot_grid(plot_uv5_fip, plot_ov5_fip)
+save_plot("plots/plot_test_EB_comp_uvov5_fip.png", plot_ovuv5_fip, base_width=18, base_height=6)
+
+# plot_ovuv5_fip = plot_grid(
+#   plot_uv5_fip + guides(color="none"), 
+#   plot_ov5_fip + guides(color="none")
+#   # plot_grid(get_legend(plot_ov5_fip)), nrow=1
+# )
+# plot_ovuv5_fip = plot_grid(
+#   plot_ovuv5_fip,
+#   plot_grid(get_legend(plot_ov5_fip))
+# )
+# plot_ovuv5_fip
+# save_plot("plots/plot_test_EB_comp_uvov5_fip.png", plot_ovuv5_fip, base_width=18, base_height=6)
+# save_plot("plots/plot_test_EB_comp_uvov5_fip_legend.png", plot_grid(get_legend(plot_ov5_fip)), base_width=6, base_height=6)
 
 

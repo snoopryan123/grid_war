@@ -23,12 +23,12 @@ pitcher_exits = pitcher_exits %>% mutate(GWAR_og = GWAR, GWAR = GWAR_og * sum_fw
 ##################################################
 
 ### Grid War vs. Fangraphs WAR for 2019
-pit4a = (WAR_df_2019 %>% arrange(GWAR - FWAR_RA9) %>% slice_head(n=3))$PIT_NAME
-pit4b = (WAR_df_2019 %>% arrange(abs(GWAR - FWAR_RA9)) %>% slice_head(n=3))$PIT_NAME
-pit4c = (WAR_df_2019 %>% arrange(-GWAR + FWAR_RA9) %>% slice_head(n=5))$PIT_NAME
+pit4a = (WAR_df_2019 %>% arrange(GWAR - FWAR_RA9) %>% slice_head(n=2))$PIT_NAME
+pit4b = (WAR_df_2019 %>% arrange(abs(GWAR - FWAR_RA9)) %>% slice_head(n=2))$PIT_NAME
+pit4c = (WAR_df_2019 %>% arrange(-GWAR + FWAR_RA9) %>% slice_head(n=2))$PIT_NAME
 pit4d = (WAR_df_2019 %>% arrange(GWAR) %>% slice_head(n=2))$PIT_NAME
 pit4e = (WAR_df_2019 %>% arrange(GWAR) %>% slice_tail(n=2))$PIT_NAME
-pit4f = c("Lance Lynn", "Sonny Gray", "Sandy Alcantara")
+pit4f = c("Sonny Gray", "Sandy Alcantara")
 pit4f = ""
 pits = c(pit4a, pit4b, pit4c, pit4d, pit4e, pit4f)
 pits = setdiff(pits, c("Rick Porcello", "Masahiro Tanaka")) #FIXME
@@ -40,25 +40,26 @@ data.frame(
     arrange(-FWAR_RA9)
 )
 
-
-pgf = WAR_df_2019 %>% 
+pgf = 
+  WAR_df_2019 %>% 
   mutate(label = ifelse(pit_examinef, PIT_NAME, "")) %>%
-  ggplot(aes(x=FWAR_RA9, y=GWAR, label = label)) + ##label = PIT_NAME
+  # mutate(label = str_replace_all(label, " ", "\n")) %>%
+  # ggplot(aes(x=FWAR_RA9, y=GWAR)) +
+  ggplot(aes(x=FWAR_RA9, y=GWAR, label = label)) +
+  geom_text(size=5, hjust=-0.1) +
+  geom_point(size=3,  shape=21, stroke=1) +
   geom_abline(slope=1, intercept=0) +
-  geom_point() +
-  geom_text(hjust=-.05, vjust=-0.05, size=3.5) +
-  scale_x_continuous(name="Fangraphs RA/9 WAR", breaks=seq(-10,20,by=2), limits = c(0,10.5)) + 
+  scale_x_continuous(name="Fangraphs RA/9 WAR", breaks=seq(-10,20,by=2), limits = c(0,12)) + 
   scale_y_continuous(name="Grid WAR (rescaled)", breaks=seq(-10,20,by=2))  
   # scale_y_continuous(name="Grid WAR", limits = c(1,8.5))  
 pgf
-ggsave(paste0(output_folder,"plot_GWAR_vs_FWAR_",year,".png"), pgf, width=8, height=5)
-
+ggsave(paste0(output_folder,"plot_GWAR_vs_FWAR_",year,".png"), pgf, width=8, height=6)
 
 ##################################################
 ######### pitcher vs. pitcher histograms #########
 ##################################################
 
-pit1_vs_pit2_hists <- function(name1, name2, diff=TRUE) {
+pit1_vs_pit2_hists <- function(name1, name2, fwar=NULL, gwar1=NULL, gwar2=NULL, diff=TRUE) {
   drl = pitcher_exits %>%
     left_join(WAR_df_2019) %>%
     filter(PIT_NAME %in% c(name1, name2))
@@ -81,23 +82,42 @@ pit1_vs_pit2_hists <- function(name1, name2, diff=TRUE) {
       select(CUM_RUNS,Count) %>%
       mutate(PIT_NAME = "Difference", mi=NA)
     drl3 = bind_rows(drl2, diff_df)
-    drl3$PIT_NAME = factor(drl3$PIT_NAME, levels=c(name1,name2,"Difference"))
     drl3 = drl3 %>% mutate(color =
                              ifelse(PIT_NAME=="Difference" & Count > 0, "darkgreen",
                                     ifelse(PIT_NAME=="Difference" & Count < 0, "firebrick",
                                            "black")))
+    drl3 = drl3 %>% mutate(PIT_NAME = as.character(PIT_NAME))
+    
+    if (!is.null(gwar1)) {
+      drl3 = drl3 %>%
+        mutate(PIT_NAME = ifelse(PIT_NAME==name1, 
+                                 paste0(name1, " (GWAR = ", round(gwar1,2),")"),
+                                 PIT_NAME))
+    }
+    if (!is.null(gwar2)) {
+      drl3 = drl3 %>%
+        mutate(PIT_NAME = ifelse(PIT_NAME==name2, 
+                                 paste0(name2, " (GWAR = ", round(gwar2,2),")"), 
+                                 PIT_NAME))
+    }
   } else {
     drl3 = drl2
     drl3$color = "black"
   }
+  # drl3$PIT_NAME = factor(drl3$PIT_NAME, levels=c(name1,name2,"Difference"))
+  drl3$PIT_NAME = factor(drl3$PIT_NAME, levels=c(
+    setdiff(drl3$PIT_NAME, "Difference")[str_detect(setdiff(drl3$PIT_NAME, "Difference"), name1)],
+    setdiff(drl3$PIT_NAME, "Difference")[str_detect(setdiff(drl3$PIT_NAME, "Difference"), name2)],
+    "Difference"
+  ))
+  
+  title_ = if (!is.null(fwar)) { if (length(fwar) == 1) { paste0("FWAR = ", fwar) } } 
+  # browser()
   prl = drl3 %>%
-    # ggplot(aes(x=CUM_RUNS,y=Count,label=mi)) +
     ggplot(aes(x=CUM_RUNS,y=Count)) +
     facet_wrap(~PIT_NAME) +
-    # geom_histogram() +
     geom_col(fill=drl3$color) +
-    # geom_text(vjust = 1.5,color="white") +
-    # geom_text(data=dnf2, aes( label = mi), vjust = -0.2)
+    labs(title =   title_) +
     scale_x_continuous(name="Runs Allowed in a Game",breaks=seq(0,20,by=2)) +
     scale_y_continuous(name="Count",breaks=seq(-20,20,by=2))
   # labs(title="Distribution of Runs Allowed in a Game")
@@ -133,7 +153,10 @@ data.frame(dfw19b)
 pf1 =
   pit1_vs_pit2_hists(
     first((dfw19b %>% filter(grp==0))$PIT_NAME), 
-    last((dfw19b %>% filter(grp==0))$PIT_NAME)
+    last((dfw19b %>% filter(grp==0))$PIT_NAME),
+    fwar = unique((dfw19b %>% filter(grp==0))$FWAR_RA9),
+    gwar1 = first((dfw19b %>% filter(grp==0))$GWAR),
+    gwar2 = last((dfw19b %>% filter(grp==0))$GWAR)
 )
 # pf1
 
@@ -141,7 +164,10 @@ pf1 =
 pf2 = 
   pit1_vs_pit2_hists(
     first((dfw19b %>% filter(grp==1))$PIT_NAME), 
-    last((dfw19b %>% filter(grp==1))$PIT_NAME)
+    last((dfw19b %>% filter(grp==1))$PIT_NAME),
+    fwar = unique((dfw19b %>% filter(grp==1))$FWAR_RA9),
+    gwar1 = first((dfw19b %>% filter(grp==1))$GWAR),
+    gwar2 = last((dfw19b %>% filter(grp==1))$GWAR)
 )
 # pf2
 
@@ -149,13 +175,16 @@ pf2 =
 pf3 =   
   pit1_vs_pit2_hists(
     first((dfw19b %>% filter(grp==2))$PIT_NAME), 
-    last((dfw19b %>% filter(grp==2))$PIT_NAME)
+    last((dfw19b %>% filter(grp==2))$PIT_NAME),
+    fwar = unique((dfw19b %>% filter(grp==2))$FWAR_RA9),
+    gwar1 = first((dfw19b %>% filter(grp==2))$GWAR),
+    gwar2 = last((dfw19b %>% filter(grp==2))$GWAR)
 )
 # pf3
 
-ggsave(paste0(output_folder,"pf1_",year,".png"), pf1, width=8.6, height=3.72)
-ggsave(paste0(output_folder,"pf2_",year,".png"), pf2, width=8.6, height=3.72)
-ggsave(paste0(output_folder,"pf3_",year,".png"), pf3, width=8.6, height=3.72)
+ggsave(paste0(output_folder,"pf1_",year,".png"), pf1, width=10, height=3.72)
+ggsave(paste0(output_folder,"pf2_",year,".png"), pf2, width=10, height=3.72)
+ggsave(paste0(output_folder,"pf3_",year,".png"), pf3, width=12, height=3.72)
 
 # library(gt)
 gt::gtsave(gt::gt(dfw19b), paste0(output_folder,"pf_",year,".png"))
@@ -321,9 +350,9 @@ plot_pit_szn <- function(pitname = best_pitcher_2019, game_idx_0 = 0, game_idx_1
 
 library(gt)
 gtsave(plot_pit_szn(best_pitcher_2019), 
-       paste0(output_folder,"plot_pitszn_", best_pitcher_2019, "_", year,".png"))
+       paste0(output_folder,"plot_pitszn_", str_remove(best_pitcher_2019, " "), "_", year,".png"))
 gtsave(plot_pit_szn(best_pitcher_2019, game_idx_0=9, game_idx_1=14), 
-       paste0(output_folder,"plot_pitszn_", best_pitcher_2019, "6", "_", year,".png"))
+       paste0(output_folder,"plot_pitszn_", str_remove(best_pitcher_2019, " "), "6", "_", year,".png"))
 
 
 #############################

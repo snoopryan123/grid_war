@@ -68,24 +68,35 @@ print(overvalued_pitchers)
  # gt::gtsave(gt::gt(overvalued_pitchers), paste0(output_folder, "plot_career_overvalued_pitchers.png"))
 
 lm1 = lm(GWAR~FWAR_RA9, data=df_war_comp)
-plot_fwar_v_gwar = df_war_comp %>% 
+print(lm1)
+plot_fwar_v_gwar = 
+  df_war_comp %>% 
   ggplot(aes(x=FWAR_RA9, y = GWAR)) + 
-  geom_point() + 
+  geom_point(shape=21) + 
   ylab("GWAR (rescaled each season)") +
   # ylab("GWAR") +
   xlab("FWAR (RA9)") +
-  geom_abline(intercept = coef(lm1)[1], slope = coef(lm1)[2], color="dodgerblue2", linewidth=1) +
-  geom_abline(linewidth=1)
-  # geom_abline(linetype="dashed", color="gray60", linewidth=1)
-# plot_fwar_v_gwar
+  geom_abline(linewidth=3, aes(slope=1, intercept=0, color="y=x\n", linetype="y=x\n")) +
+  geom_abline(aes(intercept = coef(lm1)[1], slope = coef(lm1)[2], 
+                  color="regression\nline", linetype="regression\nline"),
+              linewidth=3) +
+  scale_linetype_manual(
+    breaks = c("y=x\n", "regression\nline"),
+    values = c("solid", "twodash")
+  ) +
+  scale_color_manual("color",
+                      breaks = c("y=x\n", "regression\nline"),
+                      values = c("black", "dodgerblue2")) 
+plot_fwar_v_gwar
 ggsave("plots/plot_comp_career/plot_career_fwar_v_gwar.png",
-       plot_fwar_v_gwar, width=6, height=5)
+       plot_fwar_v_gwar, width=8, height=5)
 
 
-library(gt)
+ library(gt)
 
 #### plots: pitchers who are undervalued over their whole career, according to GWAR
-plot_undervalued_pitchers = gt(undervalued_pitchers) %>%
+plot_undervalued_pitchers =
+  gt(undervalued_pitchers) %>%
   cols_label(
     PIT_NAME = "Pitcher",
     # num_szns_undervalued = "Num Seasons Undervalued",
@@ -97,7 +108,7 @@ plot_undervalued_pitchers = gt(undervalued_pitchers) %>%
     decimals = 2 
   )
 # plot_undervalued_pitchers
-gtsave(plot_undervalued_pitchers, "plots/plot_comp_career/plot_undervalued_pitchers.png")
+gtsave(plot_undervalued_pitchers, "plots/plot_comp_career/plot_undervalued_pitchers.png", vwidth = 1500, vheight = 1000)
 
 # pit_v_pit_hists(undervalued_pitchers$PIT_NAME[1:6],
 #                 diff=F, pitcher_exits=pit_exits, war_df=df_war_comp)
@@ -126,7 +137,7 @@ plot_pit_yrs <- function(pit_name) {
       columns = c(GWAR_FWAR_diff,GWAR),
       decimals = 2 
     ) 
-  gtsave(plot_pit_yrs, paste0("plots/plot_comp_career/plot_",pit_name,"_pitYears.png"))
+  gtsave(plot_pit_yrs, paste0("plots/plot_comp_career/plot_",str_remove(pit_name, " "),"_pitYears.png"))
   plot_pit_yrs
 }
 
@@ -146,7 +157,7 @@ plot_pit_yrs_hists <- function(pit_name, undervalued=F, overvalued=F,
   pit_v_pit_hists(pit_name, facet_yr=T, diff=F, 
                   pitcher_exits=pit_exits %>% filter(YEAR %in% pit_yrs$YEAR), 
                   war_df=df_war_comp %>% filter(YEAR %in% pit_yrs$YEAR))
-  ggsave(paste0("plots/plot_comp_career/plot_", pit_name, "_",
+  ggsave(paste0("plots/plot_comp_career/plot_", str_remove(pit_name, " "), "_",
                 if (undervalued) "undervalued" else "", 
                 if (overvalued) "overvalued" else "", 
                 "_", length(yrs),
@@ -172,7 +183,7 @@ plot_overvalued_pitchers = gt(overvalued_pitchers) %>%
     decimals = 2 
   )
 # plot_overvalued_pitchers
-gtsave(plot_overvalued_pitchers, "plots/plot_comp_career/plot_overvalued_pitchers.png")
+gtsave(plot_overvalued_pitchers, "plots/plot_comp_career/plot_overvalued_pitchers.png", vwidth = 1500, vheight = 1000)
 
 
 # pit_v_pit_hists(overvalued_pitchers$PIT_NAME[1:6],

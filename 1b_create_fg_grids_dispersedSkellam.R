@@ -177,8 +177,8 @@ plot_fIR <- function(f_grid_matrix, title="", annotation="") {
     geom_line(linewidth=1) +
     labs(
       title = title,
-      y="context-neutral win probability",
-      x="runs allowed through the end of the given inning"
+      y="Context-Neutral Win Probability",
+      x="Runs Allowed Through the End of the Given Inning"
     ) +
     annotate("text", x = 8, y = 0.95, label = annotation) +
     # theme(plot.margin = unit(c(1, 1, 3, 1), "lines")) +

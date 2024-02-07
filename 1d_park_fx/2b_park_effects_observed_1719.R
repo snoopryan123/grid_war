@@ -7,9 +7,8 @@ library(ggthemes)
 library(cowplot)
 library(latex2exp)
 library(rvest)
-theme_set(theme_bw())
-theme_update(text = element_text(size=18))
-theme_update(plot.title = element_text(hjust = 0.5))
+
+source("../0_load_stuff.R")
 output_folder = "./plots/"
 set.seed(12345)
 
@@ -176,18 +175,31 @@ pf_df_fg = read_csv("obs_fg_PF.csv") %>% left_join(df_lg_park) %>% select(PARK, 
 pf_df_ALL = bind_rows(pf_df_ridge, pf_df_ols, pf_df_espn, pf_df_fg) #%>% distinct(PARK, park_factor, method)
 write_csv(pf_df_ALL, "df_ALL_park_fx_2017-2019.csv")
 
+park_df %>% distinct(HOME_TEAM_ID, PARK)
+
 ###########################################
 ### fitted park factors for 2017 - 2019 ###
 ###########################################
 
+### retrosheet park names 
+retrosheet_parkcodes = read_csv("retrosheet_parkcodes.csv")
+pf_df_ALL_1 = 
+  pf_df_ALL %>%
+  left_join(
+    retrosheet_parkcodes %>% distinct(PARKID, NAME) %>% rename(PARK=PARKID) %>% rename(PARK_NAME=NAME)
+  ) %>%
+  mutate(PARK_NAME_CODE = paste0(PARK_NAME, " (", PARK, ")"))
+pf_df_ALL_1
+
 ##### plot 2017-2019 park factor comparison
 plot_pf_comparison_1719 =
-  pf_df_ALL %>%
-  mutate(PARK = factor(PARK, levels = (pf_df_ALL %>% filter(method=="Ridge") %>% arrange(park_factor))$PARK )) %>%
-  select(PARK, park_factor, method) %>%
+  pf_df_ALL_1 %>% 
+  mutate(PARK = factor(PARK, levels = (ridge_obs %>% arrange(park_factor))$PARK )) %>%
+  mutate(PARK_NAME_CODE = fct_reorder(PARK_NAME_CODE, as.numeric(PARK))) %>%
+  select(PARK, PARK_NAME_CODE, park_factor, method) %>%
   ggplot() +
-  geom_point(aes(x=park_factor,y=PARK,color=method, shape=method),
-             size=4, alpha=0.75) + # alpha=0.85
+  geom_point(aes(x=park_factor,y=PARK_NAME_CODE,color=method, shape=method),
+             size=6, alpha=0.75) + # alpha=0.85
   ylab("park") + xlab('2019 three-year park effect') +
   scale_shape_manual(values=c(16, 17, 18, 15, 19)) +
   scale_x_continuous(
@@ -196,7 +208,25 @@ plot_pf_comparison_1719 =
   ) +
   scale_color_brewer(palette="Set1")
 plot_pf_comparison_1719
-ggsave(paste0("plot_pf_comparison_1719.png"), plot_pf_comparison_1719, width=9, height=7)
+ggsave(paste0("plot_pf_comparison_1719.png"), plot_pf_comparison_1719, width=17, height=9)
+
+### plot ridge PF 2017-2019
+plot_pf_ridge_1719 = 
+  pf_df_ALL_1 %>% 
+  mutate(PARK = factor(PARK, levels = (ridge_obs %>% arrange(park_factor))$PARK )) %>%
+  mutate(PARK_NAME_CODE = fct_reorder(PARK_NAME_CODE, as.numeric(PARK))) %>%
+  select(PARK, PARK_NAME_CODE, park_factor, method) %>%
+  filter(method=="Ridge") %>%
+  ggplot() + 
+  geom_point(aes(x=park_factor,y=PARK_NAME_CODE), size=6, alpha=1,
+             # color="dodgerblue2" 
+  ) + 
+  ylab("park") + xlab('2019 three-year park effect') +
+  scale_shape_manual(values=c(16, 17, 18, 15, 19)) +
+  scale_x_continuous(limits = c(-0.08,0.11), breaks = seq(-1,1,by=0.05)) +
+  scale_color_brewer(palette="Set1")
+plot_pf_ridge_1719
+ggsave("plot_pf_ridge_1719.png", plot_pf_ridge_1719, width=17, height=9)
 
 # ##### plot 2017-2019 park factor comparison
 # pf_1719 = bind_rows(ridge_obs, ols_obs, espn_obs, fg_obs) %>% 
@@ -219,6 +249,7 @@ ggsave(paste0("plot_pf_comparison_1719.png"), plot_pf_comparison_1719, width=9, 
 #   scale_color_brewer(palette="Set1")
 # plot_pf_comparison_1719
 # ggsave("plot_pf_comparison_1719.png", plot_pf_comparison_1719, width=9, height=7)
+
 
 
 
