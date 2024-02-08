@@ -110,4 +110,20 @@ plot_var_vs_diff =
   parse=TRUE) +
   stat_smooth(method="lm",se=F,color="dodgerblue2", linewidth=2) 
 plot_var_vs_diff
-ggsave(paste0(output_folder,"plot_var_vs_diff.png"), plot_var_vs_diff, width=6, height=5)
+# ggsave(paste0(output_folder,"plot_var_vs_diff.png"), plot_var_vs_diff, width=6, height=5)
+
+
+
+# df_plot_var_stability = 
+#   df_plot_var %>%
+#   # select(YEAR, PIT_NAME, gameByGame_sd_GWAR) %>%
+#   arrange(PIT_NAME, YEAR) %>%
+#   group_by(PIT_NAME) %>%
+#   mutate(sd_prev = lag(gameByGame_sd_GWAR))
+# df_plot_var_stability
+#
+# df_plot_var_stability %>%
+#   ggplot(aes(x = sd_prev, y = gameByGame_sd_GWAR)) +
+#   geom_point(shape=21, size=2) +
+#   stat_smooth(method="lm",se=F,color="dodgerblue2", linewidth=2) 
+
